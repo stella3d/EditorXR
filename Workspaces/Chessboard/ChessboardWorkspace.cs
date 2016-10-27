@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Utilities;
@@ -6,7 +7,7 @@ using UnityEngine.VR.Workspaces;
 
 public class ChessboardWorkspace : Workspace, IMiniWorld
 {
-	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.1f; // Show more space above ground than below
+	private static readonly float kInitReferenceYOffset = kDefaultBounds.y / 2.001f; // Show more space above ground than below
 	private const float kInitReferenceScale = 25f; // We want to see a big region by default
 
 	//TODO: replace with dynamic values once spatial hash lands
@@ -41,6 +42,9 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 	}
 
 	public Transform referenceTransform { get { return m_MiniWorld.referenceTransform; } }
+	public Func<IMiniWorld, bool> preProcessRender { set { m_MiniWorld.preProcessRender = value; } }
+	public Action<IMiniWorld> postProcessRender { set { m_MiniWorld.postProcessRender = value; } }
+	public Vector3 miniWorldScale { get { return m_MiniWorld.miniWorldScale; } }
 	public Transform miniWorldTransform { get { return m_MiniWorld.miniWorldTransform; } }
 	public bool Contains(Vector3 position) { return m_MiniWorld.Contains(position); }
 	public List<Renderer> ignoreList { set { m_MiniWorld.ignoreList = value;  } } 
@@ -52,8 +56,6 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 		m_CustomStartingBounds = new Vector3(kMinBounds.x, kMinBounds.y, 0.5f);
 
 		base.Setup();
-
-		dynamicFaceAdjustment = true;
 
 		U.Object.Instantiate(m_ContentPrefab, m_WorkspaceUI.sceneContainer, false);
 		m_ChessboardUI = GetComponentInChildren<ChessboardUI>();
@@ -129,6 +131,13 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 
 	private void OnSliding(float value)
 	{
+		ScaleMiniWorld(value);
+	}
+
+	void ScaleMiniWorld(float value)
+	{
+		var scaleDiff = (value - m_MiniWorld.referenceTransform.localScale.x) / m_MiniWorld.referenceTransform.localScale.x;
+		m_MiniWorld.referenceTransform.position += Vector3.up * m_MiniWorld.referenceBounds.extents.y * scaleDiff;
 		m_MiniWorld.referenceTransform.localScale = Vector3.one * value;
 	}
 
@@ -141,9 +150,7 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 		m_WorkspaceUI.topHighlight.visible = true;
 
 		if (m_RayData.Count == 1) // On introduction of second ray
-		{
 			m_ScaleStartDistance = (m_RayData[0].rayOrigin.position - eventData.rayOrigin.position).magnitude;
-		}
 
 		m_RayData.Add(new RayData
 		{
@@ -167,16 +174,17 @@ public class ChessboardWorkspace : Workspace, IMiniWorld
 		
 		// Rotate translation by inverse workspace yaw
 		Quaternion yawRotation = Quaternion.AngleAxis(transform.rotation.eulerAngles.y, Vector3.down);
-		
+
 		// Translate
 		referenceTransform.position = rayData.refTransformStartPosition
-									+ yawRotation * Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, referenceTransform.localScale);
-		// If we have two rays, also scale
+			+ yawRotation * Vector3.Scale(rayData.rayOriginStart - rayOrigin.transform.position, referenceTransform.localScale);
+
+		// If we have two rays, scale
 		if (m_RayData.Count > 1)
 		{
 			var otherRay = m_RayData[1];
 			referenceTransform.localScale = otherRay.refTransformStartScale * (m_ScaleStartDistance
-										/ (otherRay.rayOrigin.position - rayOrigin.position).magnitude);
+				/ (otherRay.rayOrigin.position - rayOrigin.position).magnitude);
 
 			m_ZoomSliderUI.zoomSlider.value = referenceTransform.localScale.x;
 		}

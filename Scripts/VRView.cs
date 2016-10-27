@@ -45,10 +45,8 @@ namespace UnityEditor.VR
 				{
 					return s_ActiveView.m_CameraPivot;
 				}
-				else
-				{
-					return null;
-				}
+
+				return null;
 			}
 		}
 
@@ -60,10 +58,8 @@ namespace UnityEditor.VR
 				{
 					return s_ActiveView.m_Camera;
 				}
-				else
-				{
-					return null;
-				}
+
+				return null;
 			}
 		}
 
@@ -75,10 +71,8 @@ namespace UnityEditor.VR
 				{
 					return s_ActiveView.position;
 				}
-				else
-				{
-					return new Rect();
-				}
+
+				return new Rect();
 			}
 		}
 
@@ -90,7 +84,12 @@ namespace UnityEditor.VR
 			}
 		}
 
-		public static Camera customPreviewCamera { set; private get; }
+		public static bool showDeviceView
+		{
+			get { return s_ActiveView && s_ActiveView.m_ShowDeviceView; }
+		}
+
+		public static Camera customPreviewCamera { set; private get; } // To allow for alternate previews (e.g. smoothing)
 
 		public static event Action onEnable = delegate {};
 		public static event Action onDisable = delegate {};
@@ -229,21 +228,21 @@ namespace UnityEditor.VR
 		}
 
 		// TODO: Share this between SceneView/EditorVR in SceneViewUtilies
-		private void CreateCameraTargetTexture(Rect cameraRect, bool hdr)
+		public void CreateCameraTargetTexture(ref RenderTexture renderTexture, Rect cameraRect, bool hdr)
 		{
 			bool useSRGBTarget = QualitySettings.activeColorSpace == ColorSpace.Linear;
 
 			int msaa = Mathf.Max(1, QualitySettings.antiAliasing);
 			
 			RenderTextureFormat format = hdr ? RenderTextureFormat.ARGBHalf : RenderTextureFormat.ARGB32;
-			if (m_SceneTargetTexture != null)
+			if (renderTexture != null)
 			{
-				bool matchingSRGB = m_SceneTargetTexture != null && useSRGBTarget == m_SceneTargetTexture.sRGB;
+				bool matchingSRGB = renderTexture != null && useSRGBTarget == renderTexture.sRGB;
 
-				if (m_SceneTargetTexture.format != format || m_SceneTargetTexture.antiAliasing != msaa || !matchingSRGB)
+				if (renderTexture.format != format || renderTexture.antiAliasing != msaa || !matchingSRGB)
 				{
-					Object.DestroyImmediate(m_SceneTargetTexture);
-					m_SceneTargetTexture = null;
+					Object.DestroyImmediate(renderTexture);
+					renderTexture = null;
 				}
 			}
 
@@ -251,27 +250,27 @@ namespace UnityEditor.VR
 			int width = (int)actualCameraRect.width;
 			int height = (int)actualCameraRect.height;
 
-			if (m_SceneTargetTexture == null)
+			if (renderTexture == null)
 			{
-				m_SceneTargetTexture = new RenderTexture(0, 0, 24, format);
-				m_SceneTargetTexture.name = "SceneView RT";
-				m_SceneTargetTexture.antiAliasing = msaa;
-				m_SceneTargetTexture.hideFlags = HideFlags.HideAndDontSave;
+				renderTexture = new RenderTexture(0, 0, 24, format);
+				renderTexture.name = "Scene RT";
+				renderTexture.antiAliasing = msaa;
+				renderTexture.hideFlags = HideFlags.HideAndDontSave;
 			}
-			if (m_SceneTargetTexture.width != width || m_SceneTargetTexture.height != height)
+			if (renderTexture.width != width || renderTexture.height != height)
 			{
-				m_SceneTargetTexture.Release();
-				m_SceneTargetTexture.width = width;
-				m_SceneTargetTexture.height = height;
+				renderTexture.Release();
+				renderTexture.width = width;
+				renderTexture.height = height;
 			}
-			m_SceneTargetTexture.Create();
+			renderTexture.Create();
 		}
 
 		private void PrepareCameraTargetTexture(Rect cameraRect)
 		{
 			// Always render camera into a RT
 			var hdr = false; // SceneViewIsRenderingHDR();
-			CreateCameraTargetTexture(cameraRect, hdr);
+			CreateCameraTargetTexture(ref m_SceneTargetTexture, cameraRect, hdr);
 			m_Camera.targetTexture = m_ShowDeviceView ? m_SceneTargetTexture : null;
 			VRSettings.showDeviceView = !customPreviewCamera && m_ShowDeviceView;
 		}
@@ -295,7 +294,7 @@ namespace UnityEditor.VR
 				DoDrawCamera(guiRect, out pushedGUIClip);
 
 				if (m_ShowDeviceView)
-					SceneViewUtilities.DrawTexture(m_SceneTargetTexture, guiRect, pushedGUIClip);
+					SceneViewUtilities.DrawTexture(customPreviewCamera && customPreviewCamera.targetTexture ? customPreviewCamera.targetTexture : m_SceneTargetTexture, guiRect, pushedGUIClip);
 
 				GUILayout.BeginArea(guiRect);
 				if (GUILayout.Button("Toggle Device View", EditorStyles.toolbarButton))

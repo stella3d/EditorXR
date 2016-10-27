@@ -9,7 +9,7 @@ using UnityEngine.VR.Tools;
 using UnityEngine.VR.Utilities;
 using UnityEngine.VR.Actions;
 
-public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IToolActions, IDirectSelection, IGrabObjects
+public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformTool, ISelectionChanged, IToolActions, IDirectSelection, IGrabObjects, ISnapping
 {
 	class TransformAction : IAction
 	{
@@ -135,6 +135,13 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 	public Func<DirectSelection, Transform, bool> canGrabObject { private get; set; }
 	public Func<IGrabObjects, DirectSelection, Transform, bool> grabObject { private get; set; }
 	public Action<IGrabObjects, Transform, Transform> dropObject { private get; set; }
+
+	public Action<Transform, Vector3, Transform[]> onSnapStarted { private get; set; }
+	public Action<Transform, Vector3, Transform[]> onSnapEnded { private get; set; }
+	public Action<Transform, Vector3, Transform[]> onSnapHeld { private get; set; }
+	public Action<Transform> onSnapUpdate { private get; set; }
+	
+	bool m_IsDragging;
 
 	void Awake()
 	{
@@ -299,10 +306,15 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 			var deltaTime = Time.unscaledDeltaTime;
 			var manipulatorTransform = manipulatorGameObject.transform;
+			var prevPos = manipulatorTransform.position;
 			manipulatorTransform.position = Vector3.Lerp(manipulatorTransform.position, m_TargetPosition, kLazyFollowTranslate * deltaTime);
+			var deltaMovement = manipulatorTransform.position - prevPos;
 
 			if (m_PivotRotation == PivotRotation.Local) // Manipulator does not rotate when in global mode
 				manipulatorTransform.rotation = Quaternion.Slerp(manipulatorTransform.rotation, m_TargetRotation, kLazyFollowRotate * deltaTime);
+
+			var manipulatorChildren = manipulatorGameObject.GetComponentsInChildren<Transform>(true);
+			var ignoreList = new List<Transform>(manipulatorChildren);
 
 			foreach (var t in m_SelectionTransforms)
 			{
@@ -315,6 +327,10 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 				}
 				else
 					t.position = manipulatorTransform.position + m_PositionOffsets[t];
+				
+				ignoreList.Add(t);
+				HandleSnap(m_CurrentManipulator, t, deltaMovement, ignoreList.ToArray());
+				ignoreList.Remove(t);
 
 				t.localScale = Vector3.Lerp(t.localScale, Vector3.Scale(m_TargetScale, m_ScaleOffsets[t]), kLazyFollowTranslate * deltaTime);
 			}
@@ -384,6 +400,32 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 		m_GrabData.Remove(inputNode);
 	}
 
+	private void HandleSnap(IManipulator manipulator, Transform trans, Vector3 deltaMovement, Transform[] ignoreList)
+	{
+		if (manipulator != null)
+		{
+			if (manipulator.dragging)
+			{
+				if (!m_IsDragging)
+				{
+					m_IsDragging = true;
+					onSnapStarted(trans, deltaMovement, ignoreList);
+				}
+				else
+					onSnapHeld(trans, deltaMovement, ignoreList);
+			}
+			else
+			{
+				if (m_IsDragging)
+				{
+					m_IsDragging = false;
+					onSnapEnded(trans, deltaMovement, ignoreList);
+				}
+				else
+					onSnapUpdate(trans);
+			}
+		}
+	}
 
 	private void Translate(Vector3 delta)
 	{
@@ -402,7 +444,8 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 
 	private void UpdateSelectionBounds()
 	{
-		Bounds? newBounds = null;
+		var hasBounds = false;
+		Bounds newBounds = new Bounds();
 		foreach (var selectedObj in m_SelectionTransforms)
 		{
 			var renderers = selectedObj.GetComponentsInChildren<Renderer>();
@@ -411,16 +454,21 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 				if (Mathf.Approximately(r.bounds.extents.sqrMagnitude, 0f)) // Necessary because Particle Systems have renderer components with center and extents (0,0,0)
 					continue;
 
-				if (newBounds.HasValue)
+				if (hasBounds)
+				{
 					// Only use encapsulate after the first renderer, otherwise bounds will always encapsulate point (0,0,0)
-					newBounds.Value.Encapsulate(r.bounds);
+					newBounds.Encapsulate(r.bounds);
+				}
 				else
+				{
 					newBounds = r.bounds;
+					hasBounds = true;
+				}
 			}
 		}
 
 		// If we haven't encountered any Renderers, return bounds of (0,0,0) at the center of the selected objects
-		if (newBounds == null)
+		if (!hasBounds)
 		{
 			var bounds = new Bounds();
 			foreach (var selectedObj in m_SelectionTransforms)
@@ -428,7 +476,7 @@ public class TransformTool : MonoBehaviour, ITool, ICustomActionMap, ITransformT
 			newBounds = bounds;
 		}
 
-		m_SelectionBounds = newBounds.Value;
+		m_SelectionBounds = newBounds;
 	}
 
 	private void UpdateManipulatorSize()
