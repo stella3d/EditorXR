@@ -24,8 +24,8 @@ namespace UnityEngine.VR.Handles
 
 		public Vector3 startDragPosition { get; protected set; }
 
-		public Func<BaseHandle, object, bool> canDrop;
-		public Action<BaseHandle, object> receiveDrop;
+		public Func<BaseHandle, IDroppable, bool> canDrop;
+		public Action<BaseHandle, IDroppable> receiveDrop;
 		public Func<BaseHandle, object> getDropObject;
 		public event Action<BaseHandle> dropHoverStarted = delegate {};
 		public event Action<BaseHandle> dropHoverEnded = delegate {};
@@ -195,18 +195,18 @@ namespace UnityEngine.VR.Handles
 			doubleClick(this, eventData);
 		}
 
-		public virtual bool CanDrop(object dropObject)
+		public virtual bool CanDrop(IDroppable droppable)
 		{
 			if (canDrop != null)
-				return canDrop(this, dropObject);
+				return canDrop(this, droppable);
 
 			return false;
 		}
 
-		public virtual void ReceiveDrop(object dropObject)
+		public virtual void ReceiveDrop(IDroppable droppable)
 		{
 			if (receiveDrop != null)
-				receiveDrop(this, dropObject);
+				receiveDrop(this, droppable);
 		}
 
 		public virtual object GetDropObject()

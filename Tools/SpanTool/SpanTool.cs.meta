@@ -1,11 +1,15 @@
 fileFormatVersion: 2
 guid: be3261352b89a824bbe9b7271d635615
-timeCreated: 1477677534
+timeCreated: 1477688698
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
   - m_SpanSettings: {fileID: 11400000, guid: 25c978fa5fede0d489a29a800a7ab2ac, type: 2}
+  - m_SpanPiece: {fileID: 1250781577173500, guid: f3da0067599598943ab3c77497e5b40c,
+      type: 2}
+  - m_CanvasPrefab: {fileID: 223000012882647046, guid: 676005de00087b5488d2bd0e2cc27b76,
+      type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

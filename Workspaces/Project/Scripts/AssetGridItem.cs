@@ -132,6 +132,8 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 
 	public Action<Transform, Vector3> placeObject { private get; set; }
 
+	public bool consumed { get; set; }
+
 	public override void Setup(AssetData listData)
 	{
 		base.Setup(listData);
@@ -270,20 +272,23 @@ public class AssetGridItem : DraggableListItem<AssetData>, IPlaceObjects, ISpati
 	{
 		var gridItem = m_DragObject.GetComponent<AssetGridItem>();
 
-		if (gridItem.m_PreviewObject)
+		if (!consumed)
 		{
-			placeObject(gridItem.m_PreviewObject, m_PreviewPrefabScale);
-		}
-		else
-		{
-			switch (data.type)
+			if (gridItem.m_PreviewObject)
 			{
-				case "Prefab":
-					addObjectToSpatialHash(Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation));
-					break;
-				case "Model":
-					addObjectToSpatialHash(Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation));
-					break;
+				placeObject(gridItem.m_PreviewObject, m_PreviewPrefabScale);
+			}
+			else
+			{
+				switch (data.type)
+				{
+					case "Prefab":
+						addObjectToSpatialHash(Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation));
+						break;
+					case "Model":
+						addObjectToSpatialHash(Instantiate(data.asset, gridItem.transform.position, gridItem.transform.rotation));
+						break;
+				}
 			}
 		}
 

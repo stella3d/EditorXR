@@ -11,7 +11,7 @@
 		/// <param name="target">The GameObject with which the pointer is intersecting</param>
 		/// <param name="dropObject">The object we are dropping</param>
 		/// <returns>Whether the drop can be accepted</returns>
-		bool CanDrop(object dropObject);
+		bool CanDrop(IDroppable dropObject);
 
 		/// <summary>
 		/// Called when a pointer with a valid drop object starts hovering
@@ -26,8 +26,8 @@
 		/// <summary>
 		/// Called when an object is dropped on the receiver
 		/// </summary>
-		/// <param name="dropObject">The object we are dropping</param>
+		/// <param name="droppable">The object we are dropping</param>
 		/// <returns>Whether the drop was accepted</returns>
-		void ReceiveDrop(object dropObject);
+		void ReceiveDrop(IDroppable droppable);
 	}
 }

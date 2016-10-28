@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Workspaces;
 
@@ -89,13 +90,21 @@ public class InspectorNumberItem : InspectorPropertyItem
 		return m_InputField.text;
 	}
 
-	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
+	protected override bool CanDropForFieldBlock(Transform fieldBlock, IDroppable droppable)
 	{
+		if (droppable == null)
+			return false;
+
+		var dropObject = droppable.GetDropObject();
 		return dropObject is string;
 	}
 
-	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
+	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, IDroppable droppable)
 	{
+		if (droppable == null)
+			return;
+
+		var dropObject = droppable.GetDropObject();
 		SetValue(dropObject.ToString());
 	}
 

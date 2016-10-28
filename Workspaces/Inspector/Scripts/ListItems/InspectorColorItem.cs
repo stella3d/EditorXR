@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.UI;
 
 public class InspectorColorItem : InspectorPropertyItem
@@ -66,14 +67,22 @@ public class InspectorColorItem : InspectorPropertyItem
 		return dropObject;
 	}
 
-	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
+	protected override bool CanDropForFieldBlock(Transform fieldBlock, IDroppable droppable)
 	{
+		if (droppable == null)
+			return false;
+
+		var dropObject = droppable.GetDropObject();
 		return dropObject is string || dropObject is Vector2 || dropObject is Vector3
 			|| dropObject is Vector4 || dropObject is Quaternion || dropObject is Color;
 	}
 
-	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
+	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, IDroppable droppable)
 	{
+		if (droppable == null)
+			return;
+
+		var dropObject = droppable.GetDropObject();
 		var str = dropObject as string;
 		if (str != null)
 		{

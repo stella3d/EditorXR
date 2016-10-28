@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.VR.Handles;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.Tools;
 using UnityEngine.VR.UI;
 using UnityEngine.VR.Utilities;
@@ -154,12 +155,12 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		return GetDropObjectForFieldBlock(handle.transform.parent);
 	}
 
-	bool CanDrop(BaseHandle handle, object dropObject)
+	bool CanDrop(BaseHandle handle, IDroppable droppable)
 	{
-		return CanDropForFieldBlock(handle.transform.parent, dropObject);
+		return CanDropForFieldBlock(handle.transform.parent, droppable);
 	}
 
-	void ReceiveDrop(BaseHandle handle, object dropObject)
+	void ReceiveDrop(BaseHandle handle, IDroppable dropObject)
 	{
 		ReceiveDropForFieldBlock(handle.transform.parent, dropObject);
 	}
@@ -298,12 +299,12 @@ public abstract class InspectorListItem : DraggableListItem<InspectorData>, IHig
 		return null;
 	}
 
-	protected virtual bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
+	protected virtual bool CanDropForFieldBlock(Transform fieldBlock, IDroppable droppable)
 	{
 		return false;
 	}
 
-	protected virtual void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
+	protected virtual void ReceiveDropForFieldBlock(Transform fieldBlock, IDroppable droppable)
 	{
 	}
 }

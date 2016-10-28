@@ -66,13 +66,21 @@ public class InspectorObjectFieldItem : InspectorPropertyItem
 		return m_SerializedProperty.objectReferenceValue;
 	}
 
-	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
+	protected override bool CanDropForFieldBlock(Transform fieldBlock, IDroppable droppable)
 	{
+		if (droppable == null)
+			return false;
+
+		var dropObject = droppable.GetDropObject();
 		return dropObject is Object;
 	}
 
-	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
+	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, IDroppable droppable)
 	{
+		if (droppable == null)
+			return;
+
+		var dropObject = droppable.GetDropObject();
 		SetObject(dropObject as Object);
 	}
 }

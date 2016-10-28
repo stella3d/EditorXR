@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.UI;
 
 public class InspectorRectItem : InspectorPropertyItem
@@ -86,14 +87,22 @@ public class InspectorRectItem : InspectorPropertyItem
 		return dropObject;
 	}
 
-	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
+	protected override bool CanDropForFieldBlock(Transform fieldBlock, IDroppable droppable)
 	{
+		if (droppable == null)
+			return false;
+
+		var dropObject = droppable.GetDropObject();
 		return dropObject is string || dropObject is Rect || dropObject is Vector2
 			|| dropObject is Vector3 || dropObject is Vector4;
 	}
 
-	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
+	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, IDroppable droppable)
 	{
+		if (droppable == null)
+			return;
+
+		var dropObject = droppable.GetDropObject();
 		var str = dropObject as string;
 		if (str != null)
 		{

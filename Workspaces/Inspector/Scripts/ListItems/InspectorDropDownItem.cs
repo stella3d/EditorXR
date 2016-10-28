@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.UI;
 
 public class InspectorDropDownItem : InspectorPropertyItem
@@ -119,14 +120,22 @@ public class InspectorDropDownItem : InspectorPropertyItem
 		return m_DropDown.multiSelect ? (object) m_DropDown.values : m_DropDown.value;
 	}
 
-	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
+	protected override bool CanDropForFieldBlock(Transform fieldBlock, IDroppable droppable)
 	{
+		if (droppable == null)
+			return false;
+
+		var dropObject = droppable.GetDropObject();
 		return m_DropDown.multiSelect && dropObject is int[]
 			|| !m_DropDown.multiSelect && dropObject is int;
 	}
 
-	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
+	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, IDroppable droppable)
 	{
+		if (droppable == null)
+			return;
+
+		var dropObject = droppable.GetDropObject();
 		if (m_DropDown.multiSelect && dropObject is int[])
 		{
 			m_DropDown.values = (int[]) dropObject;

@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.VR.Modules;
 using UnityEngine.VR.UI;
 using InputField = UnityEngine.VR.UI.InputField;
 
@@ -139,14 +140,22 @@ public class InspectorHeaderItem : InspectorListItem
 		return null;
 	}
 
-	protected override bool CanDropForFieldBlock(Transform fieldBlock, object dropObject)
+	protected override bool CanDropForFieldBlock(Transform fieldBlock, IDroppable droppable)
 	{
+		if (droppable == null)
+			return false;
+
+		var dropObject = droppable.GetDropObject();
 		var inputFields = fieldBlock.GetComponentsInChildren<InputField>();
 		return dropObject is string && inputFields.Contains(m_NameField);
 	}
 
-	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, object dropObject)
+	protected override void ReceiveDropForFieldBlock(Transform fieldBlock, IDroppable droppable)
 	{
+		if (droppable == null)
+			return;
+
+		var dropObject = droppable.GetDropObject();
 		m_NameField.text = (string)dropObject;
 		m_NameField.ForceUpdateLabel();
 	}
