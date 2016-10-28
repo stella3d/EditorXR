@@ -10,6 +10,9 @@ using UnityEngine.InputNew;
 [MainMenuItem("Span", "Create", "Create a span")]
 public class SpanTool : MonoBehaviour, ITool, IStandardActionMap, IRay
 {
+	[SerializeField]
+	SpanSettings m_SpanSettings;
+
 	const float m_DistanceToSpawnNewSpan = 1f;
 
 	public Standard standardInput
@@ -28,7 +31,9 @@ public class SpanTool : MonoBehaviour, ITool, IStandardActionMap, IRay
 		{
 			if (rayOrigin)
 			{
-				new SpanGroup(rayOrigin.position + rayOrigin.forward * m_DistanceToSpawnNewSpan);
+				var spanGroupTrans = U.Object.Instantiate(m_SpanSettings.spanGroup).transform;
+				spanGroupTrans.position = rayOrigin.position + rayOrigin.forward * m_DistanceToSpawnNewSpan 
+					+ Vector3.up * m_SpanSettings.groupHandleElevation;
 			}
 		}
 	}
