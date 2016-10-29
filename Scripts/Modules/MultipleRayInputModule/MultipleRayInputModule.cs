@@ -32,6 +32,7 @@ namespace UnityEngine.VR.Modules
 			}
 		}
 
+		public static bool inputBlock;
 		private static int UILayer = -1;
 		private readonly Dictionary<Transform, RaycastSource> m_RaycastSources = new Dictionary<Transform, RaycastSource>();
 
@@ -96,6 +97,7 @@ namespace UnityEngine.VR.Modules
 
 		public override void Process()
 		{
+			if (inputBlock) return;
 			ExecuteUpdateOnSelectedObject();
 
 			if (m_EventCamera == null)

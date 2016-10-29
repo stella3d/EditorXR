@@ -89,6 +89,11 @@ namespace UnityEngine.VR.Workspaces
 			get { return m_Button; }
 		}
 
+		public Image icon
+		{
+			get { return m_Icon; }
+		}
+
 		public bool alternateIconVisible
 		{
 			set

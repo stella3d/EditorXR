@@ -9,10 +9,13 @@ using UnityEngine.InputNew;
 using UnityEngine.VR;
 using UnityEngine.VR.Handles;
 using UnityEngine.VR.Modules;
+using UnityEngine.VR.Workspaces;
 
 [MainMenuItem("Span", "Create", "Create a span")]
 public class SpanTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateMenuUI
 {
+	private const float k_MaximumRayRange = 10f;
+
 	[SerializeField]
 	private SpanSettings m_SpanSettings;
 
@@ -24,25 +27,35 @@ public class SpanTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstant
 	[SerializeField]
 	private Canvas m_CanvasPrefab;
 
+	private SpanGroup m_SpanGroup;
+	private float m_InitialElevation;
 	private bool m_CanvasSpawned;
-	private Renderer m_DropZoneRenderer;
-	private Material m_OriginalMat; // tmp!
 	private AssetGridItem m_HoveredDragObject;
 	private Transform m_PreviewPiece;
+	private Transform m_BaseTrans;
+	private GameObject m_Icon;
 
 	public Node selfNode { get; set; }
 
-	public Standard standardInput
-	{
-		get; set;
-	}
+	public Standard standardInput { get; set; }
 
-	public Transform rayOrigin
-	{
-		get; set;
-	}
+	public Transform rayOrigin { get; set; }
 
 	public Func<Node, MenuOrigin, GameObject, GameObject> instantiateMenuUI { get; set; }
+	
+	private LayerMask raycastMask
+	{
+		get
+		{
+			if (!m_RaycastMask.HasValue)
+			{
+				m_RaycastMask = ~(1 << LayerMask.NameToLayer("UI"));
+				return m_RaycastMask.Value;
+			}
+			return m_RaycastMask.Value;
+		}
+	}
+	private LayerMask? m_RaycastMask;
 
 	void Update()
 	{
@@ -55,11 +68,38 @@ public class SpanTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstant
 		{
 			if (rayOrigin)
 			{
-				var spanGroup = U.Object.Instantiate(m_SpanSettings.spanGroup.gameObject).GetComponent<SpanGroup>();
-				spanGroup.transform.position = rayOrigin.position + rayOrigin.forward * m_SpanSettings.distanceToSpawnNewSpan 
-					+ Vector3.up * m_SpanSettings.groupHandleElevation;
-				spanGroup.SetupPieceAndCreateSpan(m_SpanPiece);
+				// Without inputBlock here, the action map gets reset, and .isHeld is stuck on / .wasJustReleased never 
+				// fires. This is a mysterious case where this sticking behavior only happens when running enough logic
+				// within the .isHeld block below. Likely related to an error that is logged while using the span tool,
+				// "normalOffset >= 0", without any call stack. Further investigation is required.....
+				// (For the time being, proceeding with this inputBlock workaround)
+				MultipleRayInputModule.inputBlock = true;
+				RaycastHit hit;
+				if (Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, k_MaximumRayRange, raycastMask))
+				{
+					m_SpanGroup = U.Object.Instantiate(m_SpanSettings.spanGroup.gameObject).GetComponent<SpanGroup>();
+					m_SpanGroup.transform.position = hit.point;
+					m_InitialElevation = hit.point.y;
+					m_SpanGroup.SetupPieceAndCreateSpan(m_SpanPiece);
+				}
 			}
+		}
+		if (standardInput.action.isHeld)
+		{
+			if (m_SpanGroup == null)
+				return;
+			RaycastHit hit;
+			if (Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, k_MaximumRayRange, raycastMask))
+			{
+				var targetPosition = hit.point;
+				targetPosition.y = m_InitialElevation;
+				m_SpanGroup.MoveSecondVertex(targetPosition);
+			}
+		}
+		if (standardInput.action.wasJustReleased)
+		{
+			m_SpanGroup = null;
+			MultipleRayInputModule.inputBlock = false;
 		}
 	}
 
@@ -68,22 +108,15 @@ public class SpanTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstant
 		var go = instantiateMenuUI(selfNode, MenuOrigin.Main, m_CanvasPrefab.gameObject);
 		m_CanvasSpawned = true;
 		var handle = go.GetComponentInChildren<BaseHandle>();
-		m_DropZoneRenderer = handle.GetComponentInChildren<Renderer>();
-		m_OriginalMat = m_DropZoneRenderer.sharedMaterial;
-		handle.dropHoverStarted += DropHoverStarted;
+		m_BaseTrans = handle.transform;
 		handle.dropHoverEnded += DropHoverEnded;
 		handle.canDrop += CanDrop;
 		handle.receiveDrop += ReceiveDrop;
-	}
-
-	void DropHoverStarted(BaseHandle handle)
-	{
-		m_DropZoneRenderer.material = m_SpanSettings.realVertexHandleMaterial;
+		m_Icon = handle.GetComponentInChildren<WorkspaceButton>().icon.gameObject;
 	}
 
 	void DropHoverEnded(BaseHandle handle)
 	{
-		m_DropZoneRenderer.material = m_OriginalMat;
 		m_HoveredDragObject.consumed = false;
 	}
 
@@ -102,13 +135,17 @@ public class SpanTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstant
 
 	void ReceiveDrop(BaseHandle handle, IDroppable droppable)
 	{
+		if (m_Icon.activeSelf)
+		{
+			m_Icon.SetActive(false);
+		}
 		m_SpanPiece = (GameObject)droppable.GetDropObject();
 		if (m_PreviewPiece != null)
 		{
 			DestroyImmediate(m_PreviewPiece.gameObject);
 		}
 		m_PreviewPiece = Instantiate(m_SpanPiece).transform;
-		m_PreviewPiece.parent = m_DropZoneRenderer.transform.parent; // tmp!
+		m_PreviewPiece.parent = m_BaseTrans.transform;
 		m_PreviewPiece.localPosition = Vector3.up * 0.5f;
 		m_PreviewPiece.localRotation = Quaternion.identity;
 		var bounds = m_PreviewPiece.GetComponent<MeshFilter>().sharedMesh.bounds;
@@ -121,7 +158,7 @@ public class SpanTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstant
 		{
 			max = bounds.extents.z;
 		}
-		var scale = (0.5f / max) * 200f; // tmp!
+		var scale = (0.5f / max) * 200f; // tmp! Magic numbers.
 		m_PreviewPiece.localScale = Vector3.one * scale;
 	}
 }
