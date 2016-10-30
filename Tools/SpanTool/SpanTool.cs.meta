@@ -1,6 +1,6 @@
 fileFormatVersion: 2
 guid: be3261352b89a824bbe9b7271d635615
-timeCreated: 1477782322
+timeCreated: 1477846751
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
@@ -10,6 +10,7 @@ MonoImporter:
       type: 2}
   - m_CanvasPrefab: {fileID: 223000012423146258, guid: 354c8bf9419f16d46a2c50b1890110fc,
       type: 2}
+  - handle: {fileID: 1000010610753944, guid: 10be24fac870f2e4ab6071a148799839, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

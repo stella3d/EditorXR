@@ -57,6 +57,9 @@ public class SpanTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstant
 	}
 	private LayerMask? m_RaycastMask;
 
+	[SerializeField]
+	GameObject handle;
+
 	void Update()
 	{
 		if (!m_CanvasSpawned)
@@ -77,8 +80,10 @@ public class SpanTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstant
 				RaycastHit hit;
 				if (Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, k_MaximumRayRange, raycastMask))
 				{
+					//var handleTrans = U.Object.Instantiate(handle).transform;
+					//handleTrans.position = hit.point;
 					m_SpanGroup = U.Object.Instantiate(m_SpanSettings.spanGroup.gameObject).GetComponent<SpanGroup>();
-					m_SpanGroup.transform.position = hit.point;
+					m_SpanGroup.transform.position = hit.point + Vector3.up * m_SpanSettings.groupHandleElevation;
 					m_InitialElevation = hit.point.y;
 					m_SpanGroup.SetupPieceAndCreateSpan(m_SpanPiece);
 				}
