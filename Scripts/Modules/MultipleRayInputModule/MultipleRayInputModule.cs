@@ -21,7 +21,7 @@ namespace UnityEngine.VR.Modules
 			public GameObject hoveredObject;
 			public GameObject selectedObject;
 
-			public bool hasObject { get { return (hoveredObject != null && hoveredObject.layer == UILayer) || selectedObject != null; } }
+			public bool hasObject { get { return (hoveredObject != null && (s_LayerMask & (1 << hoveredObject.layer)) != 0) || selectedObject != null; } }
 
 			public RaycastSource(IProxy proxy, Transform rayOrigin, Node node, UIActions actionMapInput)
 			{
@@ -33,11 +33,13 @@ namespace UnityEngine.VR.Modules
 		}
 
 		public static bool inputBlock;
-		private static int UILayer = -1;
 		private readonly Dictionary<Transform, RaycastSource> m_RaycastSources = new Dictionary<Transform, RaycastSource>();
 
 		public Camera eventCamera { get { return m_EventCamera; } set { m_EventCamera = value; } }
 		private Camera m_EventCamera;
+
+		public LayerMask layerMask { get { return s_LayerMask; } set { s_LayerMask = value; } }
+		private static LayerMask s_LayerMask;
 
 		public ActionMap actionMap { get { return m_UIActionMap; } }
 		[SerializeField]
@@ -53,11 +55,12 @@ namespace UnityEngine.VR.Modules
 		public Func<Transform, bool> preProcessRaycastSource = delegate { return true; };
 		public Func<bool> preProcessRaycastSources = delegate { return true; };
 		public Action postProcessRaycastSources = delegate {};
+		public Func<Transform, bool> isRayActive = delegate { return true; };
 
 		protected override void Awake()
 		{
 			base.Awake();
-			UILayer = LayerMask.NameToLayer("UI");
+			s_LayerMask = LayerMask.GetMask("UI");
 		}
 
 		public void AddRaycastSource(IProxy proxy, Node node, ActionMapInput actionMapInput, Transform rayOrigin = null)
@@ -111,6 +114,9 @@ namespace UnityEngine.VR.Modules
 			foreach (var source in sources)
 			{
 				if (!(source.rayOrigin.gameObject.activeSelf || source.selectedObject) || !source.proxy.active)
+					continue;
+
+				if (!isRayActive(source.rayOrigin))
 					continue;
 
 				if (!preProcessRaycastSource(source.rayOrigin))

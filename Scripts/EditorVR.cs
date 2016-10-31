@@ -53,6 +53,7 @@ public class EditorVR : MonoBehaviour
 
 	[SerializeField]
 	private ActionMap m_TrackedObjectActionMap;
+
 	[SerializeField]
 	private ActionMap m_StandardToolActionMap;
 
@@ -64,6 +65,7 @@ public class EditorVR : MonoBehaviour
 
 	[SerializeField]
 	private Camera m_EventCameraPrefab;
+
 	[SerializeField]
 	private MainMenuActivator m_MainMenuActivatorPrefab;
 
@@ -78,6 +80,9 @@ public class EditorVR : MonoBehaviour
 
 	[SerializeField]
 	private GameObject m_PlayerModelPrefab;
+
+	[SerializeField]
+	private ProxyExtra m_ProxyExtra;
 
 	private readonly Dictionary<Transform, DefaultProxyRay> m_DefaultRays = new Dictionary<Transform, DefaultProxyRay>();
 	private readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
@@ -196,6 +201,7 @@ public class EditorVR : MonoBehaviour
 		}
 		m_SmoothCamera = U.Object.AddComponent<VRSmoothCamera>(VRView.viewerCamera.gameObject);
 		VRView.customPreviewCamera = m_SmoothCamera.smoothCamera;
+		VRView.cullingMask = Tools.visibleLayers | m_SmoothCamera.hmdOnlyLayerMask;
 
 		InitializePlayerHandle();
 		CreateDefaultActionMapInputs();
@@ -309,6 +315,18 @@ public class EditorVR : MonoBehaviour
 			yield return null;
 		}
 
+		if (m_ProxyExtra)
+		{
+			ForEachRayOrigin((proxy, pair, device, deviceData) =>
+			{
+				if (pair.Key == m_ProxyExtra.node)
+				{
+					var go = InstantiateUI(m_ProxyExtra.gameObject);
+					go.transform.SetParent(pair.Value, false);
+				}
+			}, true);
+		}
+
 		CreateSpatialSystem();
 		AddPlayerModel();
 		SpawnDefaultTools();
@@ -317,7 +335,7 @@ public class EditorVR : MonoBehaviour
 		// In case we have anything selected at start, set up manipulators, inspector, etc.
 		EditorApplication.delayCall += OnSelectionChanged;
 
-		// This will be the first call to update the player handle (input) maps, sorted by priority
+		// This will be the first call to update the player keyboard (input) maps, sorted by priority
 		UpdatePlayerHandleMaps();
 	}
 
@@ -403,16 +421,7 @@ public class EditorVR : MonoBehaviour
 	{
 		m_SmoothCamera.enabled = VRView.showDeviceView;
 
-		foreach (var proxy in m_AllProxies)
-		{
-			proxy.hidden = !proxy.active;
-			// TODO remove this after physics are in
-			if (proxy.active)
-			{
-				foreach (var rayOrigin in proxy.rayOrigins.Values)
-					m_KeyboardMallets[rayOrigin].CheckForKeyCollision();
-			}
-		}
+		UpdateKeyboardMallets();
 
 		foreach (var kvp in m_DeviceData)
 		{
@@ -454,6 +463,54 @@ public class EditorVR : MonoBehaviour
 			m_UpdatePixelRaycastModule = false; // Don't allow another one to queue until the current one is processed
 		}
 #endif
+	}
+
+	void UpdateKeyboardMallets()
+	{
+		foreach (var proxy in m_AllProxies)
+		{
+			proxy.hidden = !proxy.active;
+			if (proxy.active)
+			{
+				foreach (var rayOrigin in proxy.rayOrigins.Values)
+				{
+					var malletVisible = true;
+					var numericKeyboardNull = false;
+					var standardKeyboardNull = false;
+
+					if (m_NumericKeyboard != null)
+						malletVisible = m_NumericKeyboard.ShouldShowMallet(rayOrigin);
+					else
+						numericKeyboardNull = true;
+
+					if (m_StandardKeyboard != null)
+						malletVisible = malletVisible || m_StandardKeyboard.ShouldShowMallet(rayOrigin);
+					else
+						standardKeyboardNull = true;
+
+					if (numericKeyboardNull && standardKeyboardNull)
+						malletVisible = false;
+
+					var mallet = m_KeyboardMallets[rayOrigin];
+
+					if (mallet.visible != malletVisible)
+					{
+						mallet.visible = malletVisible;
+						var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+						if (dpr)
+						{
+							if(malletVisible)
+								dpr.Hide();
+							else
+								dpr.Show();
+						}
+					}
+
+					// TODO remove this after physics are in
+					mallet.CheckForKeyCollision();
+				}
+			}
+		}
 	}
 
 	private void InitializePlayerHandle()
@@ -515,8 +572,10 @@ public class EditorVR : MonoBehaviour
 		if (VRSettings.loadedDeviceName == "Oculus")
 			locomotionTool = typeof(JoystickLocomotionTool);
 
-		var transformTool = SpawnTool(typeof(TransformTool), out devices);
-		m_TransformTool = transformTool as IGrabObjects;
+		var transformTool = SpawnTool(typeof(TransformTool), out devices) as TransformTool;
+		transformTool.showRay = ShowRay;
+		transformTool.hideRay = HideRay;
+		m_TransformTool = transformTool;
 
 		foreach (var deviceData in m_DeviceData)
 		{
@@ -531,6 +590,7 @@ public class EditorVR : MonoBehaviour
 			var selectionTool = tool as SelectionTool;
 			selectionTool.node = deviceNode;
 			selectionTool.selected += OnAlternateMenuItemSelected; // when a selection occurs in the selection tool, call show in the alternate menu, allowing it to show/hide itself.
+			selectionTool.isRayActive = IsRayActive;
 
 			// Using a shared instance of the transform tool across all device tool stacks
 			AddToolToStack(deviceData.Key, transformTool);
@@ -836,6 +896,8 @@ public class EditorVR : MonoBehaviour
 
 		m_InputModule = U.Object.AddComponent<MultipleRayInputModule>(gameObject);
 		m_InputModule.getPointerLength = GetPointerLength;
+		m_InputModule.isRayActive = IsRayActive;
+		m_InputModule.layerMask |= m_SmoothCamera.hmdOnlyLayerMask;
 
 		m_EventCamera = U.Object.Instantiate(m_EventCameraPrefab.gameObject, transform).GetComponent<Camera>();
 		m_EventCamera.enabled = false;
@@ -971,8 +1033,6 @@ public class EditorVR : MonoBehaviour
 			}
 		}, true);
 
-
-
 		return go;
 	}
 
@@ -983,10 +1043,8 @@ public class EditorVR : MonoBehaviour
 		
 		// Check if the prefab has already been instantiated
 		if (m_NumericKeyboard == null)
-		{
 			m_NumericKeyboard = U.Object.Instantiate(m_NumericKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
-			m_NumericKeyboard.malletVisibilityChanged += SetMalletVisible;
-		}
+
 		return m_NumericKeyboard;
 	}
 
@@ -997,34 +1055,9 @@ public class EditorVR : MonoBehaviour
 		
 		// Check if the prefab has already been instantiated
 		if (m_StandardKeyboard == null)
-		{
 			m_StandardKeyboard = U.Object.Instantiate(m_StandardKeyboardPrefab.gameObject, U.Camera.GetViewerPivot()).GetComponent<KeyboardUI>();
-			m_StandardKeyboard.malletVisibilityChanged += SetMalletVisible;
-		}
+
 		return m_StandardKeyboard;
-	}
-
-	void SetMalletVisible(bool visible)
-	{
-		foreach (var kvp in m_KeyboardMallets)
-		{
-			if (!kvp.Key.gameObject.activeInHierarchy)
-				continue;
-
-			var mallet = kvp.Value;
-			var dpr = kvp.Key.GetComponentInChildren<DefaultProxyRay>();
-			if (visible)
-			{
-				mallet.gameObject.SetActive(true);
-				mallet.Show();
-				dpr.Hide();
-			}
-			else
-			{
-				mallet.Hide();
-				dpr.Show();
-			}
-		}
 	}
 
 	private ActionMapInput CreateActionMapInput(ActionMap map, InputDevice device)
@@ -1763,6 +1796,13 @@ public class EditorVR : MonoBehaviour
 		if (filterUI != null)
 			m_FilterUIs.Add(filterUI);
 
+		var chessboard = workspace as ChessboardWorkspace;
+		if (chessboard)
+		{
+			chessboard.lockRay = LockRay;
+			chessboard.unlockRay = UnlockRay;
+		}
+
 		var miniWorld = workspace as IMiniWorld;
 		if (miniWorld != null)
 		{
@@ -1923,6 +1963,12 @@ public class EditorVR : MonoBehaviour
 			var isContained = miniWorld.Contains(originalPointerPosition);
 			miniWorldRay.tester.active = isContained;
 
+			if (isContained && !miniWorldRay.wasContained)
+				HideRay(originalRayOrigin);
+
+			if(!isContained && miniWorldRay.wasContained)
+				ShowRay(originalRayOrigin);
+
 			var directSelectInput = (DirectSelectInput)miniWorldRay.directSelectInput;
 
 			if (directSelectInput.select.wasJustPressed)
@@ -2035,7 +2081,7 @@ public class EditorVR : MonoBehaviour
 				}
 				else
 				{
-					if (dragObjectTransform.tag == kVRPlayerTag)
+					if (dragObjectTransform.CompareTag(kVRPlayerTag))
 					{
 						if (directSelection != null)
 							directSelection.DropHeldObject(dragObjectTransform.transform);
@@ -2106,7 +2152,7 @@ public class EditorVR : MonoBehaviour
 		{
 			var tester = rayOrigin.GetComponentInChildren<IntersectionTester>();
 			var renderer = m_IntersectionModule.GetIntersectedObjectForTester(tester);
-			if (renderer)
+			if (renderer && !renderer.gameObject.CompareTag(kVRPlayerTag))
 				return renderer.gameObject;
 		}
 
@@ -2143,7 +2189,7 @@ public class EditorVR : MonoBehaviour
 		{
 			var rayOrigin = rayOriginPair.Value;
 			var obj = GetDirectSelectionForRayOrigin(rayOrigin, deviceData.directSelectInput);
-			if (obj)
+			if (obj && !obj.CompareTag(kVRPlayerTag))
 			{
 				results[rayOrigin] = new DirectSelection
 				{
@@ -2197,7 +2243,7 @@ public class EditorVR : MonoBehaviour
 
 	bool CanGrabObject(DirectSelection selection, Transform rayOrigin)
 	{
-		if (selection.gameObject.tag == kVRPlayerTag && !m_MiniWorldRays.ContainsKey(rayOrigin))
+		if (selection.gameObject.CompareTag(kVRPlayerTag) && !m_MiniWorldRays.ContainsKey(rayOrigin))
 			return false;
 
 		return true;
@@ -2209,7 +2255,7 @@ public class EditorVR : MonoBehaviour
 			return false;
 
 		// Detach the player head model so that it is not affected by its parent transform
-		if (selection.gameObject.tag == kVRPlayerTag)
+		if (selection.gameObject.CompareTag(kVRPlayerTag))
 			selection.gameObject.transform.parent = null;
 
 		return true;
@@ -2218,7 +2264,7 @@ public class EditorVR : MonoBehaviour
 	void DropObject(IGrabObjects grabber, Transform grabbedObject, Transform rayOrigin)
 	{
 		// Dropping the player head updates the viewer pivot
-		if (grabbedObject.tag == kVRPlayerTag)
+		if (grabbedObject.CompareTag(kVRPlayerTag))
 			StartCoroutine(UpdateViewerPivot(grabbedObject));
 	}
 
@@ -2311,6 +2357,38 @@ public class EditorVR : MonoBehaviour
 	bool IsMiniWorldRay(Transform rayOrigin)
 	{
 		return m_MiniWorldRays.ContainsKey(rayOrigin);
+	}
+
+	bool IsRayActive(Transform rayOrigin)
+	{
+		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+		return dpr == null || dpr.visible;
+	}
+
+	void ShowRay(Transform rayOrigin)
+	{
+		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+		if (dpr)
+			dpr.ShowRayOnly();
+	}
+
+	void HideRay(Transform rayOrigin)
+	{
+		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+		if (dpr)
+			dpr.HideRayOnly();
+	}
+
+	bool LockRay(Transform rayOrigin, object obj)
+	{
+		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+		return dpr && dpr.LockRay(obj);
+	}
+
+	bool UnlockRay(Transform rayOrigin, object obj)
+	{
+		var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
+		return dpr && dpr.UnlockRay(obj);
 	}
 
 	void AddPlayerModel()
@@ -2561,7 +2639,7 @@ public class EditorVR : MonoBehaviour
 	private static void InitializeInputManager()
 	{
 		// HACK: InputSystem has a static constructor that is relied upon for initializing a bunch of other components, so
-		// in edit mode we need to handle lifecycle explicitly
+		// in edit mode we need to keyboard lifecycle explicitly
 		InputManager[] managers = Resources.FindObjectsOfTypeAll<InputManager>();
 		foreach (var m in managers)
 		{
