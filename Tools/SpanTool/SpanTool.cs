@@ -15,7 +15,7 @@ using UnityEngine.VR.Workspaces;
 public class SpanTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstantiateMenuUI
 {
 	private const float k_MaximumRayRange = 10f;
-
+	
 	[SerializeField]
 	private SpanSettings m_SpanSettings;
 
@@ -57,8 +57,15 @@ public class SpanTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstant
 	}
 	private LayerMask? m_RaycastMask;
 
-	[SerializeField]
-	GameObject handle;
+	void OnEnable()
+	{
+		SpanGroup.SetAllSpansUIVisible(true);
+	}
+
+	void OnDisable()
+	{
+		SpanGroup.SetAllSpansUIVisible(false);
+	}
 
 	void Update()
 	{
@@ -80,8 +87,6 @@ public class SpanTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstant
 				RaycastHit hit;
 				if (Physics.Raycast(rayOrigin.position, rayOrigin.forward, out hit, k_MaximumRayRange, raycastMask))
 				{
-					//var handleTrans = U.Object.Instantiate(handle).transform;
-					//handleTrans.position = hit.point;
 					m_SpanGroup = U.Object.Instantiate(m_SpanSettings.spanGroup.gameObject).GetComponent<SpanGroup>();
 					m_SpanGroup.transform.position = hit.point + Vector3.up * m_SpanSettings.groupHandleElevation;
 					m_InitialElevation = hit.point.y;
@@ -103,6 +108,9 @@ public class SpanTool : MonoBehaviour, ITool, IStandardActionMap, IRay, IInstant
 		}
 		if (standardInput.action.wasJustReleased)
 		{
+			if (m_SpanGroup == null)
+				return;
+			m_SpanGroup.MoveHandleToCenter();
 			m_SpanGroup = null;
 			MultipleRayInputModule.inputBlock = false;
 		}
