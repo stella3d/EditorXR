@@ -1,4 +1,6 @@
+using UnityEditor;
 using UnityEngine.VR.Modules;
+using Valve.VR;
 
 namespace UnityEngine.VR.Utilities
 {
@@ -13,9 +15,70 @@ namespace UnityEngine.VR.Utilities
 			/// <param name="obj">The object to test collision on</param>
 			/// <param name="tester">The tester object</param>
 			/// <returns>The result of whether the tester is in intersection with or located within the object</returns>
+
+			static Rigidbody rb;
 			public static bool TestObject(MeshCollider collisionTester, Renderer obj, IntersectionTester tester)
 			{
 				var transform = obj.transform;
+
+				var mf = obj.GetComponent<MeshFilter>();
+				if (mf)
+				{
+					collisionTester.sharedMesh = mf.sharedMesh;
+
+					if (!rb)
+					{
+						var go = new GameObject("Tester", typeof(MeshCollider), typeof(Rigidbody));
+						rb = go.GetComponent<Rigidbody>();
+						rb.useGravity = false;
+						rb.isKinematic = true;
+						var mc = go.GetComponent<MeshCollider>();
+						mc.sharedMesh = tester.GetComponent<MeshFilter>().sharedMesh;
+						mc.convex = true;
+						mc.isTrigger = true;
+					}
+
+					var testerTransform = tester.transform;
+					var restoreParent = testerTransform.parent;
+					testerTransform.parent = null;
+
+					var objTransform = obj.transform;
+					var localScale = objTransform.InverseTransformVector(testerTransform.localScale);
+					var localPosition = objTransform.InverseTransformPoint(testerTransform.position);
+					var localForward = objTransform.InverseTransformDirection(testerTransform.forward);
+
+					var boundsPoint = collisionTester.ClosestPointOnBounds(localPosition);
+					var direction = boundsPoint - localPosition;
+
+					//var restoreScale = testerTransform.localScale;
+					//var restorePosition = testerTransform.position;
+					//var restoreForward = testerTransform.forward;
+
+					//testerTransform.localScale = localScale;
+					//testerTransform.position = localPosition;
+					//testerTransform.forward = localForward;
+
+					var rbTransform = rb.transform;
+					rbTransform.localScale = localScale;
+					rbTransform.position = localPosition;
+					rbTransform.forward = localForward;
+
+					var rigidbody = rb;//tester.GetComponent<Rigidbody>();
+					RaycastHit hitInfo;
+					var result = rigidbody.SweepTest(localForward, out hitInfo, Mathf.Infinity, QueryTriggerInteraction.Collide);
+					//var result = rigidbody.SweepTest(direction, out hitInfo, direction.magnitude, QueryTriggerInteraction.Collide);
+					if (result)
+						Debug.Log("Intersection");
+
+					Debug.DrawRay(rbTransform.position, direction, Color.red);
+
+					//testerTransform.localScale = restoreScale;
+					//testerTransform.position = restorePosition;
+					//testerTransform.forward = restoreForward;
+					testerTransform.parent = restoreParent;
+
+					return result;
+				}
 
 				// Try a simple test with specific rays located at vertices
 				for (var j = 0; j < tester.rays.Length; j++)

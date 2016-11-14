@@ -46,7 +46,7 @@ namespace UnityEngine.VR.Modules
 				}
 
 				var testerTransform = tester.transform;
-				if (testerTransform.hasChanged)
+				//if (testerTransform.hasChanged)
 				{
 					var intersectionFound = false;
 					Renderer[] intersections;
