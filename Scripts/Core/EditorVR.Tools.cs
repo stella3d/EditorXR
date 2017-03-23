@@ -6,6 +6,7 @@ using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Tools;
 using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.InputNew;
 
@@ -37,7 +38,8 @@ namespace UnityEditor.Experimental.EditorVR
 				return typeof(ITransformer).IsAssignableFrom(type)
 					|| typeof(SelectionTool).IsAssignableFrom(type)
 					|| typeof(ILocomotor).IsAssignableFrom(type)
-					|| typeof(VacuumTool).IsAssignableFrom(type);
+					|| typeof(VacuumTool).IsAssignableFrom(type)
+					|| typeof(GroupingTool).IsAssignableFrom(type);
 			}
 
 			internal void SpawnDefaultTools(IProxy proxy)
@@ -47,6 +49,8 @@ namespace UnityEditor.Experimental.EditorVR
 
 				var transformTool = SpawnTool(typeof(TransformTool), out devices);
 				evr.m_DirectSelection.objectsGrabber = transformTool.tool as IGrabObjects;
+
+				var groupingTool = SpawnTool(typeof(GroupingTool), out devices);
 
 				foreach (var deviceData in evr.m_DeviceData)
 				{
@@ -68,8 +72,9 @@ namespace UnityEditor.Experimental.EditorVR
 					vacuumTool.defaultTilt = WorkspaceModule.k_DefaultWorkspaceTilt;
 					vacuumTool.vacuumables = evr.m_Vacuumables.vacuumables;
 
-					// Using a shared instance of the transform tool across all device tool stacks
+					// Using a shared instance of these tools across all device tool stacks
 					AddToolToStack(deviceData, transformTool);
+					AddToolToStack(deviceData, groupingTool);
 
 					toolData = SpawnTool(typeof(BlinkLocomotionTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);

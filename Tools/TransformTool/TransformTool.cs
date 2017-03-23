@@ -71,7 +71,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		class TransformAction : IAction, ITooltip
 		{
-			internal Func<bool> execute;
+			internal Action execute;
 			public string tooltipText { get; internal set; }
 			public Sprite icon { get; internal set; }
 
@@ -516,12 +516,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			}
 		}
 
-		bool TogglePivotMode()
+		void TogglePivotMode()
 		{
 			m_PivotMode = m_PivotMode == PivotMode.Pivot ? PivotMode.Center : PivotMode.Pivot;
 			UpdatePivotModeAction();
 			UpdateCurrentManipulator();
-			return true;
 		}
 
 		void UpdatePivotModeAction()
@@ -531,12 +530,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_PivotModeToggleAction.icon = isCenter ? m_OriginCenterIcon : m_OriginPivotIcon;
 		}
 
-		bool TogglePivotRotation()
+		void TogglePivotRotation()
 		{
 			m_PivotRotation = m_PivotRotation == PivotRotation.Global ? PivotRotation.Local : PivotRotation.Global;
 			UpdatePivotRotationAction();
 			UpdateCurrentManipulator();
-			return true;
 		}
 
 		void UpdatePivotRotationAction()
@@ -546,14 +544,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			m_PivotRotationToggleAction.icon = isGlobal ? m_RotationGlobalIcon : m_RotationLocalIcon;
 		}
 
-		bool ToggleManipulator()
+		void ToggleManipulator()
 		{
 			m_CurrentManipulator.gameObject.SetActive(false);
 
 			m_CurrentManipulator = m_CurrentManipulator == m_StandardManipulator ? m_ScaleManipulator : m_StandardManipulator;
 			UpdateManipulatorAction();
 			UpdateCurrentManipulator();
-			return true;
 		}
 
 		void UpdateManipulatorAction()
