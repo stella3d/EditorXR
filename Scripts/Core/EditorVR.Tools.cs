@@ -50,8 +50,6 @@ namespace UnityEditor.Experimental.EditorVR
 				var transformTool = SpawnTool(typeof(TransformTool), out devices);
 				evr.m_DirectSelection.objectsGrabber = transformTool.tool as IGrabObjects;
 
-				var groupingTool = SpawnTool(typeof(GroupingTool), out devices);
-
 				foreach (var deviceData in evr.m_DeviceData)
 				{
 					var inputDevice = deviceData.inputDevice;
@@ -72,9 +70,11 @@ namespace UnityEditor.Experimental.EditorVR
 					vacuumTool.defaultTilt = WorkspaceModule.k_DefaultWorkspaceTilt;
 					vacuumTool.vacuumables = evr.m_Vacuumables.vacuumables;
 
+					var groupingTool = SpawnTool(typeof(GroupingTool), out devices, inputDevice);
+					AddToolToDeviceData(groupingTool, devices);
+
 					// Using a shared instance of these tools across all device tool stacks
 					AddToolToStack(deviceData, transformTool);
-					AddToolToStack(deviceData, groupingTool);
 
 					toolData = SpawnTool(typeof(BlinkLocomotionTool), out devices, inputDevice);
 					AddToolToDeviceData(toolData, devices);

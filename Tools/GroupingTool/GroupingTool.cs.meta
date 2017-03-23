@@ -1,14 +1,18 @@
 fileFormatVersion: 2
 guid: 2d61518e0a1c06c4e931ea17d7c01d60
-timeCreated: 1490228726
+timeCreated: 1490302808
 licenseType: Pro
 MonoImporter:
   serializedVersion: 2
   defaultReferences:
-  - m_GroupingEnabledIcon: {fileID: 21300000, guid: a399c12f7f6949b43b9942f5a72aa3ce,
-      type: 3}
   - m_GroupingDisabledIcon: {fileID: 21300000, guid: fea2763109635274aadd0bc517529a3a,
       type: 3}
+  - m_GroupingEnabledIcon: {fileID: 21300000, guid: a399c12f7f6949b43b9942f5a72aa3ce,
+      type: 3}
+  - m_GroupingActivatedIcon: {fileID: 21300000, guid: 5a1d1fb67645a314ead04b0e094351b4,
+      type: 3}
+  - m_GroupingHighlightMaterial: {fileID: 2100000, guid: 38eb650c3ac87ca49b753c91deaf1643,
+      type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

@@ -166,19 +166,27 @@ namespace UnityEditor.Experimental.EditorVR
 				var toolActions = obj as IActions;
 				if (toolActions != null)
 				{
-					var actions = toolActions.actions;
-					foreach (var action in actions)
+					// Perform this after all interfaces have been connected in case a tool requires 
+					// services for reporting it's actions
+					EditorApplication.delayCall += () =>
 					{
-						var actionMenuData = new ActionMenuData()
+						var actions = toolActions.actions;
+						if (actions != null)
 						{
-							name = action.GetType().Name,
-							sectionName = ActionMenuItemAttribute.DefaultActionSectionName,
-							priority = int.MaxValue,
-							action = action,
-						};
-						evrActionsModule.menuActions.Add(actionMenuData);
-					}
-					evrMenus.UpdateAlternateMenuActions();
+							foreach (var action in actions)
+							{
+								var actionMenuData = new ActionMenuData()
+								{
+									name = action.GetType().Name,
+									sectionName = ActionMenuItemAttribute.DefaultActionSectionName,
+									priority = int.MaxValue,
+									action = action,
+								};
+								evrActionsModule.menuActions.Add(actionMenuData);
+							}
+							evrMenus.UpdateAlternateMenuActions();
+						}
+					};
 				}
 
 				var directSelection = obj as IUsesDirectSelection;
