@@ -66,7 +66,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		{
 			get
 			{
-				if (!isSharedUpdater(this))
+				if (!this.IsSharedUpdater(this))
 					return null;
 
 				if (m_Actions == null)
@@ -81,11 +81,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		}
 
 		public Transform rayOrigin { get; set; }
-		public SetHighlightDelegate setHighlight { get; set; }
-		public Func<Transform, GameObject> getFirstGameObject { get; set; }
 		public List<ILinkedObject> linkedObjects { get; set; }
-		public Func<ILinkedObject, bool> isSharedUpdater { get; set; }
-
+		
 		void Awake()
 		{
 			SetGroupingMode(GroupingMode.Disabled);
@@ -96,7 +93,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			var standardInput = (Standard)input;
 			m_SelectAction = standardInput.action;
 
-			if (isSharedUpdater(this))
+			if (this.IsSharedUpdater(this))
 			{
 				if (groupingMode == GroupingMode.Activated)
 				{
@@ -106,12 +103,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 						var selectAction = groupingTool.m_SelectAction;
 						if (selectAction != null && selectAction.wasJustPressed)
 						{
-							var hoveredObject = getFirstGameObject(groupingTool.rayOrigin);
+							var hoveredObject = this.GetFirstGameObject(groupingTool.rayOrigin);
 
 							if (hoveredObject)
 							{
 								if (m_Group.Remove(hoveredObject))
-									setHighlight(hoveredObject, false, material: m_GroupingHighlightMaterial);
+									this.SetHighlight(hoveredObject, false, material: m_GroupingHighlightMaterial);
 								else
 									m_Group.Add(hoveredObject);
 
@@ -121,7 +118,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 					}
 
 					for (int i = 0; i < m_Group.Count; i++)
-						setHighlight(m_Group[i], true, material: m_GroupingHighlightMaterial);
+						this.SetHighlight(m_Group[i], true, material: m_GroupingHighlightMaterial);
 				}
 				else
 				{
