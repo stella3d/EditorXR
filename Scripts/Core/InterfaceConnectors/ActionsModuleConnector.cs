@@ -20,6 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					{
 						var evrMenus = evr.m_Menus;
 
+						// Delay connecting actions to allow tool / module to initialize first
 						EditorApplication.delayCall += () =>
 						{
 							var actions = toolActions.actions;
