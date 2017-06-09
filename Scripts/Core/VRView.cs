@@ -1,4 +1,4 @@
-#if UNITY_EDITOR && UNITY_EDITORVR
+#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using UnityEngine;
 using UnityEngine.Assertions;
@@ -136,7 +136,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 		public void OnEnable()
 		{
-			EditorApplication.playmodeStateChanged += OnPlaymodeStateChanged;
+			// Force the window to repaint with consistent frequency, since we need live updating
+			// This also allows scripts with [ExecuteInEditMode] and .runInEditMode to run
+			EditorApplication.update += EditorApplication.QueuePlayerLoopUpdate;
+
+			EditorApplication.playModeStateChanged += OnPlaymodeStateChanged;
 
 			Assert.IsNull(s_ActiveView, "Only one EditorVR should be active");
 
@@ -184,7 +188,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			if (viewDisabled != null)
 				viewDisabled();
 
-			EditorApplication.playmodeStateChanged -= OnPlaymodeStateChanged;
+			EditorApplication.update -= EditorApplication.QueuePlayerLoopUpdate;
+
+			EditorApplication.playModeStateChanged -= OnPlaymodeStateChanged;
 
 			VRSettings.enabled = false;
 
@@ -323,16 +329,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 
-		private void OnPlaymodeStateChanged()
+		void OnPlaymodeStateChanged(PlayModeStateChange stateChange)
 		{
-			if (EditorApplication.isPlayingOrWillChangePlaymode)
+			if (stateChange == PlayModeStateChange.ExitingEditMode)
 			{
 				EditorPrefs.SetBool(k_LaunchOnExitPlaymode, true);
 				Close();
 			}
 		}
 
-		private void Update()
+		void Update()
 		{
 			// If code is compiling, then we need to clean up the window resources before classes get re-initialized
 			if (EditorApplication.isCompiling)
@@ -340,10 +346,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				Close();
 				return;
 			}
-
-			// Force the window to repaint every tick, since we need live updating
-			// This also allows scripts with [ExecuteInEditMode] to run
-			EditorApplication.SetSceneRepaintDirty();
 
 			// Our camera is disabled, so it doesn't get automatically updated to HMD values until it renders
 			UpdateCameraTransform();
