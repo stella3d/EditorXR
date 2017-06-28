@@ -77,7 +77,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 
 		MiniWorldUI m_MiniWorldUI;
-		MiniWorld m_MiniWorld;
+		IMiniWorld m_MiniWorld;
 		Material m_GridMaterial;
 		ZoomSliderUI m_ZoomSliderUI;
 		Transform m_LocatePlayerUI;
@@ -217,10 +217,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			m_GridMaterial.SetFloat("_GridScale", referenceScale * gridScale);
 			m_GridMaterial.SetVector("_GridCenter", -new Vector2(referenceTransform.position.x,
 				referenceTransform.position.z) / (gridScale * referenceScale));
-			inverseRotation = Quaternion.Inverse(m_MiniWorld.transform.rotation);
+			inverseRotation = Quaternion.Inverse(m_MiniWorld.miniWorldTransform.rotation);
 			m_GridMaterial.SetMatrix("_InverseRotation", Matrix4x4.TRS(Vector3.zero, inverseRotation, Vector3.one));
 			m_GridMaterial.SetVector("_ClipExtents", m_MiniWorld.localBounds.extents * this.GetViewerScale() * transform.localScale.x);
-			m_GridMaterial.SetVector("_ClipCenter", inverseRotation * m_MiniWorld.transform.position);
+			m_GridMaterial.SetVector("_ClipCenter", inverseRotation * m_MiniWorld.miniWorldTransform.position);
 		}
 
 		public override void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
@@ -254,7 +254,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		protected override void OnBoundsChanged()
 		{
-			m_MiniWorld.transform.localPosition = Vector3.up * contentBounds.extents.y;
+			m_MiniWorld.miniWorldTransform.localPosition = Vector3.up * contentBounds.extents.y;
 
 			var boundsWithMargin = contentBounds;
 			var size = contentBounds.size;

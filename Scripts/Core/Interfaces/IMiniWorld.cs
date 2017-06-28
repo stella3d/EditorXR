@@ -15,6 +15,16 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		Transform miniWorldTransform { get; }
 
+        /// <summary>
+        /// The boundary of the actual world space shown by the miniworld
+        /// </summary>
+		Bounds referenceBounds { get; set; }
+
+        /// <summary>
+        /// The boundary inside the miniworld tool
+        /// </summary>
+		Bounds localBounds { get; set; }
+
 		/// <summary>
 		/// Tests whether a point is contained within the actual miniWorld bounds (not the reference bounds)
 		/// </summary>
