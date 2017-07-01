@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -80,6 +81,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		{
 			set { m_MiniWorldRenderer.ignoreList = value; }
 		}
+
+	    public SpatialHash<Renderer> spatialHash
+	    {
+            set { m_MiniWorldRenderer.spatialHash = value; }
+	    }
 
 		private void OnEnable()
 		{

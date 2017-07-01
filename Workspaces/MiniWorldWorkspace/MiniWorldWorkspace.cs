@@ -22,9 +22,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 			{
 				get
 				{
-					return PlayerSettings.stereoRenderingPath == StereoRenderingPath.MultiPass
-						? string.Empty
-						: "Not currently working in single pass";
+				    return string.Empty;
+
+				    //return PlayerSettings.stereoRenderingPath == StereoRenderingPath.MultiPass
+				    //? string.Empty
+				    //: "Not currently working in single pass";
 				}
 			}
 		}

@@ -1,7 +1,8 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
-﻿using UnityEngine;
+using UnityEditor.Experimental.EditorVR.Data;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
@@ -46,6 +47,11 @@ namespace UnityEditor.Experimental.EditorVR
 		/// Sets a list of renderers to be skipped when rendering the MiniWorld
 		/// </summary>
 		List<Renderer> ignoreList { set; }
+
+        /// <summary>
+        /// Sets the structure that contains all the renderers that can potentially be rendered as a miniworld
+        /// </summary>
+        SpatialHash<Renderer> spatialHash { set; }
 	}
 }
 #endif

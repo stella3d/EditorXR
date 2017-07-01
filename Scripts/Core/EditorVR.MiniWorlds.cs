@@ -481,11 +481,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (!miniWorldWorkspace)
 					return;
 
-				miniWorldWorkspace.zoomSliderMax = evr.GetModule<SpatialHashModule>().GetMaxBounds().size.MaxComponent()
+			    var spatialModule = evr.GetModule<SpatialHashModule>();
+				miniWorldWorkspace.zoomSliderMax = spatialModule.GetMaxBounds().size.MaxComponent()
 					/ miniWorldWorkspace.contentBounds.size.MaxComponent();
 
 				var miniWorld = miniWorldWorkspace.miniWorld;
 				var worldID = m_Worlds.Count;
+			    miniWorld.spatialHash = spatialModule.spatialHash;
 				miniWorld.miniWorldTransform.name = string.Format("Miniworld {0}", worldID);
 				m_Worlds.Add(miniWorld);
 
