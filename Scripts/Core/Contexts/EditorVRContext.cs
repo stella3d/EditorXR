@@ -10,9 +10,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	class EditorVRContext : ScriptableObject, IEditingContext
 	{
 		[SerializeField]
-		List<MonoScript> m_DefaultToolStack;
+		internal List<MonoScript> m_DefaultToolStack;
 
-		EditorVR m_Instance;
+		internal EditorVR m_Instance;
 
 		public void Setup()
 		{
