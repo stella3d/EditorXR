@@ -99,9 +99,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			EditorPrefs.DeleteKey(k_SerializedPreferences);
 		}
 
-        void HandleInitialization() 
-        {
-            // previous static constructor code moved to this block to allow for testability
+		void Awake()
+		{
+			s_Instance = this; // Used only by PreferencesGUI
+			Nested.evr = this; // Set this once for the convenience of all nested classes
+			m_DefaultTools = defaultTools;
+			SetHideFlags(defaultHideFlags);
+
             if (!s_IsInitialized)
             {
                 s_IsInitialized = true;
@@ -127,17 +131,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     TagManager.AddLayer(layer);
                 }
             }
-        }
 
-		void Awake()
-		{
-			s_Instance = this; // Used only by PreferencesGUI
-			Nested.evr = this; // Set this once for the convenience of all nested classes
-			m_DefaultTools = defaultTools;
-			SetHideFlags(defaultHideFlags);
             ClearDeveloperConsoleIfNecessary();
-
-            HandleInitialization();
 
 			m_Interfaces = (Interfaces)AddNestedModule(typeof(Interfaces));
 			AddModule<SerializedPreferencesModule>(); // Added here in case any nested modules have preference serialization
