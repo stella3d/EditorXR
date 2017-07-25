@@ -99,40 +99,43 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			EditorPrefs.DeleteKey(k_SerializedPreferences);
 		}
 
+		void HandleInitialization()
+		{
+			if (!s_IsInitialized)
+			{
+				s_IsInitialized = true;
+
+				if (!PlayerSettings.virtualRealitySupported)
+					Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
+
+#if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT && !ENABLE_SIXENSE_INPUT
+				Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
+#endif
+
+				// Add EVR tags and layers if they don't exist
+				var tags = TagManager.GetRequiredTags();
+				var layers = TagManager.GetRequiredLayers();
+
+				foreach (var tag in tags)
+				{
+					TagManager.AddTag(tag);
+				}
+
+				foreach (var layer in layers)
+				{
+					TagManager.AddLayer(layer);
+				}
+			}
+		}
+
 		void Awake()
 		{
 			s_Instance = this; // Used only by PreferencesGUI
 			Nested.evr = this; // Set this once for the convenience of all nested classes
 			m_DefaultTools = defaultTools;
 			SetHideFlags(defaultHideFlags);
-
-            if (!s_IsInitialized)
-            {
-                s_IsInitialized = true;
-
-                if (!PlayerSettings.virtualRealitySupported)
-                    Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
-
-#if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT && !ENABLE_SIXENSE_INPUT
-			Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
-#endif
-
-                // Add EVR tags and layers if they don't exist
-                var tags = TagManager.GetRequiredTags();
-                var layers = TagManager.GetRequiredLayers();
-
-                foreach (var tag in tags)
-                {
-                    TagManager.AddTag(tag);
-                }
-
-                foreach (var layer in layers)
-                {
-                    TagManager.AddLayer(layer);
-                }
-            }
-
-            ClearDeveloperConsoleIfNecessary();
+			ClearDeveloperConsoleIfNecessary();
+			HandleInitialization();
 
 			m_Interfaces = (Interfaces)AddNestedModule(typeof(Interfaces));
 			AddModule<SerializedPreferencesModule>(); // Added here in case any nested modules have preference serialization
