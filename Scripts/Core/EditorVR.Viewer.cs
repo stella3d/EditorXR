@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[SerializeField]
 		GameObject m_PreviewCameraPrefab;
 
-		class Viewer : Nested, IInterfaceConnector, ISerializePreferences
+		internal class Viewer : Nested, IInterfaceConnector, ISerializePreferences
 		{
 			[Serializable]
 			class Preferences

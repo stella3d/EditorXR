@@ -85,7 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public readonly Dictionary<IMenu, float> menuSizes = new Dictionary<IMenu, float>();
 		}
 
-		class Nested
+		internal class Nested
 		{
 			public static EditorVR evr { protected get; set; }
 
@@ -129,7 +129,55 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 		}
 
-		void Awake()
+        internal Viewer SetupViewerModule()
+        {
+            var viewer = GetNestedModule<Viewer>();
+            viewer.preserveCameraRig = preserveLayout;
+            viewer.InitializeCamera();
+            return viewer;
+        }
+
+        internal DeviceInputModule SetupDeviceInputModule()
+        {
+            var module = AddModule<DeviceInputModule>();
+            module.InitializePlayerHandle();
+            module.CreateDefaultActionMapInputs();
+            module.processInput = ProcessInput;
+            module.updatePlayerHandleMaps = Tools.UpdatePlayerHandleMaps;
+            return module;
+        }
+
+        internal MultipleRayInputModule SetupMultipleRayInputModule(DragAndDropModule dndModule, TooltipModule ttModule)
+        {
+            var module = GetModule<MultipleRayInputModule>();
+            module.rayEntered += dndModule.OnRayEntered;
+            module.rayExited += dndModule.OnRayExited;
+            module.dragStarted += dndModule.OnDragStarted;
+            module.dragEnded += dndModule.OnDragEnded;
+
+            m_Interfaces.ConnectInterfaces(ttModule);
+            module.rayEntered += ttModule.OnRayEntered;
+            module.rayExited += ttModule.OnRayExited;
+            return module;
+        }
+
+        internal SpatialHashModule SetupSpatialHashModule()
+        {
+            var module = AddModule<SpatialHashModule>();
+            module.shouldExcludeObject = go => go.GetComponentInParent<EditorVR>();
+            module.Setup();
+            return module;
+        }
+
+        internal IntersectionModule SetupIntersectionModule(SpatialHashModule shModule)
+        {
+            var module = AddModule<IntersectionModule>();
+            m_Interfaces.ConnectInterfaces(module);
+            module.Setup(shModule.spatialHash);
+            return module;
+        }
+
+        void Awake()
 		{
 			s_Instance = this; // Used only by PreferencesGUI
 			Nested.evr = this; // Set this once for the convenience of all nested classes
@@ -151,31 +199,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			AddModule<HierarchyModule>();
 			AddModule<ProjectFolderModule>();
 
-			var viewer = GetNestedModule<Viewer>();
-			viewer.preserveCameraRig = preserveLayout;
-			viewer.InitializeCamera();
-
-			var deviceInputModule = AddModule<DeviceInputModule>();
-			deviceInputModule.InitializePlayerHandle();
-			deviceInputModule.CreateDefaultActionMapInputs();
-			deviceInputModule.processInput = ProcessInput;
-			deviceInputModule.updatePlayerHandleMaps = Tools.UpdatePlayerHandleMaps;
+            var viewer = SetupViewerModule();
+            var deviceInputModule = SetupDeviceInputModule();
 
 			GetNestedModule<UI>().Initialize();
 
 			AddModule<KeyboardModule>();
 
-			var multipleRayInputModule = GetModule<MultipleRayInputModule>();
 			var dragAndDropModule = AddModule<DragAndDropModule>();
-			multipleRayInputModule.rayEntered += dragAndDropModule.OnRayEntered;
-			multipleRayInputModule.rayExited += dragAndDropModule.OnRayExited;
-			multipleRayInputModule.dragStarted += dragAndDropModule.OnDragStarted;
-			multipleRayInputModule.dragEnded += dragAndDropModule.OnDragEnded;
-
 			var tooltipModule = AddModule<TooltipModule>();
-			m_Interfaces.ConnectInterfaces(tooltipModule);
-			multipleRayInputModule.rayEntered += tooltipModule.OnRayEntered;
-			multipleRayInputModule.rayExited += tooltipModule.OnRayExited;
+            var multipleRayInputModule = SetupMultipleRayInputModule(dragAndDropModule, tooltipModule);
 
 			AddModule<ActionsModule>();
 			AddModule<HighlightModule>();
@@ -185,9 +218,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			AddModule<SelectionModule>();
 
-			var spatialHashModule = AddModule<SpatialHashModule>();
-			spatialHashModule.shouldExcludeObject = go => go.GetComponentInParent<EditorVR>();
-			spatialHashModule.Setup();
+            var spatialHashModule = SetupSpatialHashModule();
 
 			var intersectionModule = AddModule<IntersectionModule>();
 			m_Interfaces.ConnectInterfaces(intersectionModule);
