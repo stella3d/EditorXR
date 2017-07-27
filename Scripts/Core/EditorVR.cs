@@ -131,10 +131,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal Viewer SetupViewerModule()
         {
-            var viewer = GetNestedModule<Viewer>();
-            viewer.preserveCameraRig = preserveLayout;
-            viewer.InitializeCamera();
-            return viewer;
+            var module = GetNestedModule<Viewer>();
+            module.preserveCameraRig = preserveLayout;
+            module.InitializeCamera();
+            return module;
         }
 
         internal DeviceInputModule SetupDeviceInputModule()
@@ -161,6 +161,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return module;
         }
 
+        internal LockModule SetupLockModule()
+        {
+            var module = AddModule<LockModule>();
+            module.updateAlternateMenu = (rayOrigin, o) => Menus.SetAlternateMenuVisibility(rayOrigin, o != null);
+            return module;
+        }
+
         internal SpatialHashModule SetupSpatialHashModule()
         {
             var module = AddModule<SpatialHashModule>();
@@ -174,6 +181,55 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var module = AddModule<IntersectionModule>();
             m_Interfaces.ConnectInterfaces(module);
             module.Setup(shModule.spatialHash);
+            return module;
+        }
+
+        internal SnappingModule SetupSnappingModule(IntersectionModule intersectionModule)
+        {
+            var module = AddModule<SnappingModule>();
+            module.raycast = intersectionModule.Raycast;
+            return module;
+        }
+
+        internal WorkspaceModule SetupWorkspaceModule(Vacuumables vacuumables, MiniWorlds miniWorlds, DeviceInputModule diModule)
+        {
+            var module = AddModule<WorkspaceModule>();
+            module.preserveWorkspaces = preserveLayout;
+            module.workspaceCreated += vacuumables.OnWorkspaceCreated;
+            module.workspaceCreated += miniWorlds.OnWorkspaceCreated;
+            module.workspaceCreated += workspace =>
+            {
+                module.workspaceInputs.Add((WorkspaceInput)diModule.CreateActionMapInputForObject(workspace, null));
+                diModule.UpdatePlayerHandleMaps();
+            };
+            module.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
+            module.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
+            return module;
+        }
+
+        internal SceneObjectModule SetupSceneObjectModule(MiniWorlds miniWorlds, SpatialHashModule shModule)
+        {
+            var module = AddModule<SceneObjectModule>();
+            module.tryPlaceObject = (obj, targetScale) =>
+            {
+                foreach (var miniWorld in miniWorlds.worlds)
+                {
+                    if (!miniWorld.Contains(obj.position))
+                        continue;
+
+                    var referenceTransform = miniWorld.referenceTransform;
+                    obj.transform.parent = null;
+                    obj.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(obj.position), miniWorld.referenceTransform.localScale);
+                    obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
+                    obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale.Inverse());
+
+                    shModule.AddObject(obj.gameObject);
+                    return true;
+                }
+
+                return false;
+            };
+
             return module;
         }
 
@@ -213,57 +269,20 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			AddModule<ActionsModule>();
 			AddModule<HighlightModule>();
 
-			var lockModule = AddModule<LockModule>();
-			lockModule.updateAlternateMenu = (rayOrigin, o) => Menus.SetAlternateMenuVisibility(rayOrigin, o != null);
-
-			AddModule<SelectionModule>();
+            var lockModule = SetupLockModule();
+            AddModule<SelectionModule>();
 
             var spatialHashModule = SetupSpatialHashModule();
-
-			var intersectionModule = AddModule<IntersectionModule>();
-			m_Interfaces.ConnectInterfaces(intersectionModule);
-			intersectionModule.Setup(spatialHashModule.spatialHash);
-
-			var snappingModule = AddModule<SnappingModule>();
-			snappingModule.raycast = intersectionModule.Raycast;
+            var intersectionModule = SetupIntersectionModule(spatialHashModule);
+            var snappingModule = SetupSnappingModule(intersectionModule);
 
 			var vacuumables = GetNestedModule<Vacuumables>();
-
 			var miniWorlds = GetNestedModule<MiniWorlds>();
-			var workspaceModule = AddModule<WorkspaceModule>();
-			workspaceModule.preserveWorkspaces = preserveLayout;
-			workspaceModule.workspaceCreated += vacuumables.OnWorkspaceCreated;
-			workspaceModule.workspaceCreated += miniWorlds.OnWorkspaceCreated;
-			workspaceModule.workspaceCreated += workspace =>
-			{
-				workspaceModule.workspaceInputs.Add((WorkspaceInput)deviceInputModule.CreateActionMapInputForObject(workspace, null));
-				deviceInputModule.UpdatePlayerHandleMaps();
-			};
-			workspaceModule.workspaceDestroyed += vacuumables.OnWorkspaceDestroyed;
-			workspaceModule.workspaceDestroyed += miniWorlds.OnWorkspaceDestroyed;
+            var workspaceModule = SetupWorkspaceModule(vacuumables, miniWorlds, deviceInputModule);
 
 			UnityBrandColorScheme.sessionGradient = UnityBrandColorScheme.GetRandomCuratedLightGradient();
 
-			var sceneObjectModule = AddModule<SceneObjectModule>();
-			sceneObjectModule.tryPlaceObject = (obj, targetScale) =>
-			{
-				foreach (var miniWorld in miniWorlds.worlds)
-				{
-					if (!miniWorld.Contains(obj.position))
-						continue;
-
-					var referenceTransform = miniWorld.referenceTransform;
-					obj.transform.parent = null;
-					obj.position = referenceTransform.position + Vector3.Scale(miniWorld.miniWorldTransform.InverseTransformPoint(obj.position), miniWorld.referenceTransform.localScale);
-					obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
-					obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale.Inverse());
-
-					spatialHashModule.AddObject(obj.gameObject);
-					return true;
-				}
-
-				return false;
-			};
+            var sceneObjectModule = SetupSceneObjectModule(miniWorlds, spatialHashModule);
 
 			AddModule<HapticsModule>();
 

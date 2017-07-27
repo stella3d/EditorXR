@@ -5,7 +5,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class Vacuumables : Nested
+		internal class Vacuumables : Nested
 		{
 			public List<IVacuumable> vacuumables { get { return m_Vacuumables; } }
 			readonly List<IVacuumable> m_Vacuumables = new List<IVacuumable>();

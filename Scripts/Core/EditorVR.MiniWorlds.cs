@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class MiniWorlds : Nested, ILateBindInterfaceMethods<DirectSelection>, IPlaceSceneObjects, IUsesViewerScale, IUsesSpatialHash
+		internal class MiniWorlds : Nested, ILateBindInterfaceMethods<DirectSelection>, IPlaceSceneObjects, IUsesViewerScale, IUsesSpatialHash
 		{
 			internal class MiniWorldRay
 			{
