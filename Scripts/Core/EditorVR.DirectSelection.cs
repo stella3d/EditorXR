@@ -10,7 +10,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class DirectSelection : Nested, IInterfaceConnector
+		[SerializeField]
+		HapticPulse m_DirectSelectIntersectionPulse;
+
+		class DirectSelection : Nested, IInterfaceConnector, IControlHaptics, IRayToNode
 		{
 			readonly Dictionary<Transform, DirectSelectionData> m_DirectSelections = new Dictionary<Transform, DirectSelectionData>();
 			readonly Dictionary<Transform, HashSet<Transform>> m_GrabbedObjects = new Dictionary<Transform, HashSet<Transform>>();
@@ -107,6 +110,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							node = deviceData.node,
 							input = input
 						};
+
+						// Provide the user tangible feedback when a direct selection can occur
+						this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), evr.m_DirectSelectIntersectionPulse);
 					}
 				});
 
