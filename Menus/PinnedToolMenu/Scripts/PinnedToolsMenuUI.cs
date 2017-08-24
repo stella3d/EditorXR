@@ -12,7 +12,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
 	sealed class PinnedToolsMenuUI : MonoBehaviour, IUsesViewerScale, IInstantiateUI,
-		IConnectInterfaces, IControlSpatialHinting, IControlHaptics, IUsesRayOrigin
+		IConnectInterfaces, IControlSpatialHinting, IUsesRayOrigin
 	{
 		const int k_MenuButtonOrderPosition = 0; // Menu button position used in this particular ToolButton implementation
 		const int k_ActiveToolOrderPosition = 1; // Active-tool button position used in this particular ToolButton implementation
@@ -132,6 +132,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public event Action buttonHovered;
 		public event Action buttonClicked;
 		public event Action<Transform, Type> buttonSelected;
+		public event Action closeMenu;
 
 		void Awake()
 		{
@@ -190,10 +191,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				allowSecondaryButton = !IsSelectionToolButton(button);
 			}
 
+			var initializingButtons = m_OrderedButtons.Count == 1;
 			m_OrderedButtons.Insert(insertPosition, button);
 			// If only the MainMenu & SelectionTool buttons exist, set visible button count to 1
-			m_VisibleButtonCount = aboveMinimumButtonCount ? m_OrderedButtons.Count : 1;
-
+			m_VisibleButtonCount = aboveMinimumButtonCount || initializingButtons ? m_OrderedButtons.Count : 1;
 			button.implementsSecondaryButton = allowSecondaryButton;
 			button.isActiveTool = true;
 			button.order = insertPosition;
@@ -202,7 +203,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			buttonTransform.localPosition = Vector3.zero;
 			buttonTransform.localScale = Vector3.zero;
 
-			if (aboveMinimumButtonCount)
+			if (aboveMinimumButtonCount) // aboveMinimumCount will change throughout function, don't cache for re-use
 				this.RestartCoroutine(ref m_ShowHideAllButtonsCoroutine, ShowThenHideAllButtons(1.25f, false));
 			else
 				SetupButtonOrder(); // Setup the MainMenu and active tool buttons only
@@ -418,6 +419,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				if (buttonSelected != null)
 					buttonSelected(rayOrigin, button.toolType); // Select the new active tool button
 			}
+
+			if (!aboveMinimumButtonCount && closeMenu != null)
+				closeMenu(); // Close the menu if below the minimum button count (only MainMenu & SelectionTool are active)
 
 			return button != null;
 		}
