@@ -212,17 +212,20 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				var shapedDuration = MathUtilsExt.SmoothInOutLerpFloat(currentDuration / kTargetDuration);
 				m_ScrollVisualsCanvasGroup.alpha = Mathf.Lerp(currentAlpha, 1f, shapedDuration);
 
+				var scrollVisualsDragTargetArrowTransformOrigin = m_ScrollVisualsTransform.position;
 				// Only validate movement in the initial direction with which the user began the drag
-				m_ScrollVisualsDragTargetArrowTransform.position = Vector3.Lerp(secondArrowCurrentPosition, scrollVisualsDragThresholdTriggerPosition, shapedDuration);
+				var scrollTypeMultiplier = centeredScrolling ? Time.unscaledDeltaTime : shapedDuration; // Centered scrolls will gradually adjust to the position of the hand
+				//m_ScrollVisualsDragTargetArrowTransform.position = Vector3.Lerp(secondArrowCurrentPosition, scrollVisualsDragThresholdTriggerPosition, scrollTypeMultiplier);
 
 				currentDuration += Time.unscaledDeltaTime * 2f;
+				m_ScrollVisualsDragTargetArrowTransform.position = Vector3.Lerp(scrollVisualsDragTargetArrowTransformOrigin, scrollVisualsDragThresholdTriggerPosition, Mathf.Cos(shapedDuration));
 
 				m_ScrollVisualsDragTargetArrowTransform.LookAt(m_ScrollVisualsDragTargetArrowTransform.position - m_ScrollVisualsTransform.position);
 				m_ScrollVisualsDragTargetArrowTransform.LookAt(m_ScrollVisualsTransform.position - m_ScrollVisualsDragTargetArrowTransform.position);
 				m_ScrollVisualsTransform.localScale = Vector3.Lerp(currentLocalScale, targetLocalScale, shapedDuration);
 
-				var scrollVisualsDragTargetArrowTransformOrigin = m_ScrollVisualsTransform.position;
 				var scrollVisualsDragTargetArrowTransformDestination = m_ScrollVisualsDragTargetArrowTransform.position;
+				/*
 				if (centeredScrolling)
 				{
 					Vector3 offset = (scrollVisualsDragTargetArrowTransformOrigin - scrollVisualsDragTargetArrowTransformDestination) * -1;
@@ -233,6 +236,23 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					offset *= distanceShaped;
 					scrollVisualsDragTargetArrowTransformOrigin -= offset;
 					scrollVisualsDragTargetArrowTransformDestination += offset;
+				}
+				*/
+
+				if (centeredScrolling)
+				{
+					Vector3 offset = (scrollVisualsDragTargetArrowTransformOrigin - scrollVisualsDragTargetArrowTransformDestination).normalized * -1;
+					var distance = (scrollVisualsDragTargetArrowTransformOrigin - scrollVisualsDragTargetArrowTransformDestination).magnitude;
+					// Increase the initial line position separation for scrolls of a smaller magnitude
+					// This mandates a sully visible scroll line, regardless of scroll start/end magnitude
+					//var distanceShaped = Mathf.Clamp(2 - offset.magnitude * 0.175f, 0.75f, 2f);
+					//offset *= distanceShaped;
+					offset *= 10;
+					//scrollVisualsDragTargetArrowTransformOrigin -= offset * Time.unscaledDeltaTime;
+					scrollVisualsDragTargetArrowTransformDestination = scrollVisualsDragTargetArrowTransformOrigin + offset;
+					m_ScrollVisualsTransform.position -= offset;
+					//scrollVisualsDragTargetArrowTransformOrigin -= offset;
+					//scrollVisualsDragTargetArrowTransformDestination = Vector3.Lerp(scrollVisualsDragTargetArrowTransformDestination, scrollVisualsDragTargetArrowTransformDestination += offset, Time.unscaledDeltaTime);
 				}
 
 				var lineRendererPositions = new[] { scrollVisualsDragTargetArrowTransformOrigin, scrollVisualsDragTargetArrowTransformDestination };
