@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		}
 
 		[SerializeField]
-		private Transform m_RayOrigin;
+		Transform m_RayOrigin;
 
 		/// <summary>
 		/// The transform that the menu content will be parented under
@@ -28,7 +28,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		}
 
 		[SerializeField]
-		private Transform m_MenuOrigin;
+		Transform m_MenuOrigin;
 
 		/// <summary>
 		/// The transform that the alternate-menu content will be parented under
@@ -39,7 +39,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		}
 
 		[SerializeField]
-		private Transform m_AlternateMenuOrigin;
+		Transform m_AlternateMenuOrigin;
 
 		/// <summary>
 		/// The transform that the display/preview objects will be parented under
@@ -50,7 +50,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		}
 
 		[SerializeField]
-		private Transform m_PreviewOrigin;
+		Transform m_PreviewOrigin;
 
 		/// <summary>
 		/// The transform that the display/preview objects will be parented under
@@ -61,7 +61,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		}
 
 		[SerializeField]
-		private Transform m_FieldGrabOrigin;
+		Transform m_FieldGrabOrigin;
 
 		/// <summary>
 		/// The root transform of the device/controller mesh-renderers/geometry
@@ -72,7 +72,29 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 		}
 
 		[SerializeField]
-		private Transform m_MeshRoot;
+		Transform m_MeshRoot;
+
+		/// <summary>
+		/// The elements that will be highlighted when corresponding input actions are performed
+		/// </summary>
+		public MeshRenderer[] highlightedElements
+		{
+			get { return m_HighlightedElements; }
+		}
+
+		[SerializeField]
+		MeshRenderer[] m_HighlightedElements;
+
+		public enum Controls
+		{
+			Trigger1,
+			Trigger2,
+			Action1,
+			Action2
+		}
+
+		[SerializeField]
+		Controls m_Controls;
 	}
 }
 #endif

@@ -48,7 +48,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		/// <param name="rayOrigin">This menu's RayOrigin</param>
 		/// <param name="gradientPair">The gradient pair used in the highlight visuals</param>
-		public static void HighlightDevice(this IPinnedToolsMenu obj, Transform rayOrigin, GradientPair gradientPair)
+		public static void HighlightDevice(this IToolsMenu obj, Transform rayOrigin, GradientPair gradientPair)
 		{
 			highlightDevice(rayOrigin, gradientPair);
 		}
