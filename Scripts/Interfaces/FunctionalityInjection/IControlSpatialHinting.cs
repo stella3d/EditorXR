@@ -1,11 +1,16 @@
 ﻿#if UNITY_EDITOR
+using System;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
-	/// Gives decorated class ability to control spatial-hinting visuals
+	/// Gives decorated class ability to control spatial-hinting visuals.
+	/// 
+	/// Spatial-Hinting visuals are displayed when performing a spatial-input action, such as spatial-scrolling
+	/// These visual elements assist the user in seeing which spatial direction(s) will
+	/// reveal/allow additional spatial interaction(s).
 	/// </summary>
 	public interface IControlSpatialHinting
 	{
@@ -13,8 +18,14 @@ namespace UnityEditor.Experimental.EditorVR
 
 	public static class IControlSpatialHintingMethods
 	{
-		internal delegate void SetSpatialHintStateDelegate(SpatialHintModule.SpatialHintStateFlags state);
-		internal static SetSpatialHintStateDelegate setSpatialHintState { get; set; }
+		internal static Action<SpatialHintModule.SpatialHintStateFlags> setSpatialHintState { get; set; }
+		internal static Action<Vector3> setSpatialHintPosition { get; set; }
+		internal static Action<Quaternion> setSpatialHintContainerRotation { get; set; }
+		internal static Action<Vector3> setSpatialHintShowHideRotationTarget { get; set; }
+		internal static Action<Vector3> setSpatialHintLookAtRotation { get; set; }
+		internal static Action pulseSpatialHintScrollArrows { get; set; }
+		internal static Action<Vector3> setSpatialHintDragThresholdTriggerPosition { get; set; }
+		internal static Action<Node?> setSpatialHintControlNode { get; set; }
 
 		/// <summary>
 		/// Set the spatial hint state
@@ -25,9 +36,6 @@ namespace UnityEditor.Experimental.EditorVR
 			setSpatialHintState(state);
 		}
 
-		internal delegate void SetSpatialHintPositionDelegate(Vector3 position);
-		internal static SetSpatialHintPositionDelegate setSpatialHintPosition { get; set; }
-
 		/// <summary>
 		/// Set the position of the spatial hint visuals
 		/// </summary>
@@ -36,9 +44,6 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			setSpatialHintPosition(position);
 		}
-
-		internal delegate void SetSpatialHintRotationDelegate(Quaternion rotation);
-		internal static SetSpatialHintRotationDelegate setSpatialHintContainerRotation { get; set; }
 
 		/// <summary>
 		/// Set the rotation of the spatial hint visuals container game object
@@ -49,9 +54,6 @@ namespace UnityEditor.Experimental.EditorVR
 			setSpatialHintContainerRotation(rotation);
 		}
 
-		internal delegate void SetSpatialHintRotationTargetDelegate(Vector3 target);
-		internal static SetSpatialHintRotationTargetDelegate setSpatialHintShowHideRotationTarget { get; set; }
-
 		/// <summary>
 		/// Sets the target for the spatial hint visuals to look at while performing an animated show or hide
 		/// </summary>
@@ -60,9 +62,6 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			setSpatialHintShowHideRotationTarget(target);
 		}
-
-		internal delegate void SetSpatialHintLookATRotationDelegate(Vector3 position);
-		internal static SetSpatialHintLookATRotationDelegate setSpatialHintLookAtRotation { get; set; }
 
 		/// <summary>
 		/// Set the LookAt target
@@ -73,9 +72,6 @@ namespace UnityEditor.Experimental.EditorVR
 			setSpatialHintLookAtRotation(position);
 		}
 
-		internal delegate void PulseSpatialHintScrollArrowsDelegate();
-		internal static PulseSpatialHintScrollArrowsDelegate pulseSpatialHintScrollArrows { get; set; }
-
 		/// <summary>
 		/// Visually pulse the spatial-scroll arrows; the arrows shown when performing a spatial scroll
 		/// </summary>
@@ -83,9 +79,6 @@ namespace UnityEditor.Experimental.EditorVR
 		{
 			pulseSpatialHintScrollArrows();
 		}
-
-		internal delegate void SetSpatialHintDragThresholdTriggerPositionDelegate(Vector3 position);
-		internal static SetSpatialHintDragThresholdTriggerPositionDelegate setSpatialHintDragThresholdTriggerPosition { get; set; }
 
 		/// <summary>
 		/// Set the magnitude at which the user will trigger spatial scrolling
@@ -96,17 +89,14 @@ namespace UnityEditor.Experimental.EditorVR
 			setSpatialHintDragThresholdTriggerPosition(position);
 		}
 
-		internal delegate void SetSpatialHintControlObjectDelegate(Transform controlObject);
-		internal static SetSpatialHintControlObjectDelegate setSpatialHintControlObject { get; set; }
-
 		/// <summary>
 		/// Set reference to the object, RayOrigin, controlling the Spatial Hint visuals
 		/// Each control-object has it's spatial scrolling processed independently
 		/// </summary>
-		/// <param name="controlObject">Control-object whose spatial scrolling will be processed independently</param>
-		public static void SetSpatialHintControlObject(this IControlSpatialHinting obj, Transform controlObject)
+		/// <param name="controlNode">Node on which spatial scrolling will be processed independently</param>
+		public static void SetSpatialHintControlNode(this IControlSpatialHinting obj, Node? controlNode)
 		{
-			setSpatialHintControlObject(controlObject);
+			setSpatialHintControlNode(controlNode);
 		}
 	}
 }

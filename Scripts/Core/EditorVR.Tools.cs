@@ -70,7 +70,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			internal static void SpawnDefaultTools(IProxy proxy)
 			{
-				Func<Transform, bool> isRayActive = Rays.IsRayActive;
 				var vacuumables = evr.GetNestedModule<Vacuumables>();
 				var lockModule = evr.GetModule<LockModule>();
 				var defaultTools = evr.m_DefaultTools;
@@ -95,7 +94,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						{
 							selectionToolData = toolData;
 							selectionTool.hovered += lockModule.OnHovered;
-							selectionTool.isRayActive = isRayActive;
 						}
 
 						var vacuumTool = tool as VacuumTool;
@@ -107,21 +105,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 					}
 
+					var menuHideData = deviceData.menuHideData;
 					var mainMenu = Menus.SpawnMainMenu(typeof(MainMenu), inputDevice, false, out deviceData.mainMenuInput);
 					deviceData.mainMenu = mainMenu;
-					deviceData.menuHideFlags[mainMenu] = Menus.MenuHideFlags.Hidden;
+					menuHideData[mainMenu] = new Menus.MenuHideData();
 
 					var alternateMenu = Menus.SpawnAlternateMenu(typeof(RadialMenu), inputDevice, out deviceData.alternateMenuInput);
 					deviceData.alternateMenu = alternateMenu;
-					deviceData.menuHideFlags[alternateMenu] = Menus.MenuHideFlags.Hidden;
+					menuHideData[alternateMenu] = new Menus.MenuHideData();
 					alternateMenu.itemWasSelected += Menus.UpdateAlternateMenuOnSelectionChanged;
 
-					// Setup PinnedToolsMenu
-					var pinnedToolsMenu = Menus.SpawnPinnedToolsMenu(typeof(PinnedToolsMenu), inputDevice, out deviceData.pinnedToolsMenuInput);
-					deviceData.pinnedToolsMenu = pinnedToolsMenu;
-					pinnedToolsMenu.rayOrigin = deviceData.rayOrigin;
-					pinnedToolsMenu.SetButtonForType(typeof(IMainMenu), null);
-					pinnedToolsMenu.SetButtonForType(typeof(SelectionTool), selectionToolData != null ? selectionToolData.icon : null);
+					// Setup ToolsMenu
+					var toolsMenu = Menus.SpawnToolsMenu(typeof(Experimental.EditorVR.Menus.ToolsMenu), inputDevice, out deviceData.toolsMenuInput);
+					deviceData.ToolsMenu = toolsMenu;
+					toolsMenu.rayOrigin = deviceData.rayOrigin;
+					toolsMenu.setButtonForType(typeof(IMainMenu), null);
+					toolsMenu.setButtonForType(typeof(SelectionTool), selectionToolData != null ? selectionToolData.icon : null);
 				}
 
 				evr.GetModule<DeviceInputModule>().UpdatePlayerHandleMaps();
@@ -193,24 +192,24 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						var currentToolType = currentTool.GetType();
 						var currentToolIsSelect = currentToolType == typeof(SelectionTool);
 						var setSelectAsCurrentTool = toolType == typeof(SelectionTool) && !currentToolIsSelect;
-						var pinnedToolsMenu = deviceData.pinnedToolsMenu;
+						var toolsMenu = deviceData.ToolsMenu;
 						// If this tool was on the current device already, remove it, if it is selected while already being the current tool
 						var despawn = (!currentToolIsSelect && currentToolType == toolType && despawnOnReselect) || setSelectAsCurrentTool;// || setSelectAsCurrentTool || toolType == typeof(IMainMenu);
 						if (currentTool != null && despawn)
 						{
 							DespawnTool(deviceData, currentTool);
 
-							if (!currentToolIsSelect && !setSelectAsCurrentTool)
+							if (!setSelectAsCurrentTool)
 							{
 								// Delete a button of the first type parameter
 								// Then select a button the second type param (the new current tool)
 								// Don't spawn a new tool, since we are only removing the old tool
-								pinnedToolsMenu.deletePinnedToolButton(toolType, currentToolType);
+								toolsMenu.deleteToolsMenuButton(toolType, currentToolType);
 							}
-							else if (!currentToolIsSelect && setSelectAsCurrentTool)
+							else if (setSelectAsCurrentTool)
 							{
 								// Set the selection tool as the active tool, if select is to be the new current tool
-								pinnedToolsMenu.SetButtonForType(typeof(SelectionTool), null);
+								toolsMenu.setButtonForType(typeof(SelectionTool), null);
 							}
 
 							spawnTool = false;
@@ -243,7 +242,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 								AddToolToStack(data, newTool);
 								
-								pinnedToolsMenu.SetButtonForType(toolType, newTool.icon);
+								toolsMenu.setButtonForType(toolType, newTool.icon);
 							}
 						}
 						
@@ -293,7 +292,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 								var customMenu = otherDeviceData.customMenu;
 								if (customMenu != null)
 								{
-									otherDeviceData.menuHideFlags.Remove(customMenu);
+									otherDeviceData.menuHideData.Remove(customMenu);
 									otherDeviceData.customMenu = null;
 								}
 							}
@@ -346,7 +345,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var mainMenuInput = deviceData.mainMenuInput;
 					if (mainMenu != null && mainMenuInput != null)
 					{
-						mainMenuInput.active = mainMenu.visible;
+						mainMenuInput.active = mainMenu.menuHideFlags == 0;
 
 						if (!maps.Contains(mainMenuInput))
 							maps.Add(mainMenuInput);
@@ -356,22 +355,21 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var alternateMenuInput = deviceData.alternateMenuInput;
 					if (alternateMenu != null && alternateMenuInput != null)
 					{
-						alternateMenuInput.active = alternateMenu.visible;
+						alternateMenuInput.active = alternateMenu.menuHideFlags == 0;
 
 						if (!maps.Contains(alternateMenuInput))
 							maps.Add(alternateMenuInput);
 					}
 
-					var pinnedToolsMenu = deviceData.pinnedToolsMenu;
-					var pinnedToolsMenuInput = deviceData.pinnedToolsMenuInput;
-					if (pinnedToolsMenu != null && pinnedToolsMenuInput != null)
+					var toolsMenu = deviceData.ToolsMenu;
+					var toolsMenuInput = deviceData.toolsMenuInput;
+					if (toolsMenu != null && toolsMenuInput != null)
 					{
-						// PinnedToolsMenu visibility is handled internally, not via hide flags
-						if (!maps.Contains(pinnedToolsMenuInput))
-							maps.Add(pinnedToolsMenuInput);
+						// Tools Menu visibility is handled internally, not via hide flags
+						if (!maps.Contains(toolsMenuInput))
+							maps.Add(toolsMenuInput);
 					}
 
-					maps.Add(deviceData.directSelectInput);
 					maps.Add(deviceData.uiInput);
 				}
 

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,51 +16,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 	{
 		const string k_SettingsMenuSectionName = "Settings";
 
-		public ActionMap actionMap { get {return m_MainMenuActionMap; } }
 		[SerializeField]
 		ActionMap m_MainMenuActionMap;
-
-		public Transform alternateMenuOrigin
-		{
-			get
-			{
-				return m_AlternateMenuOrigin;
-			}
-			set
-			{
-				m_AlternateMenuOrigin = value;
-				if (m_MainMenuUI)
-					m_MainMenuUI.alternateMenuOrigin = value;
-			}
-		}
-		Transform m_AlternateMenuOrigin;
-
-		public Transform menuOrigin
-		{
-			get { return m_MenuOrigin; }
-			set
-			{
-				m_MenuOrigin = value;
-				if (m_MainMenuUI)
-					m_MainMenuUI.menuOrigin = value;
-			}
-		}
-		Transform m_MenuOrigin;
-
-		public bool visible
-		{
-			get { return m_Visible; }
-			set
-			{
-				if (m_Visible != value)
-				{
-					m_Visible = value;
-					if (m_MainMenuUI)
-						m_MainMenuUI.visible = value;
-				}
-			}
-		}
-		bool m_Visible;
 
 		[SerializeField]
 		HapticPulse m_FaceRotationPulse;
@@ -80,8 +37,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		[SerializeField]
 		HapticPulse m_ButtonHoverPulse;
 
+		Transform m_AlternateMenuOrigin;
+		Transform m_MenuOrigin;
 		MainMenuUI m_MainMenuUI;
 		float m_LastRotationInput;
+		MenuHideFlags m_MenuHideFlags = MenuHideFlags.Hidden;
 		readonly Dictionary<Type, MainMenuButton> m_ToolButtons = new Dictionary<Type, MainMenuButton>();
 
 		public List<Type> menuTools { private get; set; }
@@ -95,6 +55,55 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public GameObject menuContent { get { return m_MainMenuUI.gameObject; } }
 		public Transform rayOrigin { private get; set; }
 
+		public Bounds localBounds { get { return m_MainMenuUI.localBounds; } }
+
+		public bool focus { get { return m_MainMenuUI.hovering; } }
+
+		public ActionMap actionMap { get { return m_MainMenuActionMap; } }
+
+		public Transform menuOrigin
+		{
+			get { return m_MenuOrigin; }
+			set
+			{
+				m_MenuOrigin = value;
+				if (m_MainMenuUI)
+					m_MainMenuUI.menuOrigin = value;
+			}
+		}
+
+		public Transform alternateMenuOrigin
+		{
+			get { return m_AlternateMenuOrigin; }
+			set
+			{
+				m_AlternateMenuOrigin = value;
+				if (m_MainMenuUI)
+					m_MainMenuUI.alternateMenuOrigin = value;
+			}
+		}
+
+		public MenuHideFlags menuHideFlags
+		{
+			get { return m_MenuHideFlags; }
+			set
+			{
+				var wasVisible = m_MenuHideFlags == 0;
+				var wasPermanent = (m_MenuHideFlags & MenuHideFlags.Hidden) != 0;
+				if (m_MenuHideFlags != value)
+				{
+					m_MenuHideFlags = value;
+					if (m_MainMenuUI)
+					{
+						var isPermanent = (value & MenuHideFlags.Hidden) != 0;
+						m_MainMenuUI.visible = value == 0;
+						if (wasPermanent && value == 0 || wasVisible && isPermanent)
+							SendVisibilityPulse();
+					}
+				}
+			}
+		}
+
 		void Start()
 		{
 			m_MainMenuUI = this.InstantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
@@ -102,9 +111,6 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
-			m_MainMenuUI.visible = m_Visible;
-			m_MainMenuUI.opening += OnOpening;
-			m_MainMenuUI.closing += OnClosing;
 
 			var types = new HashSet<Type>();
 			types.UnionWith(menuTools);
@@ -133,7 +139,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 				this.Pulse(node, m_FaceRotationPulse);
 			}
 
-			if (visible)
+			if (m_MenuHideFlags == 0)
 				consumeControl(mainMenuInput.flickFace);
 
 			m_LastRotationInput = rotationInput;
@@ -175,14 +181,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 					if (buttonData == null)
 						buttonData = new MainMenuUI.ButtonData(type.Name);
 
-					CreateFaceButton(buttonData, tooltip, () =>
+					var mainMenuButton = CreateFaceButton(buttonData, tooltip, () =>
 					{
 						if (targetRayOrigin)
 						{
 							this.SelectTool(targetRayOrigin, selectedType);
 							UpdateToolButtons();
 						}
-					}, selectedType);
+					});
+
+					// Assign Tools Menu button preview properties
+					mainMenuButton.toolType = selectedType;
 				}
 
 				if (isWorkspace)
@@ -238,25 +247,22 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
-		void CreateFaceButton(MainMenuUI.ButtonData buttonData, ITooltip tooltip, Action buttonClickCallback, Type selectedType = null)
+		MainMenuButton CreateFaceButton(MainMenuUI.ButtonData buttonData, ITooltip tooltip, Action buttonClickCallback)
 		{
 			var mainMenuButton = m_MainMenuUI.CreateFaceButton(buttonData);
-			mainMenuButton.button.onClick.RemoveAllListeners();
-			mainMenuButton.button.onClick.AddListener(() =>
+			var button = mainMenuButton.button;
+			button.onClick.RemoveAllListeners();
+			button.onClick.AddListener(() =>
 			{
-				if (visible)
+				if (m_MenuHideFlags == 0)
 					buttonClickCallback();
 			});
 
+			mainMenuButton.hovered += OnButtonHovered;
+			mainMenuButton.clicked += OnButtonClicked;
 			mainMenuButton.tooltip = tooltip;
 
-			if (selectedType != null)
-			{
-				// Assign pinned tool button preview properties
-				mainMenuButton.toolType = selectedType;
-				mainMenuButton.hovered += OnButtonHovered;
-				mainMenuButton.clicked += OnButtonClicked;
-			}
+			return mainMenuButton;
 		}
 
 		void UpdateToolButtons()
@@ -277,22 +283,17 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			this.Pulse(this.RequestNodeFromRayOrigin(rayOrigin), m_ButtonHoverPulse);
 
 			// Pass the pointer which is over us, so this information can supply context (e.g. selecting a tool for a different hand)
-			// Enable preview-mode on a pinned tool button; Display on the opposite proxy device by evaluating the entering RayOrigin
-			// Disable any existing previews being displayed in PinnedToolsMenus
-			this.ClearPinnedToolButtonPreview();
+			// Enable preview-mode on a Tools Menu button; Display on the opposite proxy device by evaluating the entering RayOrigin
+			// Disable any existing previews being displayed in ToolsMenus
+			this.ClearToolMenuButtonPreview();
 
 			if (buttonType != null && rayOrigin != null)
-				this.PreviewInPinnedToolButton(rayOrigin, buttonType, buttonDescription);
+				this.PreviewInToolMenuButton(rayOrigin, buttonType, buttonDescription);
 		}
 
-		void OnOpening()
+		void SendVisibilityPulse()
 		{
-			this.Pulse(node, m_ShowPulse);
-		}
-
-		void OnClosing()
-		{
-			this.Pulse(node, m_HidePulse);
+			this.Pulse(node, m_MenuHideFlags == 0 ? m_HidePulse : m_ShowPulse);
 		}
 	}
 }

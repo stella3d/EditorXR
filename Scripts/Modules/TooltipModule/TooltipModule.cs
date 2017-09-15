@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -34,6 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		{
 			public float startTime;
 			public TooltipUI tooltipUI;
+			public Material customHighlightMaterial;
 		}
 
 		readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
@@ -41,7 +41,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		Transform m_TooltipCanvas;
 		Vector3 m_TooltipScale;
 		Color m_OriginalBackgroundColor;
-		Material m_CustomHighlightMaterial;
+
+		// Local method use only -- created here to reduce garbage collection
+		readonly List<ITooltip> m_TooltipsToHide = new List<ITooltip>();
 
 		void Start()
 		{
@@ -49,7 +51,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_TooltipCanvas.SetParent(transform);
 			m_TooltipScale = m_TooltipPrefab.transform.localScale;
 			m_HighlightMaterial = Instantiate(m_HighlightMaterial);
-			m_CustomHighlightMaterial = Instantiate(m_HighlightMaterial);
 			m_TooltipBackgroundMaterial = Instantiate(m_TooltipBackgroundMaterial);
 			m_OriginalBackgroundColor = m_TooltipBackgroundMaterial.color;
 			var sessionGradient = UnityBrandColorScheme.sessionGradient;
@@ -59,6 +60,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Update()
 		{
+			m_TooltipsToHide.Clear();
 			foreach (var kvp in m_Tooltips)
 			{
 				var tooltip = kvp.Key;
@@ -94,6 +96,14 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					var lerp = Mathf.Clamp01((hoverTime - k_Delay) / k_TransitionDuration);
 					UpdateVisuals(tooltip, tooltipUI, target, lerp);
 				}
+
+				if (!IsValidTooltip(tooltip))
+					m_TooltipsToHide.Add(tooltip);
+			}
+
+			foreach (var tooltip in m_TooltipsToHide)
+			{
+				HideTooltip(tooltip);
 			}
 		}
 
@@ -122,14 +132,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var viewerScale = this.GetViewerScale();
 			tooltipTransform.localScale = m_TooltipScale * lerp * viewerScale;
 
-			var customToolTipColor = tooltip as ISetCustomTooltipColor;
-			if (customToolTipColor != null)
-			{
-				var customToolTipHighlightColor = customToolTipColor.customToolTipHighlightColor;
-				tooltipUI.highlight.material= m_CustomHighlightMaterial;
-				m_CustomHighlightMaterial.SetColor(k_MaterialColorTopProperty, customToolTipHighlightColor.a);
-				m_CustomHighlightMaterial.SetColor(k_MaterialColorBottomProperty, customToolTipHighlightColor.b);
-			}
+			TooltipData toolTipData;
+			m_Tooltips.TryGetValue(tooltip, out toolTipData);
+			var highlightMaterial = toolTipData != null ? toolTipData.customHighlightMaterial : m_HighlightMaterial;
+			tooltipUI.highlight.material= highlightMaterial;
 
 			m_TooltipBackgroundMaterial.SetColor("_Color", Color.Lerp(UnityBrandColorScheme.darker, m_OriginalBackgroundColor, lerp));
 
@@ -202,6 +208,19 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void OnRayEntered(GameObject gameObject, RayEventData eventData)
 		{
+			if (gameObject == this.gameObject)
+				return;
+
+			var tooltip = gameObject.GetComponent<ITooltip>();
+			if (tooltip != null)
+				ShowTooltip(tooltip);
+		}
+
+		public void OnRayHovering(GameObject gameObject, RayEventData eventData)
+		{
+			if (gameObject == this.gameObject)
+				return;
+
 			var tooltip = gameObject.GetComponent<ITooltip>();
 			if (tooltip != null)
 				ShowTooltip(tooltip);
@@ -209,7 +228,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void OnRayExited(GameObject gameObject, RayEventData eventData)
 		{
-			if (gameObject)
+			if (gameObject && gameObject != this.gameObject)
 			{
 				var tooltip = gameObject.GetComponent<ITooltip>();
 				if (tooltip != null)
@@ -219,16 +238,32 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void ShowTooltip(ITooltip tooltip)
 		{
-			if (string.IsNullOrEmpty(tooltip.tooltipText))
+			if (!IsValidTooltip(tooltip))
 				return;
 
 			if (m_Tooltips.ContainsKey(tooltip))
 				return;
 
+			Material highlightMaterial = null;
+			var customToolTipColor = tooltip as ISetCustomTooltipColor;
+			if (customToolTipColor != null)
+			{
+				highlightMaterial = Instantiate(m_HighlightMaterial);
+				var customToolTipHighlightColor = customToolTipColor.customToolTipHighlightColor;
+				highlightMaterial.SetColor(k_MaterialColorTopProperty, customToolTipHighlightColor.a);
+				highlightMaterial.SetColor(k_MaterialColorBottomProperty, customToolTipHighlightColor.b);
+			}
+
 			m_Tooltips[tooltip] = new TooltipData
 			{
-				startTime = Time.realtimeSinceStartup
+				startTime = Time.realtimeSinceStartup,
+				customHighlightMaterial = highlightMaterial
 			};
+		}
+
+		static bool IsValidTooltip(ITooltip tooltip)
+		{
+			return !string.IsNullOrEmpty(tooltip.tooltipText);
 		}
 
 		public void HideTooltip(ITooltip tooltip)
