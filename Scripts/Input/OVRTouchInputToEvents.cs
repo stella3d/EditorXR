@@ -1,151 +1,125 @@
-﻿#if UNITY_EDITOR
+﻿#if UNITY_EDITOR && UNITY_2017_2_OR_NEWER
 using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.VR;
+using UnityEngine.XR;
+using InputTracking = UnityEngine.XR.InputTracking;
 
 [assembly: OptionalDependency("OVRInput", "ENABLE_OVR_INPUT")]
 
 namespace UnityEditor.Experimental.EditorVR.Input
 {
+	using Input = UnityEngine.Input;
+
 	/// <summary>
 	/// Sends events to the input system based on native Oculus SDK calls
 	/// </summary>
 	sealed class OVRTouchInputToEvents : BaseInputToEvents
 	{
-#if ENABLE_OVR_INPUT
+		const string k_LeftControllerName = "Oculus Touch Controller - Left";
+		const string k_RightControllerName = "Oculus Touch Controller - Right";
+
 		const uint k_ControllerCount = 2;
-		const int k_AxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
-		
-		float[,] m_LastAxisValues = new float[k_ControllerCount, k_AxisCount];
+
+		int[] m_JoystickIndices = new int[k_ControllerCount];
+		string[,] m_AxisNames = new string[k_ControllerCount, JoystickInputToEvents.axisCount];
+		float[,] m_LastAxisValues = new float[k_ControllerCount, JoystickInputToEvents.axisCount];
 		Vector3[] m_LastPositionValues = new Vector3[k_ControllerCount];
 		Quaternion[] m_LastRotationValues = new Quaternion[k_ControllerCount];
 
 		public void Update()
 		{
-			// Manually update the Touch input
-			OVRInput.Update();
-
-			if ((OVRInput.GetActiveController() & OVRInput.Controller.Touch) == 0)
+			var isActive = false;
+			var names = Input.GetJoystickNames();
+			for (var i = 0; i < k_ControllerCount; i++)
 			{
-				active = false;
-				return;
+				var joystickName = i == 0 ? k_LeftControllerName : k_RightControllerName;
+				var joystickIndex = Array.IndexOf(names, joystickName);
+				if (joystickIndex >= 0)
+				{
+					isActive = true;
+					m_JoystickIndices[i] = joystickIndex;
+					for (var j = 0; j < JoystickInputToEvents.axisCount; j++)
+					{
+						m_AxisNames[i, j] = string.Format("Analog{0}_Joy{1}", j + 1, joystickIndex);
+					}
+				}
 			}
-			active = true;
+
+			active = isActive;
+
+			if (!active)
+				return;
 
 			for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left;
 				(int)hand <= (int)VRInputDevice.Handedness.Right;
 				hand++)
 			{
-				OVRInput.Controller controller = hand == VRInputDevice.Handedness.Left
-					? OVRInput.Controller.LTouch
-					: OVRInput.Controller.RTouch;
-				int ovrIndex = controller == OVRInput.Controller.LTouch ? 0 : 1;
 				int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4;
-
-				// TODO change 3 and 4 based on virtual devices defined in InputDeviceManager (using actual hardware available)
-				SendButtonEvents(controller, deviceIndex);
-				SendAxisEvents(controller, ovrIndex, deviceIndex);
-				SendTrackingEvents(controller, ovrIndex, deviceIndex);
+				var controller = (int)hand;
+				SendAxisEvents(controller, deviceIndex);
+				var node = hand == VRInputDevice.Handedness.Left ? XRNode.LeftHand : XRNode.RightHand;
+				SendTrackingEvents(node, controller, deviceIndex);
+				SendButtonEvents(m_JoystickIndices[controller], deviceIndex);
 			}
 		}
 
-		private bool GetAxis(OVRInput.Controller controller, VRInputDevice.VRControl axis, out float value)
+		void OnGUI()
 		{
-			switch (axis)
+			GUILayout.BeginHorizontal();
+			for (var i = 0; i < Input.GetJoystickNames().Length; i++)
 			{
-				case VRInputDevice.VRControl.Trigger1:
-					value = OVRInput.Get(OVRInput.Axis1D.PrimaryIndexTrigger, controller);
-					return true;
-				case VRInputDevice.VRControl.Trigger2:
-					value = OVRInput.Get(OVRInput.Axis1D.PrimaryHandTrigger, controller);
-					return true;
-				case VRInputDevice.VRControl.LeftStickX:
-					value = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, controller).x;
-					return true;
-				case VRInputDevice.VRControl.LeftStickY:
-					value = OVRInput.Get(OVRInput.Axis2D.PrimaryThumbstick, controller).y;
-					return true;
-			}
-
-			value = 0f;
-			return false;
-		}
-
-		private void SendAxisEvents(OVRInput.Controller controller, int ovrIndex, int deviceIndex)
-		{
-			for (var axis = 0; axis < k_AxisCount; ++axis)
-			{
-				float value;
-				if (GetAxis(controller, (VRInputDevice.VRControl)axis, out value))
+				GUILayout.BeginVertical();
+				var max = JoystickInputToEvents.axisCount + 1;
+				for (var j = 1; j < max; j++)
 				{
-					if (Mathf.Approximately(m_LastAxisValues[ovrIndex, axis], value))
-						continue;
-
-					var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
-					inputEvent.deviceType = typeof(VRInputDevice);
-					inputEvent.deviceIndex = deviceIndex;
-					inputEvent.controlIndex = axis;
-					inputEvent.value = value;
-
-					m_LastAxisValues[ovrIndex, axis] = inputEvent.value;
-
-					InputSystem.QueueEvent(inputEvent);
+					var axisName = string.Format("Analog{0}_Joy{1}", j, i + 1);
+					GUILayout.Label(string.Format("{0}: {1:f2}", axisName, Input.GetAxis(axisName)));
 				}
-			}
-		}
+				GUILayout.EndVertical();
 
-		private int GetButtonIndex(OVRInput.Button button)
-		{
-			switch (button)
-			{
-				case OVRInput.Button.One:
-					return (int)VRInputDevice.VRControl.Action1;
+				GUILayout.BeginVertical();
+				var first = (int)KeyCode.Joystick1Button0 + i * 20;
+				var last = (int)KeyCode.Joystick1Button19 + i * 20;
 
-				case OVRInput.Button.Two:
-					return (int)VRInputDevice.VRControl.Action2;
-
-				case OVRInput.Button.PrimaryThumbstick:
-					return (int)VRInputDevice.VRControl.LeftStickButton;
-			}
-
-			// Not all buttons are currently mapped
-			return -1;
-		}
-
-		private void SendButtonEvents(OVRInput.Controller ovrController, int deviceIndex)
-		{
-			foreach (OVRInput.Button button in Enum.GetValues(typeof(OVRInput.Button)))
-			{
-				int buttonIndex = GetButtonIndex(button);
-				if (buttonIndex >= 0)
+				for (var j = 0; j <= last - first; j++)
 				{
-					bool isDown = OVRInput.GetDown(button, ovrController);
-					bool isUp = OVRInput.GetUp(button, ovrController);
-
-					if (isDown || isUp)
-					{
-						var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
-						inputEvent.deviceType = typeof(VRInputDevice);
-						inputEvent.deviceIndex = deviceIndex;
-						inputEvent.controlIndex = buttonIndex;
-						inputEvent.value = isDown ? 1.0f : 0.0f;
-
-						InputSystem.QueueEvent(inputEvent);
-					}
+					var buttonName = string.Format("Button {0}_Joy{1}", j, i + 1);
+					GUILayout.Toggle(Input.GetKey((KeyCode)(j + first)), string.Format("{0}", buttonName));
 				}
+				GUILayout.EndVertical();
+			}
+			GUILayout.EndHorizontal();
+		}
+
+		void SendAxisEvents(int controller, int deviceIndex)
+		{
+			for (var axis = 0; axis < JoystickInputToEvents.axisCount; ++axis)
+			{
+				var value = Input.GetAxis(m_AxisNames[controller, axis]);
+				if (Mathf.Approximately(m_LastAxisValues[controller, axis], value))
+					continue;
+
+				var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
+				inputEvent.deviceType = typeof(VRInputDevice);
+				inputEvent.deviceIndex = deviceIndex;
+				inputEvent.controlIndex = axis;
+				inputEvent.value = value;
+
+				m_LastAxisValues[controller, axis] = inputEvent.value;
+
+				InputSystem.QueueEvent(inputEvent);
 			}
 		}
 
-		private void SendTrackingEvents(OVRInput.Controller ovrController, int ovrIndex, int deviceIndex)
+		void SendTrackingEvents(XRNode node, int controller, int deviceIndex)
 		{
-			if (!OVRInput.GetControllerPositionTracked(ovrController))
-				return;
+			var localPosition = InputTracking.GetLocalPosition(node);
+			var localRotation = InputTracking.GetLocalRotation(node);
 
-			var localPosition = OVRInput.GetLocalControllerPosition(ovrController);
-			var localRotation = OVRInput.GetLocalControllerRotation(ovrController);
-
-			if (localPosition == m_LastPositionValues[ovrIndex] && localRotation == m_LastRotationValues[ovrIndex])
+			if (localPosition == m_LastPositionValues[controller] && localRotation == m_LastRotationValues[controller])
 				return;
 
 			var inputEvent = InputSystem.CreateEvent<VREvent>();
@@ -154,12 +128,36 @@ namespace UnityEditor.Experimental.EditorVR.Input
 			inputEvent.localPosition = localPosition;
 			inputEvent.localRotation = localRotation;
 
-			m_LastPositionValues[ovrIndex] = inputEvent.localPosition;
-			m_LastRotationValues[ovrIndex] = inputEvent.localRotation;
+			m_LastPositionValues[controller] = inputEvent.localPosition;
+			m_LastRotationValues[controller] = inputEvent.localRotation;
 
 			InputSystem.QueueEvent(inputEvent);
 		}
-#endif
+
+		static void SendButtonEvents(int joystickIndex, int deviceIndex)
+		{
+			//var first = (int)KeyCode.Joystick1Button0 + joystickIndex * 20;
+			//var last = (int)KeyCode.Joystick1Button19 + joystickIndex * 20;
+
+			//for (var i = 0; i <= last - first; i++)
+			//{
+			//	if (Input.GetKeyDown((KeyCode)(i + first)))
+			//		SendButtonEvent(deviceIndex, k_AxisCount + i, 1.0f);
+			//	if (Input.GetKeyUp((KeyCode)(i + first)))
+			//		SendButtonEvent(deviceIndex, k_AxisCount + i, 0.0f);
+			//}
+		}
+
+		static void SendButtonEvent(int deviceIndex, int button, float value)
+		{
+			var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
+			inputEvent.deviceType = typeof(VRInputDevice);
+			inputEvent.deviceIndex = deviceIndex;
+			inputEvent.controlIndex = button;
+			inputEvent.value = value;
+
+			InputSystem.QueueEvent(inputEvent);
+		}
 	}
 }
 #endif
