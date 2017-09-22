@@ -98,6 +98,10 @@ namespace UnityEditor.Experimental.EditorVR.Input
 		{
 			for (var axis = 0; axis < JoystickInputToEvents.axisCount; ++axis)
 			{
+				var VRIndex = AxisIndexToVRIndex(axis);
+				if (VRIndex == -1)
+					continue;
+
 				var value = Input.GetAxis(m_AxisNames[controller, axis]);
 				if (Mathf.Approximately(m_LastAxisValues[controller, axis], value))
 					continue;
@@ -105,12 +109,29 @@ namespace UnityEditor.Experimental.EditorVR.Input
 				var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
 				inputEvent.deviceType = typeof(VRInputDevice);
 				inputEvent.deviceIndex = deviceIndex;
-				inputEvent.controlIndex = axis;
+				inputEvent.controlIndex = VRIndex;
 				inputEvent.value = value;
 
 				m_LastAxisValues[controller, axis] = inputEvent.value;
 
 				InputSystem.QueueEvent(inputEvent);
+			}
+		}
+
+		static int AxisIndexToVRIndex(int axisIndex)
+		{
+			switch (axisIndex)
+			{
+				case 10:
+					return (int)VRInputDevice.VRControl.Trigger2;
+				case 11:
+					return (int)VRInputDevice.VRControl.Trigger2;
+				case 12:
+					return (int)VRInputDevice.VRControl.Trigger1;
+				case 13:
+					return (int)VRInputDevice.VRControl.Trigger1;
+				default:
+					return -1;
 			}
 		}
 
@@ -136,24 +157,41 @@ namespace UnityEditor.Experimental.EditorVR.Input
 
 		static void SendButtonEvents(int joystickIndex, int deviceIndex)
 		{
-			//var first = (int)KeyCode.Joystick1Button0 + joystickIndex * 20;
-			//var last = (int)KeyCode.Joystick1Button19 + joystickIndex * 20;
+			var first = KeyCode.Joystick1Button0 + joystickIndex * 20;
+			var last = KeyCode.Joystick1Button19 + joystickIndex * 20;
 
-			//for (var i = 0; i <= last - first; i++)
-			//{
-			//	if (Input.GetKeyDown((KeyCode)(i + first)))
-			//		SendButtonEvent(deviceIndex, k_AxisCount + i, 1.0f);
-			//	if (Input.GetKeyUp((KeyCode)(i + first)))
-			//		SendButtonEvent(deviceIndex, k_AxisCount + i, 0.0f);
-			//}
+			for (var i = 0; i <= last - first; i++)
+			{
+				var VRIndex = ButtonIndexToVRIndex(i);
+				if (VRIndex == -1)
+					continue;
+
+				if (Input.GetKeyDown(i + first))
+					SendButtonEvent(deviceIndex, VRIndex, 1.0f);
+				if (Input.GetKeyUp(i + first))
+					SendButtonEvent(deviceIndex, VRIndex, 0.0f);
+			}
 		}
 
-		static void SendButtonEvent(int deviceIndex, int button, float value)
+		static int ButtonIndexToVRIndex(int buttonIndex)
+		{
+			switch (buttonIndex)
+			{
+				case 0:
+					return (int)VRInputDevice.VRControl.Action1;
+				case 1:
+					return (int)VRInputDevice.VRControl.Action2;
+				default:
+					return -1;
+			}
+		}
+
+		static void SendButtonEvent(int deviceIndex, int controlIndex, float value)
 		{
 			var inputEvent = InputSystem.CreateEvent<GenericControlEvent>();
 			inputEvent.deviceType = typeof(VRInputDevice);
 			inputEvent.deviceIndex = deviceIndex;
-			inputEvent.controlIndex = button;
+			inputEvent.controlIndex = controlIndex;
 			inputEvent.value = value;
 
 			InputSystem.QueueEvent(inputEvent);
