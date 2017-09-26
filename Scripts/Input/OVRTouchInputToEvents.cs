@@ -57,17 +57,17 @@ namespace UnityEditor.Experimental.EditorVR.Input
 			if (!active)
 				return;
 
-			for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left;
-				(int)hand <= (int)VRInputDevice.Handedness.Right;
-				hand++)
-			{
-				int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4;
-				var controller = (int)hand;
-				//SendAxisEvents(controller, deviceIndex);
-				var node = hand == VRInputDevice.Handedness.Left ? XRNode.LeftHand : XRNode.RightHand;
-				SendTrackingEvents(node, controller, deviceIndex);
-				//SendButtonEvents(m_JoystickIndices[controller], deviceIndex);
-			}
+			//for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left;
+			//	(int)hand <= (int)VRInputDevice.Handedness.Right;
+			//	hand++)
+			//{
+			//	int deviceIndex = hand == VRInputDevice.Handedness.Left ? 3 : 4;
+			//	var controller = (int)hand;
+			//	//SendAxisEvents(controller, deviceIndex);
+			//	var node = hand == VRInputDevice.Handedness.Left ? XRNode.LeftHand : XRNode.RightHand;
+			//	SendTrackingEvents(node, controller, deviceIndex);
+			//	//SendButtonEvents(m_JoystickIndices[controller], deviceIndex);
+			//}
 		}
 
 		//void OnGUI()
