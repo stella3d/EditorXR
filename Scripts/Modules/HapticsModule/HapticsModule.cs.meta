@@ -1,12 +1,12 @@
 fileFormatVersion: 2
 guid: d3359d35460d63a469d686098ebbcb79
-timeCreated: 1506399489
+timeCreated: 1506454898
 licenseType: Pro
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
-  - m_HapticsClip: {fileID: 8300000, guid: 7a1b97ffbdbef1d44aa8aab723f05560, type: 3}
+  - m_HapticsClip: {fileID: 8300000, guid: fd1f237cd5c84e84dbd1249ee8564a21, type: 3}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

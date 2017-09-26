@@ -8,10 +8,29 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class HapticsModule : MonoBehaviour
 	{
+		public enum Bool
+		{
+			False = 0,
+			True
+		}
+
+		[StructLayout(LayoutKind.Sequential)]
+		public struct HapticsBuffer
+		{
+			public IntPtr Samples;
+			public int SamplesCount;
+		}
+
 		public const float MaxDuration = 0.8f;
+		const string k_PluginName = "OVRPlugin";
 
 		[SerializeField]
 		float m_MasterIntensity = 0.8f;
+
+		[SerializeField]
+		AudioClip m_HapticsClip;
+
+		IntPtr m_Samples;
 
 		/// <summary>
 		/// Overall intensity of haptics.
@@ -33,11 +52,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Start()
 		{
+			var data = new float[m_HapticsClip.samples];
+			m_HapticsClip.GetData(data, data.Length);
+			m_Samples = Marshal.AllocHGlobal(data.Length * sizeof(float));
+			Marshal.Copy(data, 0, m_Samples, data.Length);
+
 #if ENABLE_OVR_INPUT
 			m_LHapticsChannel = OVRHaptics.LeftChannel;
 			m_RHapticsChannel = OVRHaptics.RightChannel;
 			m_GeneratedHapticClip = new OVRHapticsClip();
 #endif
+		}
+
+		void OnDestroy()
+		{
+			Marshal.FreeHGlobal(m_Samples);
 		}
 
 #if ENABLE_OVR_INPUT
@@ -47,6 +76,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			OVRHaptics.Process();
 		}
 #endif
+
+		[DllImport(k_PluginName, CallingConvention = CallingConvention.Cdecl)]
+		public static extern Bool ovrp_SetControllerHaptics(uint controllerMask, HapticsBuffer hapticsBuffer);
 
 		/// <summary>
 		/// Pulse haptic feedback
@@ -62,6 +94,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (Mathf.Approximately(m_MasterIntensity, 0))
 				return;
 
+			ovrp_SetControllerHaptics(1, new HapticsBuffer { Samples = m_Samples, SamplesCount = m_HapticsClip.samples });
 #if ENABLE_OVR_INPUT
 			m_GeneratedHapticClip.Reset();
 
