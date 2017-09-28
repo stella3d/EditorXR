@@ -1,36 +1,20 @@
 ﻿#if UNITY_EDITOR
 using System;
+using System.Collections;
 using System.Runtime.InteropServices;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
+using UnityEngineInternal.Input;
+using XRAuthoring.Input;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class HapticsModule : MonoBehaviour
 	{
-		public enum Bool
-		{
-			False = 0,
-			True
-		}
-
-		[StructLayout(LayoutKind.Sequential)]
-		public struct HapticsBuffer
-		{
-			public IntPtr Samples;
-			public int SamplesCount;
-		}
-
 		public const float MaxDuration = 0.8f;
-		const string k_PluginName = "OVRPlugin";
 
 		[SerializeField]
 		float m_MasterIntensity = 0.8f;
-
-		[SerializeField]
-		AudioClip m_HapticsClip;
-
-		IntPtr m_Samples;
 
 		/// <summary>
 		/// Overall intensity of haptics.
@@ -52,21 +36,11 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Start()
 		{
-			var data = new float[m_HapticsClip.samples];
-			m_HapticsClip.GetData(data, data.Length);
-			m_Samples = Marshal.AllocHGlobal(data.Length * sizeof(float));
-			Marshal.Copy(data, 0, m_Samples, data.Length);
-
 #if ENABLE_OVR_INPUT
 			m_LHapticsChannel = OVRHaptics.LeftChannel;
 			m_RHapticsChannel = OVRHaptics.RightChannel;
 			m_GeneratedHapticClip = new OVRHapticsClip();
 #endif
-		}
-
-		void OnDestroy()
-		{
-			Marshal.FreeHGlobal(m_Samples);
 		}
 
 #if ENABLE_OVR_INPUT
@@ -75,10 +49,85 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			// Perform a manual update of OVR haptics
 			OVRHaptics.Process();
 		}
+#else
+		void LateUpdate()
+		{
+			RumbleEvent outputEvent;
+			if (m_Pulsing)
+			{
+				outputEvent = new RumbleEvent(1f, 0);
+			}
+			else
+			{
+				outputEvent = new RumbleEvent(0f, 0);
+			}
+			NativeInputSystem.SendOutput(TrackedNodeDeviceManager.DeviceIDForTrackedNode(Node.RightHand), outputEvent.type, outputEvent);
+		}
 #endif
 
-		[DllImport(k_PluginName, CallingConvention = CallingConvention.Cdecl)]
-		public static extern Bool ovrp_SetControllerHaptics(uint controllerMask, HapticsBuffer hapticsBuffer);
+		public struct FourCC
+		{
+			int m_Code;
+
+			public FourCC(char a, char b, char c, char d)
+			{
+				m_Code = (a << 24) | (b << 16) | (c << 8) | d;
+			}
+
+			public FourCC(string str)
+				: this()
+			{
+				Debug.Assert(str.Length == 4, "FourCC string must be exactly four characters long!");
+				m_Code = (str[0] << 24) | (str[1] << 16) | (str[2] << 8) | str[3];
+			}
+
+			public static implicit operator int(FourCC fourCC)
+			{
+				return fourCC.m_Code;
+			}
+
+			public override string ToString()
+			{
+				return string.Format("'{0}{1}{2}{3}'",
+					(char)(m_Code >> 24), (char)((m_Code & 0xff0000) >> 16), (char)((m_Code & 0xff00) >> 8), (char)(m_Code & 0xff));
+			}
+		}
+
+		public interface IOutputEvent
+		{
+			FourCC type { get; }
+		}
+
+		enum HapticsEventType
+		{
+			None = 0,
+			EnqueueRumble = 1,
+		}
+
+		[StructLayout(LayoutKind.Sequential, Pack = 1)]
+		public struct RumbleEvent : IOutputEvent
+		{
+			public FourCC type { get { return new FourCC("0VCR"); } }
+
+			public int hapticsEventType;
+			public float intensity;
+			public int channel;
+
+			public RumbleEvent(float intensity, int channel)
+			{
+				hapticsEventType = (int)HapticsEventType.EnqueueRumble;
+				this.intensity = intensity;
+				this.channel = channel;
+			}
+		}
+
+		bool m_Pulsing;
+		IEnumerator TestPulse()
+		{
+			m_Pulsing = true;
+			yield return new WaitForSeconds(0.15f);
+			m_Pulsing = false;
+		}
 
 		/// <summary>
 		/// Pulse haptic feedback
@@ -94,7 +143,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (Mathf.Approximately(m_MasterIntensity, 0))
 				return;
 
-			ovrp_SetControllerHaptics(1, new HapticsBuffer { Samples = m_Samples, SamplesCount = m_HapticsClip.samples });
+			StartCoroutine(TestPulse());
 #if ENABLE_OVR_INPUT
 			m_GeneratedHapticClip.Reset();
 
