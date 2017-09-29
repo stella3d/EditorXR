@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
@@ -11,6 +12,12 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class HapticsModule : MonoBehaviour
 	{
+		class HapticsChannel
+		{
+			public float intensity;
+			public Coroutine doPulseCoroutine;
+		}
+
 		public const float MaxDuration = 0.8f;
 
 		[SerializeField]
@@ -21,18 +28,20 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// A value to 0 will mute haptics.
 		/// A value of 1 will allow haptics to be performed at normal intensity
 		/// </summary>
-		public float masterIntensity { set { m_MasterIntensity = Mathf.Clamp(value, 0f, 10f); } }
+		public float masterIntensity { set { m_MasterIntensity = Mathf.Clamp01(value); } }
 
 #if ENABLE_OVR_INPUT
 		OVRHaptics.OVRHapticsChannel m_LHapticsChannel;
 		OVRHaptics.OVRHapticsChannel m_RHapticsChannel;
 		OVRHapticsClip m_GeneratedHapticClip;
+#else
+		Dictionary<Node, HapticsChannel> m_HapticsChannels = new Dictionary<Node, HapticsChannel>();
 #endif
 
 		/// <summary>
-		/// Allow for a single warning that informs the user of an attempted pulse with a length greater than 0.8f
+		/// Allow for a single warning that informs the user of an attempted pulse with a duration greater than 0.8f
 		/// </summary>
-		bool m_SampleLengthWarningShown;
+		bool m_DurationWarningShown;
 
 		void Start()
 		{
@@ -40,30 +49,27 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_LHapticsChannel = OVRHaptics.LeftChannel;
 			m_RHapticsChannel = OVRHaptics.RightChannel;
 			m_GeneratedHapticClip = new OVRHapticsClip();
+#else
+			foreach (Node node in Enum.GetValues(typeof(Node)))
+			{
+				m_HapticsChannels[node] = new HapticsChannel();
+			}
 #endif
 		}
 
-#if ENABLE_OVR_INPUT
 		void LateUpdate()
 		{
+#if ENABLE_OVR_INPUT
 			// Perform a manual update of OVR haptics
 			OVRHaptics.Process();
-		}
 #else
-		void LateUpdate()
-		{
-			RumbleEvent outputEvent;
-			if (m_Pulsing)
+			foreach (var kvp in m_HapticsChannels)
 			{
-				outputEvent = new RumbleEvent(1f, 0);
+				var rumbleEvent = new RumbleEvent(kvp.Value.intensity * m_MasterIntensity, 0);
+				NativeInputSystem.SendOutput(TrackedNodeDeviceManager.DeviceIDForTrackedNode(kvp.Key), rumbleEvent.type, rumbleEvent);
 			}
-			else
-			{
-				outputEvent = new RumbleEvent(0f, 0);
-			}
-			NativeInputSystem.SendOutput(TrackedNodeDeviceManager.DeviceIDForTrackedNode(Node.RightHand), outputEvent.type, outputEvent);
-		}
 #endif
+		}
 
 		public struct FourCC
 		{
@@ -121,14 +127,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		bool m_Pulsing;
-		IEnumerator TestPulse()
-		{
-			m_Pulsing = true;
-			yield return new WaitForSeconds(0.15f);
-			m_Pulsing = false;
-		}
-
 		/// <summary>
 		/// Pulse haptic feedback
 		/// </summary>
@@ -138,12 +136,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		/// <param name="intensityMultiplier">(Optional) Multiplier value applied to the hapticPulse intensity</param>
 		public void Pulse(Node? node, HapticPulse hapticPulse, float durationMultiplier = 1f, float intensityMultiplier = 1f)
 		{
-			// Clip buffer can hold up to 800 milliseconds of samples
-			// At 320Hz, each sample is 3.125f milliseconds
-			if (Mathf.Approximately(m_MasterIntensity, 0))
-				return;
-
-			StartCoroutine(TestPulse());
 #if ENABLE_OVR_INPUT
 			m_GeneratedHapticClip.Reset();
 
@@ -211,6 +203,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					m_LHapticsChannel.Mix(m_GeneratedHapticClip);
 				}
 			}
+#else
+			// TODO: Ability mix intensities rather than preempt each time
+			StopPulses(node);
+
+			if (node != null)
+			{
+				m_HapticsChannels[node.Value].doPulseCoroutine = StartCoroutine(DoPulse(node.Value, hapticPulse, durationMultiplier, intensityMultiplier));
+			}
+			else
+			{
+				foreach (var kvp in m_HapticsChannels)
+				{
+					kvp.Value.doPulseCoroutine = StartCoroutine(DoPulse(kvp.Key, hapticPulse, durationMultiplier, intensityMultiplier));
+				}
+			}
 #endif
 		}
 
@@ -221,17 +228,81 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			if (channel != null)
 				channel.Clear();
 			else
-				Debug.LogWarning("Only null, or valid ray origins can stop pulse playback.");
+			{
+				m_RHapticsChannel.Clear();
+				m_LHapticsChannel.Clear();
+			}
+#else
+			if (node != null)
+			{
+				var channel = m_HapticsChannels[node.Value];
+				channel.intensity = 0f;
+				if (channel.doPulseCoroutine != null)
+				{
+					StopCoroutine(channel.doPulseCoroutine);
+					channel.doPulseCoroutine = null;
+				}
+			}
+			else
+			{
+				foreach (var channel in m_HapticsChannels.Values)
+				{
+					channel.intensity = 0f;
+					if (channel.doPulseCoroutine != null)
+					{
+						StopCoroutine(channel.doPulseCoroutine);
+						channel.doPulseCoroutine = null;
+					}
+				}
+			}
 #endif
 		}
 
-		public void StopPulses()
+#if !ENABLE_OVR_INPUT
+		IEnumerator DoPulse(Node node, HapticPulse hapticPulse, float durationMultiplier, float intensityMultiplier)
 		{
-#if ENABLE_OVR_INPUT
-			m_RHapticsChannel.Clear();
-			m_LHapticsChannel.Clear();
-#endif
+			var totalDuration = hapticPulse.duration * durationMultiplier;
+			if (totalDuration > MaxDuration)
+			{
+				totalDuration = Mathf.Clamp(totalDuration, 0f, MaxDuration);
+				if (!m_DurationWarningShown)
+					Debug.LogWarning("Pulse durations greater than 0.8f are not currently supported");
+				m_DurationWarningShown = true;
+			}
+
+			const float kFadeInProportion = 0.25f;
+
+			// FadeOut is less apparent than FadeIn unless FadeOut duration is increased
+			const float kFadeOutProportion = kFadeInProportion * 2f;
+
+			var fadeInDuration = hapticPulse.fadeIn ? totalDuration * kFadeInProportion : 0f;
+			var fadeOutDuration = hapticPulse.fadeOut ? totalDuration * kFadeOutProportion : 0f;
+			var intensity = hapticPulse.intensity * intensityMultiplier;
+			var peakIntensityDuration = totalDuration - fadeInDuration - fadeOutDuration;
+
+			var channel = m_HapticsChannels[node];
+			var timePassed = 0f;
+			while (timePassed < fadeInDuration)
+			{
+				channel.intensity = Mathf.Lerp(0f, intensity, timePassed / fadeInDuration);
+				timePassed += Time.deltaTime;
+				yield return null;
+			}
+
+			channel.intensity = intensity;
+			yield return new WaitForSeconds(peakIntensityDuration);
+
+			timePassed = 0f;
+			while (timePassed < fadeOutDuration)
+			{
+				channel.intensity = Mathf.Lerp(intensity, 0f, timePassed / fadeOutDuration);
+				timePassed += Time.deltaTime;
+				yield return null;
+			}
+
+			channel.intensity = 0f;
 		}
+#endif
 
 #if ENABLE_OVR_INPUT
 		OVRHaptics.OVRHapticsChannel GetTargetChannel(Node? node)
