@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -6,28 +6,38 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Decorates types that need to connect interfaces for spawned objects
 	/// </summary>
-	public interface IInstantiateUI
+	public interface IInstantiateUI : IInjectedFunctionality<IInstantiateUIProvider>
 	{
 	}
 
-	public static class IInstantiateUIMethods
+	public interface IInstantiateUIProvider
 	{
-		internal delegate GameObject InstantiateUIDelegate(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null);
-
-		internal static InstantiateUIDelegate instantiateUI { get; set; }
-
 		/// <summary>
 		/// Method provided by the system for instantiating UI
 		/// </summary>
 		/// <param name="prefab">The prefab to instantiate</param>
 		/// <param name="parent">(Optional) A parent transform to instantiate under</param>
-		/// <param name="worldPositionStays">(Optional) If true, the parent-relative position, scale and rotation are modified
+		/// <param name="worldPositionStays">(Optional) If true, the parent-relative position, scale and rotation are modified</param>
 		/// <param name="rayOrigin">(Optional) RayOrigin override that will be used when connecting interfaces on this object
 		/// such that the object keeps the same world space position, rotation and scale as before.</param>
-		/// <returns></returns>
-		public static GameObject InstantiateUI(this IInstantiateUI obj, GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null)
+		/// <returns>The instantiated gameobject</returns>
+		GameObject InstantiateUI( GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null);
+	}
+
+	public static class IInstantiateUIMethods
+	{
+		/// <summary>
+		/// Method provided by the system for instantiating UI
+		/// </summary>
+		/// <param name="prefab">The prefab to instantiate</param>
+		/// <param name="parent">(Optional) A parent transform to instantiate under</param>
+		/// <param name="worldPositionStays">(Optional) If true, the parent-relative position, scale and rotation are modified</param>
+		/// <param name="rayOrigin">(Optional) RayOrigin override that will be used when connecting interfaces on this object
+		/// such that the object keeps the same world space position, rotation and scale as before.</param>
+		/// <returns>The instantiated gameobject</returns>
+		public static GameObject InstantiateUI(this IInstantiateUI @this, GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null)
 		{
-			return instantiateUI(prefab, parent, worldPositionStays, rayOrigin);
+			return @this.provider.InstantiateUI(prefab, parent, worldPositionStays, rayOrigin);
 		}
 	}
 }

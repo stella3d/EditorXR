@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
@@ -7,6 +7,9 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 	[ActionMenuItem("Clone", ActionMenuItemAttribute.DefaultActionSectionName, 3)]
 	sealed class Clone : BaseAction, IUsesSpatialHash, IUsesViewerScale
 	{
+		IUsesSpatialHashProvider IInjectedFunctionality<IUsesSpatialHashProvider>.provider { get; set; }
+		IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
+
 		public override void ExecuteAction()
 		{
 			Unsupported.DuplicateGameObjectsUsingPasteboard();

@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -7,14 +6,12 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Gives decorated class the ability to place objects in the scene or a MiniWorld
 	/// </summary>
-	public interface IPlaceSceneObjects
+	public interface IPlaceSceneObjects : IInjectedFunctionality<IPlaceSceneObjectsProvider>
 	{
 	}
 
-	public static class IPlaceSceneObjectsMethods
+	public interface IPlaceSceneObjectsProvider
 	{
-		internal static Action<Transform[], Vector3[], Quaternion[], Vector3[]> placeSceneObjects { get; set; }
-
 		/// <summary>
 		/// Method used to place groups of objects in the scene/MiniWorld
 		/// </summary>
@@ -22,9 +19,21 @@ namespace UnityEditor.Experimental.EditorVR
 		/// <param name="targetPositionOffsets">Array of per-object target positions</param>
 		/// <param name="targetRotations">Array of per-object target rotations</param>
 		/// <param name="targetScales">Array of per-object target scales</param>
-		public static void PlaceSceneObjects(this IPlaceSceneObjects obj, Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
+		void PlaceSceneObjects(Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales);
+	}
+
+	public static class IPlaceSceneObjectsMethods
+	{
+		/// <summary>
+		/// Method used to place groups of objects in the scene/MiniWorld
+		/// </summary>
+		/// <param name="transforms">Array of Transforms to place</param>
+		/// <param name="targetPositionOffsets">Array of per-object target positions</param>
+		/// <param name="targetRotations">Array of per-object target rotations</param>
+		/// <param name="targetScales">Array of per-object target scales</param>
+		public static void PlaceSceneObjects(this IPlaceSceneObjects @this, Transform[] transforms, Vector3[] targetPositionOffsets, Quaternion[] targetRotations, Vector3[] targetScales)
 		{
-			placeSceneObjects(transforms, targetPositionOffsets, targetRotations, targetScales);
+			@this.provider.PlaceSceneObjects(transforms, targetPositionOffsets, targetRotations, targetScales);
 		}
 	}
 }

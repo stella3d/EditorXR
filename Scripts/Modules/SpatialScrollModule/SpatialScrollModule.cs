@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	public sealed class SpatialScrollModule : MonoBehaviour, IUsesViewerScale, IControlHaptics, IControlSpatialHinting, IRayVisibilitySettings, INodeToRay
+	public sealed class SpatialScrollModule : MonoBehaviour, IUsesViewerScale, IControlHaptics, IControlSpatialHinting, IRayVisibilitySettings, INodeToRay, IControlSpatialScrollingProvider
 	{
 		[SerializeField]
 		HapticPulse m_ActivationPulse; // The pulse performed when initial activating spatial selection
@@ -15,6 +15,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public class SpatialScrollData : INodeToRay
 		{
+			public INodeToRayProvider provider { get; set; }
+
 			public SpatialScrollData(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerVisuals = true)
 			{
 				this.caller = caller;
@@ -104,13 +106,13 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		void Awake()
-		{
-			IControlSpatialScrollingMethods.performSpatialScroll = PerformScroll;
-			IControlSpatialScrollingMethods.endSpatialScroll = EndScroll;
-		}
+		IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
+		IControlHapticsProvider IInjectedFunctionality<IControlHapticsProvider>.provider { get; set; }
+		IControlSpatialHintingProvider IInjectedFunctionality<IControlSpatialHintingProvider>.provider { get; set; }
+		IRayVisibilitySettingsProvider IInjectedFunctionality<IRayVisibilitySettingsProvider>.provider { get; set; }
+		INodeToRayProvider IInjectedFunctionality<INodeToRayProvider>.provider { get; set; }
 
-		internal SpatialScrollData PerformScroll(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
+		public SpatialScrollData PerformSpatialScroll(IControlSpatialScrolling caller, Node node, Vector3 startingPosition, Vector3 currentPosition, float repeatingScrollLengthRange, int scrollableItemCount, int maxItemCount = -1, bool centerScrollVisuals = true)
 		{
 			// Continue processing of spatial scrolling for a given caller,
 			// Or create new instance of scroll data for new callers. (Initial structure for support of simultaneous callers)
@@ -163,7 +165,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return scrollData;
 		}
 
-		internal void EndScroll(IControlSpatialScrolling caller)
+		public void EndSpatialScroll(IControlSpatialScrolling caller)
 		{
 			if (m_ScrollCallers.Count == 0)
 				return;

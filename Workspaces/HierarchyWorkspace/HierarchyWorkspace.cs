@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -59,6 +59,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		protected List<string> m_FilterList;
 
 		public virtual string searchQuery { get { return m_FilterUI.searchQuery; } }
+
+		public IMoveCameraRigProvider provider { get; set; }
 
 		public override void Setup()
 		{
@@ -245,5 +247,4 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 	}
 }
-
 #endif

@@ -66,6 +66,8 @@ namespace UnityEditor.Experimental.EditorVR.UI
 		[SerializeField] // Serialized so that this remains set after cloning
 		protected string m_Text = string.Empty;
 
+		public IUsesViewerScaleProvider provider { get; set; }
+
 		protected override void OnEnable()
 		{
 			base.OnEnable();

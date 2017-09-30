@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -181,6 +181,10 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		/// If FALSE, draw scroll hint line visuals along the line the user is defining
 		/// </summary>
 		public bool centeredScrolling { get; set; }
+
+		IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
+		IControlHapticsProvider IInjectedFunctionality<IControlHapticsProvider>.provider { get; set; }
+		IRayToNodeProvider IInjectedFunctionality<IRayToNodeProvider>.provider { get; set; }
 
 		void Awake()
 		{

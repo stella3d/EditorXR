@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Handles;
@@ -104,6 +104,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public int extraSpace { get; private set; }
 
 		public bool isStillSettling { private set; get; }
+
+		public IUsesViewerBodyProvider provider { get; set; }
 
 		public override void Setup(HierarchyData data)
 		{

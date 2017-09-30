@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using ListView;
@@ -58,6 +58,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public byte stencilRef { get; set; }
 
 		public event Action<List<InspectorData>, PropertyData> arraySizeChanged;
+
+		public IUsesGameObjectLockingProvider provider { get; set; }
 
 		protected override void Setup()
 		{

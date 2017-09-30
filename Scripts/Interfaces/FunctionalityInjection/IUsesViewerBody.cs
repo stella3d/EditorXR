@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -7,31 +6,43 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Provides access to checks that can test against the viewer's body
 	/// </summary>
-	public interface IUsesViewerBody
+	public interface IUsesViewerBody : IInjectedFunctionality<IUsesViewerBodyProvider>
 	{
 	}
 
-	public static class IUsesViewerBodyMethods
+	public interface IUsesViewerBodyProvider
 	{
-		internal static Func<Transform, bool> isOverShoulder { get; set; }
-		internal static Func<Transform, bool> isAboveHead { get; set; }
-
 		/// <summary>
 		/// Returns whether the specified transform is over the viewer's shoulders and behind the head
 		/// </summary>
 		/// <param name="rayOrigin">The rayOrigin to test</param>
-		public static bool IsOverShoulder(this IUsesViewerBody obj, Transform rayOrigin)
+		bool IsOverShoulder(Transform rayOrigin);
+
+		/// <summary>
+		/// Returns whether the specified transform is over the viewer's head
+		/// </summary>
+		/// <param name="rayOrigin">The rayOrigin to test</param>
+		bool IsAboveHead(Transform rayOrigin);
+	}
+
+	public static class IUsesViewerBodyMethods
+	{
+		/// <summary>
+		/// Returns whether the specified transform is over the viewer's shoulders and behind the head
+		/// </summary>
+		/// <param name="rayOrigin">The rayOrigin to test</param>
+		public static bool IsOverShoulder(this IUsesViewerBody @this, Transform rayOrigin)
 		{
-			return isOverShoulder(rayOrigin);
+			return @this.provider.IsOverShoulder(rayOrigin);
 		}
 
 		/// <summary>
 		/// Returns whether the specified transform is over the viewer's head
 		/// </summary>
 		/// <param name="rayOrigin">The rayOrigin to test</param>
-		public static bool IsAboveHead(this IUsesViewerBody obj, Transform rayOrigin)
+		public static bool IsAboveHead(this IUsesViewerBody @this, Transform rayOrigin)
 		{
-			return isAboveHead(rayOrigin);
+			return @this.provider.IsAboveHead(rayOrigin);
 		}
 	}
 }

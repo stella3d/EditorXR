@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class Tools : Nested, IInterfaceConnector, IConnectInterfaces
+		class Tools : Nested, IInterfaceConnector, IConnectInterfaces, ILinkedObjectProvider, ISelectToolProvider
 		{
 			internal class ToolData
 			{
@@ -26,13 +26,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			readonly Dictionary<Type, List<ILinkedObject>> m_LinkedObjects = new Dictionary<Type, List<ILinkedObject>>();
 
+			public IConnectInterfacesProvider provider { get; set; }
+
 			public Tools()
 			{
 				allTools = ObjectUtils.GetImplementationsOfInterface(typeof(ITool)).ToList();
-
-				ILinkedObjectMethods.isSharedUpdater = IsSharedUpdater;
-				ISelectToolMethods.selectTool = SelectTool;
-				ISelectToolMethods.isToolActive = IsToolActive;
 			}
 
 			public void ConnectInterface(object @object, object userData = null)
@@ -71,7 +69,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			bool IsSharedUpdater(ILinkedObject linkedObject)
+			public bool IsSharedUpdater(ILinkedObject linkedObject)
 			{
 				var type = linkedObject.GetType();
 				return m_LinkedObjects[type].IndexOf(linkedObject) == 0;
@@ -184,7 +182,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			static bool IsToolActive(Transform targetRayOrigin, Type toolType)
+			public bool IsToolActive(Transform targetRayOrigin, Type toolType)
 			{
 				var result = false;
 
@@ -195,7 +193,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return result;
 			}
 
-			internal bool SelectTool(Transform rayOrigin, Type toolType, bool despawnOnReselect = true)
+			public bool SelectTool(Transform rayOrigin, Type toolType, bool despawnOnReselect = true)
 			{
 				var result = false;
 				var deviceInputModule = evr.GetModule<DeviceInputModule>();

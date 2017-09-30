@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -59,6 +59,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Transform tooltipSource { get { return rayOrigin; } }
 		public TextAlignment tooltipAlignment { get { return TextAlignment.Center; } }
 
+		IRequestFeedbackProvider IInjectedFunctionality<IRequestFeedbackProvider>.provider { get; set; }
+		ISetManipulatorsVisibleProvider IInjectedFunctionality<ISetManipulatorsVisibleProvider>.provider { get; set; }
+		ILinkedObjectProvider IInjectedFunctionality<ILinkedObjectProvider>.provider { get; set; }
+		IGetManiuplatorDragStateProvider IInjectedFunctionality<IGetManiuplatorDragStateProvider>.provider { get; set; }
+		IRayToNodeProvider IInjectedFunctionality<IRayToNodeProvider>.provider { get; set; }
+
 		void Start()
 		{
 			m_NormalRayColor = this.GetDefaultRayColor(rayOrigin);
@@ -113,7 +119,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			if (this.IsSharedUpdater(this))
 			{
-				this.SetManipulatorsVisible(this, !m_MultiSelect);
+				this.SetManipulatorsVisible(!m_MultiSelect);
 
 				var directSelection = this.GetDirectSelection();
 

@@ -6,19 +6,14 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class SceneObjectModule : MonoBehaviour, IUsesSpatialHash
+	sealed class SceneObjectModule : MonoBehaviour, IUsesSpatialHash, IPlaceSceneObjectProvider, IPlaceSceneObjectsProvider, IDeleteSceneObjectProvider
 	{
 		const float k_InstantiateFOVDifference = -5f;
 		const float k_GrowDuration = 0.5f;
 
 		public Func<Transform, Vector3, bool> tryPlaceObject;
 
-		void Awake()
-		{
-			IDeleteSceneObjectMethods.deleteSceneObject = DeleteSceneObject;
-			IPlaceSceneObjectMethods.placeSceneObject = PlaceSceneObject;
-			IPlaceSceneObjectsMethods.placeSceneObjects = PlaceSceneObjects;
-		}
+		public IUsesSpatialHashProvider provider { get; set; }
 
 		public void PlaceSceneObject(Transform obj, Vector3 targetScale)
 		{

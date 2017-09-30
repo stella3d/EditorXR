@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -133,6 +133,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public event Action buttonClicked;
 		public event Action<Transform, Type> buttonSelected;
 		public event Action closeMenu;
+
+		IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
+		IInstantiateUIProvider IInjectedFunctionality<IInstantiateUIProvider>.provider { get; set; }
+		IConnectInterfacesProvider IInjectedFunctionality<IConnectInterfacesProvider>.provider { get; set; }
+		IControlSpatialHintingProvider IInjectedFunctionality<IControlSpatialHintingProvider>.provider { get; set; }
 
 		void Awake()
 		{

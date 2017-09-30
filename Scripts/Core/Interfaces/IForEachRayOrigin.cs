@@ -1,22 +1,24 @@
-﻿#if UNITY_EDITOR
-using System;
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
 	delegate void ForEachRayOriginCallback(Transform rayOrigin);
 
-	interface IForEachRayOrigin
+	interface IForEachRayOrigin : IInjectedFunctionality<IForEachRayOriginProvider>
 	{
+	}
+
+	interface IForEachRayOriginProvider
+	{
+		void ForEachRayOrigin(ForEachRayOriginCallback callback);
 	}
 
 	static class IForEachRayOriginMethods
 	{
-		internal static Action<ForEachRayOriginCallback> forEachRayOrigin { get; set; }
-
 		public static void ForEachRayOrigin(this IForEachRayOrigin obj, ForEachRayOriginCallback callback)
 		{
-			forEachRayOrigin(callback);
+			obj.provider.ForEachRayOrigin(callback);
 		}
 	}
 }

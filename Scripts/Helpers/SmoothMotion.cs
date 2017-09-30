@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Helpers
@@ -38,6 +38,8 @@ namespace UnityEditor.Experimental.EditorVR.Helpers
 
 		Quaternion m_LazyRotation;
 		Vector3 m_LazyPosition;
+
+		public IUsesViewerScaleProvider provider { get; set; }
 
 		void Start()
 		{

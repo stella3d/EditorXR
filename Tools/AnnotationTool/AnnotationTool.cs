@@ -7,7 +7,6 @@ using UnityEditor;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
-using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -152,6 +151,12 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 			}
 		}
 	}
+
+	IRayVisibilitySettingsProvider IInjectedFunctionality<IRayVisibilitySettingsProvider>.provider { get; set; }
+	IInstantiateUIProvider IInjectedFunctionality<IInstantiateUIProvider>.provider { get; set; }
+	IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
+	IUsesSpatialHashProvider IInjectedFunctionality<IUsesSpatialHashProvider>.provider { get; set; }
+	ILinkedObjectProvider IInjectedFunctionality<ILinkedObjectProvider>.provider { get; set; }
 
 	void OnDestroy()
 	{

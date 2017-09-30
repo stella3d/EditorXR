@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	partial class EditorVR
 	{
 		class MiniWorlds : Nested, ILateBindInterfaceMethods<DirectSelection>, IPlaceSceneObjects, IUsesViewerScale,
-			IUsesSpatialHash
+			IUsesSpatialHash, IRayVisibilitySettings
 		{
 			internal class MiniWorldRay
 			{
@@ -177,11 +177,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			bool m_MiniWorldIgnoreListDirty = true;
 
-			// Local method use only -- created here to reduce garbage collection
-			readonly List<Renderer> m_IgnoreList = new List<Renderer>();
-
 			public Dictionary<Transform, MiniWorldRay> rays { get { return m_Rays; } }
 			public List<IMiniWorld> worlds { get { return m_Worlds; } }
+			IPlaceSceneObjectsProvider IInjectedFunctionality<IPlaceSceneObjectsProvider>.provider { get; set; }
+			IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
+			IUsesSpatialHashProvider IInjectedFunctionality<IUsesSpatialHashProvider>.provider { get; set; }
+			IRayVisibilitySettingsProvider IInjectedFunctionality<IRayVisibilitySettingsProvider>.provider { get; set; }
+
+			// Local method use only -- created here to reduce garbage collection
+			readonly List<Renderer> m_IgnoreList = new List<Renderer>();
 
 			public MiniWorlds()
 			{
@@ -476,10 +480,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 
 					if (isContained && !wasContained)
-						Rays.AddVisibilitySettings(rayOrigin, this, false, true);
+						this.AddRayVisibilitySettings(rayOrigin, this, false, true);
 
 					if (!isContained && wasContained)
-						Rays.RemoveVisibilitySettings(rayOrigin, this);
+						this.RemoveRayVisibilitySettings(rayOrigin, this);
 
 					m_RayWasContained[rayOrigin] = isContained;
 				});
@@ -587,7 +591,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						miniWorldRay.dragStartedOutside = false;
 
 						if (!miniWorldRay.isContained)
-							Rays.RemoveVisibilitySettings(rayOrigin, this);
+							this.RemoveRayVisibilitySettings(rayOrigin, this);
 					}
 				}
 			}

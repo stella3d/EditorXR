@@ -1,25 +1,29 @@
-﻿#if UNITY_EDITOR
-using System;
-
+#if UNITY_EDITOR
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Provide the ability to request a new unique stencil ref value
 	/// </summary>
-	public interface IRequestStencilRef
+	public interface IRequestStencilRef : IInjectedFunctionality<IRequestStencilRefProvider>
 	{
+	}
+
+	public interface IRequestStencilRefProvider
+	{
+		/// <summary>
+		/// Get a new unique stencil ref value
+		/// </summary>
+		byte RequestStencilRef();
 	}
 
 	public static class IRequestStencilRefMethods
 	{
-		internal static Func<byte> requestStencilRef { get; set; }
-
 		/// <summary>
 		/// Get a new unique stencil ref value
 		/// </summary>
 		public static byte RequestStencilRef(this IRequestStencilRef obj)
 		{
-			return requestStencilRef();
+			return obj.provider.RequestStencilRef();
 		}
 	}
 }

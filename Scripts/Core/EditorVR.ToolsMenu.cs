@@ -7,18 +7,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class ToolsMenu : Nested
+		class ToolsMenu : Nested, IInterfaceConnector, IToolsMenuProvider, IPreviewInToolsMenuButtonProvider
 		{
-			public ToolsMenu()
-			{
-				IToolsMenuMethods.mainMenuActivatorSelected = OnMainMenuActivatorSelected;
-				IToolsMenuMethods.selectTool = OnToolButtonClicked;
-
-				IPreviewInToolMenuButtonMethods.previewInToolMenuButton = PreviewToolInToolMenuButton;
-				IPreviewInToolMenuButtonMethods.clearToolMenuButtonPreview = ClearToolMenuButtonPreview;
-			}
-
-			static void PreviewToolInToolMenuButton (Transform rayOrigin, Type toolType, string toolDescription)
+			public void PreviewInToolMenuButton(Transform rayOrigin, Type toolType, string toolDescription)
 			{
 				// Prevents menu buttons of types other than ITool from triggering any ToolMenuButton preview actions
 				if (!toolType.GetInterfaces().Contains(typeof(ITool)))
@@ -35,26 +26,41 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				});
 			}
 
-			static void ClearToolMenuButtonPreview()
+			public void ClearToolMenuButtonPreview()
 			{
-				Rays.ForEachProxyDevice((deviceData) =>
+				Rays.ForEachProxyDevice(deviceData =>
 				{
 					deviceData.toolsMenu.PreviewToolsMenuButton.previewToolType = null;
 				});
 			}
 
-			static void OnToolButtonClicked(Transform rayOrigin, Type toolType)
+			public void SelectTool(Transform rayOrigin, Type toolType)
 			{
 				if (toolType == typeof(IMainMenu))
-					OnMainMenuActivatorSelected(rayOrigin);
+					MainMenuActivatorSelected(rayOrigin);
 				else
 					evr.GetNestedModule<Tools>().SelectTool(rayOrigin, toolType);
 			}
 
-			static void OnMainMenuActivatorSelected(Transform rayOrigin)
+			public void MainMenuActivatorSelected(Transform rayOrigin)
 			{
 				var targetToolRayOrigin = evr.m_DeviceData.FirstOrDefault(data => data.rayOrigin != rayOrigin).rayOrigin;
 				Menus.OnMainMenuActivatorSelected(rayOrigin, targetToolRayOrigin);
+			}
+
+			public void ConnectInterface(object @object, object userData = null)
+			{
+				var toolsMenu = @object as IInjectedFunctionality<IToolsMenuProvider>;
+				if (toolsMenu != null)
+					toolsMenu.provider = this;
+
+				var previewInToolsMenuButton = @object as IPreviewInToolsMenuButton;
+				if (previewInToolsMenuButton != null)
+					previewInToolsMenuButton.provider = this;
+			}
+
+			public void DisconnectInterface(object @object, object userData = null)
+			{
 			}
 		}
 	}

@@ -106,6 +106,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 			}
 		}
 
+		IConnectInterfacesProvider IInjectedFunctionality<IConnectInterfacesProvider>.provider { get; set; }
+		IInstantiateUIProvider IInjectedFunctionality<IInstantiateUIProvider>.provider { get; set; }
+		ICreateWorkspaceProvider IInjectedFunctionality<ICreateWorkspaceProvider>.provider { get; set; }
+		IControlHapticsProvider IInjectedFunctionality<IControlHapticsProvider>.provider { get; set; }
+		IRayToNodeProvider IInjectedFunctionality<IRayToNodeProvider>.provider { get; set; }
+		IPreviewInToolsMenuButtonProvider IInjectedFunctionality<IPreviewInToolsMenuButtonProvider>.provider { get; set; }
+		ISelectToolProvider IInjectedFunctionality<ISelectToolProvider>.provider { get; set; }
+
 		void Awake()
 		{
 			m_MainMenuUI = this.InstantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();

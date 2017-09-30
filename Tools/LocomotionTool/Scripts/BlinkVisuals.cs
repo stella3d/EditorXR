@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
@@ -58,6 +58,7 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 	bool m_Visible;
 	float m_TransitionAmount;
 	Coroutine m_VisibilityCoroutine;
+	IUsesViewerScaleProvider m_Provider;
 
 	public Vector3? targetPosition { get; private set; }
 
@@ -85,6 +86,9 @@ public class BlinkVisuals : MonoBehaviour, IUsesViewerScale, IRaycast
 			}
 		}
 	}
+
+	IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
+	IRaycastProvider IInjectedFunctionality<IRaycastProvider>.provider { get; set; }
 
 	void Awake()
 	{

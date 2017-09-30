@@ -164,6 +164,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		public bool hovering { get; private set; }
 
 
+		IInstantiateUIProvider IInjectedFunctionality<IInstantiateUIProvider>.provider { get; set; }
+		IConnectInterfacesProvider IInjectedFunctionality<IConnectInterfacesProvider>.provider { get; set; }
+
 		void Awake()
 		{
 			m_MenuFacesMaterial = MaterialUtils.GetMaterialClone(m_MenuFaceRotationOrigin.GetComponent<MeshRenderer>());

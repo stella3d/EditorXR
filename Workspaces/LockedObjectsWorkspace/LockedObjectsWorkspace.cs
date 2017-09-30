@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
@@ -45,6 +45,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Action<GameObject, bool> setLocked { get; set; }
 		public Func<GameObject, bool> isLocked { get; set; }
+
+		public IUsesGameObjectLockingProvider provider { get; set; }
 
 		public override void Setup()
 		{

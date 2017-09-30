@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using ListView;
 using System;
 using System.Collections;
@@ -26,6 +26,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Action<TIndex, Transform, bool> setRowGrabbed { protected get; set; }
 		public Func<Transform, ListViewItem<TData, TIndex>> getGrabbedRow { protected get; set; }
+
+		public IUsesViewerScaleProvider provider { get; set; }
 
 		protected virtual void OnDragStarted(BaseHandle handle, HandleEventData eventData)
 		{

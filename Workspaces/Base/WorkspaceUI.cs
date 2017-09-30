@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -424,6 +424,10 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 				return adjustedBounds;
 			}
 		}
+
+
+		IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
+		IGetPointerLengthProvider IInjectedFunctionality<IGetPointerLengthProvider>.provider { get; set; }
 
 		void Awake()
 		{

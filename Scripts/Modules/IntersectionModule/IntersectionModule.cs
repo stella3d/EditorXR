@@ -8,6 +8,18 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
 	{
+		class RayIntersection
+		{
+			public GameObject go;
+			public float distance;
+		}
+
+		struct SortableRenderer
+		{
+			public Renderer renderer;
+			public float distance;
+		}
+
 		const int k_MaxTestsPerTester = 250;
 
 		readonly Dictionary<IntersectionTester, Renderer> m_IntersectedObjects = new Dictionary<IntersectionTester, Renderer>();
@@ -17,12 +29,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		SpatialHash<Renderer> m_SpatialHash; 
 		MeshCollider m_CollisionTester;
 
-		class RayIntersection
-		{
-			public GameObject go;
-			public float distance;
-		}
-
 		public bool ready { get { return m_SpatialHash != null; } }
 		public List<IntersectionTester> testers { get { return m_Testers; } }
 		public List<Renderer> allObjects { get { return m_SpatialHash == null ? null : m_SpatialHash.allObjects; } }
@@ -31,12 +37,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		// Local method use only -- created here to reduce garbage collection
 		readonly List<Renderer> m_Intersections = new List<Renderer>();
 		readonly List<SortableRenderer> m_SortedIntersections = new List<SortableRenderer>();
-		
-		struct SortableRenderer
-		{
-			public Renderer renderer;
-			public float distance;
-		}
+
+		public IUsesGameObjectLockingProvider provider { get; set; }
 
 		void Awake()
 		{

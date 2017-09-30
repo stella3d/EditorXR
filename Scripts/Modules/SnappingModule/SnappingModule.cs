@@ -364,6 +364,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public Transform rayOrigin { get { return null; } }
 
+		IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
+		IRaycastProvider IInjectedFunctionality<IRaycastProvider>.provider { get; set; }
+
 		// Local method use only -- created here to reduce garbage collection
 		readonly List<Renderer> m_CombinedIgnoreList = new List<Renderer>();
 		Transform[] m_SingleTransformArray = new Transform[1];

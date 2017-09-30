@@ -24,6 +24,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		float m_ProjectFolderLoadStartTime;
 		float m_ProjectFolderLoadYieldTime;
 
+		public IConnectInterfacesProvider provider { get; set; }
+
 		void OnEnable()
 		{
 			EditorApplication.projectWindowChanged += UpdateProjectFolders;

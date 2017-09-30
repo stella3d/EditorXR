@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -129,6 +129,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Transform leftRayOrigin { protected get; set; }
 		public Transform rightRayOrigin { protected get; set; }
+
+		IInstantiateUIProvider IInjectedFunctionality<IInstantiateUIProvider>.provider { get; set; }
+		IConnectInterfacesProvider IInjectedFunctionality<IConnectInterfacesProvider>.provider { get; set; }
+		IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
+		IControlHapticsProvider IInjectedFunctionality<IControlHapticsProvider>.provider { get; set; }
+		IRayToNodeProvider IInjectedFunctionality<IRayToNodeProvider>.provider { get; set; }
 
 		public virtual void Setup()
 		{

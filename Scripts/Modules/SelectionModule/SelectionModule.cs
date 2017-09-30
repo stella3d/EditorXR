@@ -20,6 +20,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public event Action<Transform> selected;
 
+		IUsesGameObjectLockingProvider IInjectedFunctionality<IUsesGameObjectLockingProvider>.provider { get; set; }
+		IControlHapticsProvider IInjectedFunctionality<IControlHapticsProvider>.provider { get; set; }
+		IRayToNodeProvider IInjectedFunctionality<IRayToNodeProvider>.provider { get; set; }
+
 		void Awake()
 		{
 			ISelectObjectMethods.getSelectionCandidate = GetSelectionCandidate;

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using UnityEngine;
 
@@ -7,7 +7,7 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Gives decorated class Tools Menu functionality
 	/// </summary>
-	public interface IToolsMenu : IUsesMenuOrigins, ICustomActionMap, IUsesNode, ISelectTool
+	public interface IToolsMenu : IUsesMenuOrigins, ICustomActionMap, IUsesNode, ISelectTool, IInjectedFunctionality<IToolsMenuProvider>
 	{
 		/// <summary>
 		/// Bool denoting that the alternate menu (radial menu, etc) is currently visible
@@ -43,18 +43,31 @@ namespace UnityEditor.Experimental.EditorVR
 		bool mainMenuActivatorInteractable { set; }
 	}
 
-	public static class IToolsMenuMethods
+	public interface IToolsMenuProvider
 	{
-		public static Action<Transform> mainMenuActivatorSelected { get; set; }
-		public static Action<Transform, Type> selectTool { get; set; }
-
 		/// <summary>
 		/// Called when selecting the main menu activator
 		/// </summary>
 		/// <param name="rayOrigin">This menu's RayOrigin</param>
-		public static void MainMenuActivatorSelected(this IToolsMenu obj, Transform rayOrigin)
+		void MainMenuActivatorSelected(Transform rayOrigin);
+
+		/// <summary>
+		/// Selects a tool, based on type, from a Tools Menu Button
+		/// </summary>
+		/// <param name="rayOrigin">This menu's RayOrigin</param>
+		/// <param name="type">The type of the tool that is to be selected</param>
+		void SelectTool(Transform rayOrigin, Type type);
+	}
+
+	public static class IToolsMenuMethods
+	{
+		/// <summary>
+		/// Called when selecting the main menu activator
+		/// </summary>
+		/// <param name="rayOrigin">This menu's RayOrigin</param>
+		public static void MainMenuActivatorSelected(this IInjectedFunctionality<IToolsMenuProvider> @this, Transform rayOrigin)
 		{
-			mainMenuActivatorSelected(rayOrigin);
+			@this.provider.MainMenuActivatorSelected(rayOrigin);
 		}
 
 		/// <summary>
@@ -62,9 +75,9 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		/// <param name="rayOrigin">This menu's RayOrigin</param>
 		/// <param name="type">The type of the tool that is to be selected</param>
-		public static void SelectTool(this IToolsMenu obj, Transform rayOrigin, Type type)
+		public static void SelectTool(this IInjectedFunctionality<IToolsMenuProvider> @this, Transform rayOrigin, Type type)
 		{
-			selectTool(rayOrigin, type);
+			@this.provider.SelectTool(rayOrigin, type);
 		}
 	}
 }

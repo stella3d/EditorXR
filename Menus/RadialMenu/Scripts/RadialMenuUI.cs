@@ -172,7 +172,9 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		bool m_SemiTransparent;
 
 		public event Action buttonHovered;
-		public event Action buttonClicked; 
+		public event Action buttonClicked;
+
+		public IConnectInterfacesProvider provider { get; set; }
 
 		void Update()
 		{

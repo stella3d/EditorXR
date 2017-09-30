@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[SerializeField]
 		Camera m_EventCameraPrefab;
 
-		class UI : Nested, IInterfaceConnector, IConnectInterfaces
+		class UI : Nested, IInterfaceConnector, IConnectInterfaces, IInstantiateUIProvider, ISetManipulatorsVisibleProvider, IGetManiuplatorDragStateProvider
 		{
 			const byte k_MinStencilRef = 2;
 
@@ -37,13 +37,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			readonly List<IManipulatorController> m_ManipulatorControllers = new List<IManipulatorController>();
 			readonly HashSet<ISetManipulatorsVisible> m_ManipulatorsHiddenRequests = new HashSet<ISetManipulatorsVisible>();
 
-			public UI()
-			{
-				IInstantiateUIMethods.instantiateUI = InstantiateUI;
-				IRequestStencilRefMethods.requestStencilRef = RequestStencilRef;
-				ISetManipulatorsVisibleMethods.setManipulatorsVisible = SetManipulatorsVisible;
-				IGetManipulatorDragStateMethods.getManipulatorDragState = GetManipulatorDragState;
-			}
+			public IConnectInterfacesProvider provider { get; set; }
 
 			public void ConnectInterface(object @object, object userData = null)
 			{
@@ -71,6 +65,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 					usesStencilRef.stencilRef = stencilRef ?? RequestStencilRef();
 				}
+
+				var instantiateUI = @object as IInstantiateUI;
+				if (instantiateUI != null)
+					instantiateUI.provider = this;
+
+				var setManipulatorsVisible = @object as ISetManipulatorsVisible;
+				if (setManipulatorsVisible != null)
+					setManipulatorsVisible.provider = this;
+
+				var getManipulatorDragState = @object as IGetManipulatorDragState;
+				if (getManipulatorDragState != null)
+					getManipulatorDragState.provider = this;
 			}
 
 			public void DisconnectInterface(object @object, object userData = null)
@@ -98,7 +104,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				inputModule.preProcessRaycastSource = evr.GetNestedModule<Rays>().PreProcessRaycastSource;
 			}
 
-			internal GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null)
+			public GameObject InstantiateUI(GameObject prefab, Transform parent = null, bool worldPositionStays = true, Transform rayOrigin = null)
 			{
 				var go = ObjectUtils.Instantiate(prefab, parent ? parent : evr.transform, worldPositionStays);
 				foreach (var canvas in go.GetComponentsInChildren<Canvas>())
@@ -119,7 +125,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return go;
 			}
 
-			void SetManipulatorsVisible(ISetManipulatorsVisible setter, bool visible)
+			public void SetManipulatorsVisible(ISetManipulatorsVisible setter, bool visible)
 			{
 				if (visible)
 					m_ManipulatorsHiddenRequests.Remove(setter);
@@ -127,7 +133,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					m_ManipulatorsHiddenRequests.Add(setter);
 			}
 
-			bool GetManipulatorDragState()
+			public bool GetManipulatorDragState()
 			{
 				return m_ManipulatorControllers.Any(controller => controller.manipulatorDragging);
 			}

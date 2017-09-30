@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
@@ -67,6 +67,8 @@ namespace ListView
 		protected Vector3 m_Extents;
 
 		protected abstract float listHeight { get; }
+
+		public IControlHapticsProvider provider { get; set; }
 
 		public virtual Vector3 size
 		{

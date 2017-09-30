@@ -1,13 +1,15 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
 {
 	[ActionMenuItem("Paste", ActionMenuItemAttribute.DefaultActionSectionName, 6)]
-	sealed class Paste : BaseAction, IUsesSpatialHash, IUsesViewerScale
+	sealed class Paste : BaseAction, IUsesSpatialHash
 	{
 		static float s_BufferDistance;
+
+		public IUsesSpatialHashProvider provider { get; set; }
 
 		public static void SetBufferDistance(Transform[] transforms)
 		{
@@ -16,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 				var bounds = ObjectUtils.GetBounds(transforms);
 
 				s_BufferDistance = bounds.size != Vector3.zero ? (bounds.center - CameraUtils.GetMainCamera().transform.position).magnitude : 1f;
-				s_BufferDistance /= IUsesViewerScaleMethods.getViewerScale(); // Normalize this value in case viewer scale changes before paste happens
+				s_BufferDistance /= IUsesViewerScaleMethods.GetViewerScale(); // Normalize this value in case viewer scale changes before paste happens
 			}
 		}
 

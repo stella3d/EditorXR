@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,8 +10,8 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
-	sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IConnectInterfaces, IInstantiateUI,
-		IControlHaptics, IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, IRayVisibilitySettings, IUsesRayOrigin
+	sealed class ToolsMenu : MonoBehaviour, IToolsMenu, IConnectInterfaces, IInstantiateUI, IControlHaptics,
+		IUsesViewerScale, IControlSpatialScrolling, IControlSpatialHinting, IRayVisibilitySettings, IUsesRayOrigin
 	{
 		const int k_ActiveToolOrderPosition = 1; // A active-tool button position used in this particular ToolButton implementation
 		const int k_MaxButtonCount = 16;
@@ -60,6 +60,16 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		{
 			set { PreviewToolsMenuButton.interactable = value; }
 		}
+
+		IToolsMenuProvider IInjectedFunctionality<IToolsMenuProvider>.provider { get; set; }
+		IConnectInterfacesProvider IInjectedFunctionality<IConnectInterfacesProvider>.provider { get; set; }
+		IInstantiateUIProvider IInjectedFunctionality<IInstantiateUIProvider>.provider { get; set; }
+		IControlHapticsProvider IInjectedFunctionality<IControlHapticsProvider>.provider { get; set; }
+		IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
+		IControlSpatialScrollingProvider IInjectedFunctionality<IControlSpatialScrollingProvider>.provider { get; set; }
+		IControlSpatialHintingProvider IInjectedFunctionality<IControlSpatialHintingProvider>.provider { get; set; }
+		IRayVisibilitySettingsProvider IInjectedFunctionality<IRayVisibilitySettingsProvider>.provider { get; set; }
+		ISelectToolProvider IInjectedFunctionality<ISelectToolProvider>.provider { get; set; }
 
 		void Awake()
 		{

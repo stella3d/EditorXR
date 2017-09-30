@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	{
 		const float k_MainMenuAutoHideDelay = 0.125f;
 		const float k_MainMenuAutoShowDelay = 0.25f;
-		class Menus : Nested, IInterfaceConnector, ILateBindInterfaceMethods<Tools>, IConnectInterfaces
+		class Menus : Nested, IInterfaceConnector, ILateBindInterfaceMethods<Tools>, IConnectInterfaces, IUsesViewerScale
 		{
 			internal class MenuHideData
 			{
@@ -31,6 +31,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider> m_SettingsMenuProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuProvider>();
 			readonly Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider> m_SettingsMenuItemProviders = new Dictionary<KeyValuePair<Type, Transform>, ISettingsMenuItemProvider>();
 			List<Type> m_MainMenuTools;
+
+			IConnectInterfacesProvider IInjectedFunctionality<IConnectInterfacesProvider>.provider { get; set; }
+			IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly List<DeviceData> m_ActiveDeviceData = new List<DeviceData>();
@@ -252,6 +255,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					}
 				}
 
+				var rays = evr.GetNestedModule<Rays>();
 				// Apply MenuHideFlags to UI visibility
 				foreach (var deviceData in m_ActiveDeviceData)
 				{
@@ -281,7 +285,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						customMenu.menuHideFlags = deviceData.menuHideData[customMenu].hideFlags;
 
 					UpdateAlternateMenuForDevice(deviceData);
-					Rays.UpdateRayForDevice(deviceData, deviceData.rayOrigin);
+					rays.UpdateRayForDevice(deviceData, deviceData.rayOrigin);
 				}
 
 				// Reset Temporary states and set lastHideFlags
@@ -298,7 +302,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			void CheckDirectSelection(DeviceData deviceData, Dictionary<IMenu, MenuHideData> menuHideData, bool alternateMenuVisible)
 			{
-				var viewerScale = Viewer.GetViewerScale();
+				var viewerScale = this.GetViewerScale();
 				var directSelection = evr.GetNestedModule<DirectSelection>();
 				var rayOrigin = deviceData.rayOrigin;
 				var rayOriginPosition = rayOrigin.position;
@@ -347,7 +351,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var hoveringWorkspace = false;
 				var menuTransform = menu.menuContent.transform;
 				var menuRotation = menuTransform.rotation;
-				var viewerScale = Viewer.GetViewerScale();
+				var viewerScale = this.GetViewerScale();
 				var center = menuTransform.position + menuRotation * menuBounds.center * viewerScale;
 				if (Physics.OverlapBoxNonAlloc(center, menuBounds.extents * viewerScale, m_WorkspaceOverlaps, menuRotation) > 0)
 				{
@@ -388,7 +392,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					if (go.transform.IsChildOf(deviceData.rayOrigin)) // Don't let UI on this hand block the menu
 						return false;
 
-					var scaledPointerDistance = eventData.pointerCurrentRaycast.distance / Viewer.GetViewerScale();
+					var scaledPointerDistance = eventData.pointerCurrentRaycast.distance / IUsesViewerScaleMethods.GetViewerScale();
 					var menuHideFlags = deviceData.menuHideData;
 					var mainMenu = deviceData.mainMenu;
 					IMenu openMenu = mainMenu;

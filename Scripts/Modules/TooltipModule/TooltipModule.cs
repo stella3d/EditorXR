@@ -45,6 +45,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		Vector3 m_TooltipScale;
 		Color m_OriginalBackgroundColor;
 
+		public IUsesViewerScaleProvider provider { get; set; }
+
 		// Local method use only -- created here to reduce garbage collection
 		readonly List<ITooltip> m_TooltipsToHide = new List<ITooltip>();
 

@@ -84,6 +84,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			internal virtual void OnDestroy() { }
 		}
 
+		public IConnectInterfacesProvider provider { get; set; }
+
 		static void ResetPreferences()
 		{
 			EditorPrefs.DeleteKey(k_ShowGameObjects);
@@ -131,6 +133,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			HandleInitialization();
 
 			m_Interfaces = (Interfaces)AddNestedModule(typeof(Interfaces));
+			provider = m_Interfaces;
 			AddModule<SerializedPreferencesModule>(); // Added here in case any nested modules have preference serialization
 
 			var nestedClassTypes = ObjectUtils.GetExtensionsOfClass(typeof(Nested));
@@ -224,7 +227,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					obj.rotation = referenceTransform.rotation * Quaternion.Inverse(miniWorld.miniWorldTransform.rotation) * obj.rotation;
 					obj.localScale = Vector3.Scale(Vector3.Scale(obj.localScale, referenceTransform.localScale), miniWorld.miniWorldTransform.lossyScale.Inverse());
 
-					spatialHashModule.AddObject(obj.gameObject);
+					spatialHashModule.AddToSpatialHash(obj.gameObject);
 					return true;
 				}
 
@@ -344,9 +347,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		{
 			GetNestedModule<Viewer>().UpdateCamera();
 
-			Rays.UpdateRaycasts();
-
-			GetNestedModule<Rays>().UpdateDefaultProxyRays();
+			var rays = GetNestedModule<Rays>();
+			rays.UpdateRaycasts();
+			rays.UpdateDefaultProxyRays();
 
 			GetNestedModule<DirectSelection>().UpdateDirectSelection();
 

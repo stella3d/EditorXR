@@ -1,22 +1,26 @@
 #if UNITY_EDITOR
-using System;
-
 namespace UnityEditor.Experimental.EditorVR
 {
-	public interface IResetWorkspaces
+	public interface IResetWorkspaces : IInjectedFunctionality<IResetWorkspacesProvider>
 	{
+	}
+
+	public interface IResetWorkspacesProvider
+	{
+		/// <summary>
+		/// Reset all open workspaces
+		/// </summary>
+		void ResetWorkspaceRotations();
 	}
 
 	public static class IResetWorkspacesMethods
 	{
-		internal static Action resetWorkspaceRotations { get; set; }
-
 		/// <summary>
 		/// Reset all open workspaces
 		/// </summary>
 		public static void ResetWorkspaceRotations(this IResetWorkspaces obj)
 		{
-			resetWorkspaceRotations();
+			obj.provider.ResetWorkspaceRotations();
 		}
 	}
 }

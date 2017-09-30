@@ -11,7 +11,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 	{
 		public List<ActionMenuData> menuActions { get { return m_MenuActions; } }
 		List<ActionMenuData> m_MenuActions = new List<ActionMenuData>();
-		List<IAction> m_Actions;
+
+		public IConnectInterfacesProvider provider { get; set; }
 
 		public void RemoveActions(List<IAction> actions)
 		{
@@ -27,7 +28,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		void SpawnActions()
 		{
 			IEnumerable<Type> actionTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IAction));
-			m_Actions = new List<IAction>();
 			foreach (Type actionType in actionTypes)
 			{
 				// Don't treat vanilla actions or tool actions as first class actions
@@ -51,8 +51,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 					m_MenuActions.Add(actionMenuData);
 				}
-
-				m_Actions.Add(action);
 			}
 
 			m_MenuActions.Sort((x, y) => y.priority.CompareTo(x.priority));

@@ -1,11 +1,16 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
 {
-	interface IGetPointerLength
+	interface IGetPointerLength : IInjectedFunctionality<IGetPointerLengthProvider>
 	{
+	}
+
+	interface IGetPointerLengthProvider
+	{
+		float GetPointerLength(Transform rayOrigin);
 	}
 
 	static class IGetPointerLengthMethods
@@ -14,7 +19,7 @@ namespace UnityEditor.Experimental.EditorVR
 
 		public static float GetPointerLength(this IGetPointerLength obj, Transform rayOrigin)
 		{
-			return getPointerLength(rayOrigin);
+			return obj.provider.GetPointerLength(rayOrigin);
 		}
 	}
 }

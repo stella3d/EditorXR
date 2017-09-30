@@ -142,6 +142,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public Action<Transform> preProcessRaycastSource { private get; set; }
 
+		IGetPointerLengthProvider IInjectedFunctionality<IGetPointerLengthProvider>.provider { get; set; }
+		IConnectInterfacesProvider IInjectedFunctionality<IConnectInterfacesProvider>.provider { get; set; }
+
 		// Local method use only -- created here to reduce garbage collection
 		RayEventData m_TempRayEvent;
 

@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class LockModule : MonoBehaviour, IActions, ISelectionChanged
+	sealed class LockModule : MonoBehaviour, IActions, ISelectionChanged, IUsesGameObjectLockingProvider
 	{
 		class LockModuleAction : IAction, ITooltip
 		{
@@ -39,13 +39,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Awake()
 		{
-			IUsesGameObjectLockingMethods.setLocked = SetLocked;
-			IUsesGameObjectLockingMethods.isLocked = IsLocked;
-
 			m_LockModuleAction.execute = ToggleLocked;
 			UpdateAction(null);
 
-			actions = new List<IAction>() { m_LockModuleAction };
+			actions = new List<IAction> { m_LockModuleAction };
 		}
 
 		public bool IsLocked(GameObject go)

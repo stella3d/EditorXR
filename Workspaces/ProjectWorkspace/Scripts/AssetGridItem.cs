@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Data;
@@ -153,6 +153,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		}
 
 		public float scaleFactor { private get; set; }
+
+		IPlaceSceneObjectProvider IInjectedFunctionality<IPlaceSceneObjectProvider>.provider { get; set; }
+		IUsesSpatialHashProvider IInjectedFunctionality<IUsesSpatialHashProvider>.provider { get; set; }
+		IUsesViewerBodyProvider IInjectedFunctionality<IUsesViewerBodyProvider>.provider { get; set; }
+		IRayVisibilitySettingsProvider IInjectedFunctionality<IRayVisibilitySettingsProvider>.provider { get; set; }
 
 		public override void Setup(AssetData listData)
 		{

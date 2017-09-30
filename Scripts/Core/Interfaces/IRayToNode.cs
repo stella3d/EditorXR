@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
@@ -7,21 +6,28 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	/// <summary>
 	/// Provide the ability to request a corresponding node for a ray origin
 	/// </summary>
-	interface IRayToNode
+	interface IRayToNode : IInjectedFunctionality<IRayToNodeProvider>
 	{
 	}
 
-	static class IRayToNodeMethods
+	interface IRayToNodeProvider
 	{
-		internal static Func<Transform, Node> requestNodeFromRayOrigin { private get; set; }
-
 		/// <summary>
 		/// Get the corresponding node for a given ray origin
 		/// </summary>
 		/// <param name="rayOrigin">The ray origin to request a node for</param>
-		internal static Node RequestNodeFromRayOrigin(this IRayToNode obj, Transform rayOrigin)
+		Node RequestNodeFromRayOrigin(Transform rayOrigin);
+	}
+
+	static class IRayToNodeMethods
+	{
+		/// <summary>
+		/// Get the corresponding node for a given ray origin
+		/// </summary>
+		/// <param name="rayOrigin">The ray origin to request a node for</param>
+		internal static Node RequestNodeFromRayOrigin(this IRayToNode @this, Transform rayOrigin)
 		{
-			return requestNodeFromRayOrigin(rayOrigin);
+			return @this.provider.RequestNodeFromRayOrigin(rayOrigin);
 		}
 	}
 }

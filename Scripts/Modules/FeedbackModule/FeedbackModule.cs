@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR
 		public GameObject settingsMenuItemInstance { get; set; }
 	}
 
-	public class FeedbackModule : MonoBehaviour, IInterfaceConnector, ISettingsMenuItemProvider, ISerializePreferences
+	public class FeedbackModule : MonoBehaviour, IInterfaceConnector, ISettingsMenuItemProvider, ISerializePreferences, IRequestFeedbackProvider
 	{
 		[Serializable]
 		class Preferences
@@ -66,13 +66,6 @@ namespace UnityEditor.Experimental.EditorVR
 		}
 
 		public Transform rayOrigin { get { return null; } }
-		
-		void Awake()
-		{
-			IRequestFeedbackMethods.addFeedbackRequest = AddFeedbackRequest;
-			IRequestFeedbackMethods.removeFeedbackRequest = RemoveFeedbackRequest;
-			IRequestFeedbackMethods.clearFeedbackRequests = ClearFeedbackRequests;
-		}
 
 		void Start()
 		{
@@ -109,7 +102,7 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 		}
 
-		void AddFeedbackRequest(FeedbackRequest request)
+		public void AddFeedbackRequest(FeedbackRequest request)
 		{
 			if (!m_Preferences.enabled)
 				return;
@@ -120,7 +113,7 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 		}
 
-		void RemoveFeedbackRequest(FeedbackRequest request)
+		public void RemoveFeedbackRequest(FeedbackRequest request)
 		{
 			foreach (var receiver in m_FeedbackReceivers)
 			{
@@ -128,7 +121,7 @@ namespace UnityEditor.Experimental.EditorVR
 			}
 		}
 
-		void ClearFeedbackRequests(IRequestFeedback caller)
+		public void ClearFeedbackRequests(IRequestFeedback caller)
 		{
 			if (caller == null) // Requesters are not allowed to clear all requests
 				return;

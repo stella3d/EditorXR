@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
@@ -32,6 +32,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public Transform leftHand { private get; set; }
 		public Transform rightHand { private get; set; }
+
+		public IUsesViewerScaleProvider provider { get; set; }
 
 		void Awake()
 		{

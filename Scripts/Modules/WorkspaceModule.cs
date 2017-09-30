@@ -9,7 +9,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class WorkspaceModule : MonoBehaviour, IConnectInterfaces, ISerializePreferences, IInterfaceConnector
+	sealed class WorkspaceModule : MonoBehaviour, IConnectInterfaces, ISerializePreferences, IInterfaceConnector, ICreateWorkspaceProvider, IResetWorkspacesProvider
 	{
 		[Serializable]
 		class Preferences
@@ -61,6 +61,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		internal bool preserveWorkspaces { get; set; }
 
+		public IConnectInterfacesProvider provider { get; set; }
+
 		static WorkspaceModule()
 		{
 			workspaceTypes = ObjectUtils.GetImplementationsOfInterface(typeof(IWorkspace)).ToList();
@@ -68,8 +70,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Awake()
 		{
-			ICreateWorkspaceMethods.createWorkspace = CreateWorkspace;
-			IResetWorkspacesMethods.resetWorkspaceRotations = ResetWorkspaceRotations;
 			preserveWorkspaces = true;
 		}
 
@@ -138,7 +138,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		internal void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
+		public void CreateWorkspace(Type t, Action<IWorkspace> createdCallback = null)
 		{
 			// HACK: MiniWorldWorkspace is not working in single pass yet
 			if (t == typeof(MiniWorldWorkspace) && PlayerSettings.stereoRenderingPath != StereoRenderingPath.MultiPass)
@@ -188,7 +188,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				workspaceDestroyed(workspace);
 		}
 
-		internal void ResetWorkspaceRotations()
+		public void ResetWorkspaceRotations()
 		{
 			var cameraTransform = CameraUtils.GetMainCamera().transform;
 			foreach (var ws in workspaces)

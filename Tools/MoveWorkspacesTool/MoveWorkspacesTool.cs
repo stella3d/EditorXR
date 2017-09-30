@@ -33,10 +33,15 @@ public class MoveWorkspacesTool : MonoBehaviour, ITool, IStandardActionMap, IUse
 	float m_TargetScale = 1.0f;
 
 	State m_State = State.WaitingForInput;
-	
+
 	public Transform rayOrigin { private get; set; }
 	public List<IWorkspace> allWorkspaces { private get; set; }
 	public ActionMap standardActionMap { private get; set; }
+
+	IUsesViewerBodyProvider IInjectedFunctionality<IUsesViewerBodyProvider>.provider { get; set; }
+	IResetWorkspacesProvider IInjectedFunctionality<IResetWorkspacesProvider>.provider { get; set; }
+	IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
+	IRayVisibilitySettingsProvider IInjectedFunctionality<IRayVisibilitySettingsProvider>.provider { get; set; }
 
 	public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
 	{

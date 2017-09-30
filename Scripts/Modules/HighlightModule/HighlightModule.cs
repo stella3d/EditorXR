@@ -18,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		const string k_SelectionOutlinePrefsKey = "Scene/Selected Outline";
 
-		static readonly Dictionary<SkinnedMeshRenderer, Mesh> m_BakedMeshes = new Dictionary<SkinnedMeshRenderer, Mesh>();
+		static readonly Dictionary<SkinnedMeshRenderer, Mesh> k_BakedMeshes = new Dictionary<SkinnedMeshRenderer, Mesh>();
 
 		[SerializeField]
 		Material m_DefaultHighlightMaterial;
@@ -44,6 +44,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			get { return m_RayHighlightMaterial.GetVector("_Color"); }
 			set { m_RayHighlightMaterial.color = value; }
 		}
+
+		public IUsesGameObjectLockingProvider provider { get; set; }
 
 		void Awake()
 		{
@@ -136,10 +138,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 					continue;
 
 				Mesh bakedMesh;
-				if (!m_BakedMeshes.TryGetValue(skinnedMeshRenderer, out bakedMesh))
+				if (!k_BakedMeshes.TryGetValue(skinnedMeshRenderer, out bakedMesh))
 				{
 					bakedMesh = new Mesh();
-					m_BakedMeshes[skinnedMeshRenderer] = bakedMesh;
+					k_BakedMeshes[skinnedMeshRenderer] = bakedMesh;
 				}
 
 				skinnedMeshRenderer.BakeMesh(bakedMesh);
@@ -208,7 +210,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 				var skinnedMeshRenderer = go.GetComponent<SkinnedMeshRenderer>();
 				if (skinnedMeshRenderer)
-					m_BakedMeshes.Remove(skinnedMeshRenderer);
+					k_BakedMeshes.Remove(skinnedMeshRenderer);
 			}
 		}
 	}

@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
@@ -35,6 +35,9 @@ namespace ListView
 		protected readonly Dictionary<TIndex, Transform> m_GrabbedRows = new Dictionary<TIndex, Transform>();
 
 		protected override float listHeight { get { return m_Data.Count * itemSize.z; } }
+
+		IInstantiateUIProvider IInjectedFunctionality<IInstantiateUIProvider>.provider { get; set; }
+		IConnectInterfacesProvider IInjectedFunctionality<IConnectInterfacesProvider>.provider { get; set; }
 
 		protected override void Setup()
 		{

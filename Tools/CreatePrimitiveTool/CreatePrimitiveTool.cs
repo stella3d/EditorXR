@@ -10,8 +10,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 	[MainMenuItem("Primitive", "Create", "Create primitives in the scene")]
 	sealed class CreatePrimitiveTool : MonoBehaviour, ITool, IStandardActionMap, IConnectInterfaces, IInstantiateMenuUI,
 		IUsesRayOrigin, IUsesSpatialHash, IUsesViewerScale, ISelectTool, IIsHoveringOverUI, IIsMainMenuVisible,
-		IRayVisibilitySettings, IMenuIcon, IRequestFeedback, IUsesNode
+		IRayVisibilitySettings, IMenuIcon, IRequestFeedback, IUsesNode, IInjectedFunctionality<IUsesViewerScaleProvider>
 	{
+		enum PrimitiveCreationStates
+		{
+			StartPoint,
+			EndPoint,
+			Freeform
+		}
+
 		[SerializeField]
 		CreatePrimitiveMenu m_MenuPrefab;
 
@@ -34,17 +41,20 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
 
+		IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
+		IRequestFeedbackProvider IInjectedFunctionality<IRequestFeedbackProvider>.provider { get; set; }
+
 		public Transform rayOrigin { get; set; }
 		public Node node { get; set; }
 
 		public Sprite icon { get { return m_Icon; } }
 
-		enum PrimitiveCreationStates
-		{
-			StartPoint,
-			EndPoint,
-			Freeform
-		}
+		public ActionMap standardActionMap { private get; set; }
+
+		IConnectInterfacesProvider IInjectedFunctionality<IConnectInterfacesProvider>.provider { get; set; }
+		IUsesSpatialHashProvider IInjectedFunctionality<IUsesSpatialHashProvider>.provider { get; set; }
+		ISelectToolProvider IInjectedFunctionality<ISelectToolProvider>.provider { get; set; }
+		IRayVisibilitySettingsProvider IInjectedFunctionality<IRayVisibilitySettingsProvider>.provider { get; set; }
 
 		void Start()
 		{
@@ -192,8 +202,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 			this.RemoveRayVisibilitySettings(rayOrigin, this);
 			this.ClearFeedbackRequests();
 		}
-
-		public ActionMap standardActionMap { private get; set; }
 	}
 }
 #endif

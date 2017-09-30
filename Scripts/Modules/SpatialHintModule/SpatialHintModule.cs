@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	public sealed class SpatialHintModule : MonoBehaviour, IConnectInterfaces, IInstantiateUI, INodeToRay, IRayVisibilitySettings
+	public sealed class SpatialHintModule : MonoBehaviour, IConnectInterfaces, IInstantiateUI, INodeToRay, IRayVisibilitySettings, IControlSpatialHintingProvider
 	{
 		public enum SpatialHintStateFlags
 		{
@@ -75,54 +75,50 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		Transform spatialHintContentContainer { get { return m_SpatialHintUI.contentContainer; } }
 
+		IConnectInterfacesProvider IInjectedFunctionality<IConnectInterfacesProvider>.provider { get; set; }
+		IInstantiateUIProvider IInjectedFunctionality<IInstantiateUIProvider>.provider { get; set; }
+		INodeToRayProvider IInjectedFunctionality<INodeToRayProvider>.provider { get; set; }
+		IRayVisibilitySettingsProvider IInjectedFunctionality<IRayVisibilitySettingsProvider>.provider { get; set; }
+
 		void Awake()
 		{
-			IControlSpatialHintingMethods.setSpatialHintState = SetState;
-			IControlSpatialHintingMethods.setSpatialHintPosition = SetPosition;
-			IControlSpatialHintingMethods.setSpatialHintContainerRotation = SetContainerRotation;
-			IControlSpatialHintingMethods.setSpatialHintShowHideRotationTarget = SetShowHideRotationTarget;
-			IControlSpatialHintingMethods.setSpatialHintLookAtRotation = LookAt;
-			IControlSpatialHintingMethods.setSpatialHintDragThresholdTriggerPosition = SetDragThresholdTriggerPosition;
-			IControlSpatialHintingMethods.pulseSpatialHintScrollArrows = PulseScrollArrows;
-			IControlSpatialHintingMethods.setSpatialHintControlNode = SetSpatialHintControlNode;
-
 			m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUI.gameObject).GetComponent<SpatialHintUI>();
 			this.ConnectInterfaces(m_SpatialHintUI);
 		}
 
-		internal void PulseScrollArrows()
+		public void PulseSpatialHintScrollArrows()
 		{
 			m_SpatialHintUI.PulseScrollArrows();
 		}
 
-		internal void SetState(SpatialHintStateFlags newState)
+		public void SetSpatialHintState(SpatialHintStateFlags newState)
 		{
 			state = newState;
 		}
 
-		internal void SetPosition(Vector3 newPosition)
+		public void SetSpatialHintPosition(Vector3 newPosition)
 		{
 			spatialHintContentContainer.position = newPosition;
 		}
 
-		internal void SetContainerRotation(Quaternion newRotation)
+		public void SetSpatialHintContainerRotation(Quaternion newRotation)
 		{
 			m_SpatialHintUI.transform.rotation = newRotation;
 		}
 
-		internal void SetShowHideRotationTarget(Vector3 target)
+		public void SetSpatialHintShowHideRotationTarget(Vector3 target)
 		{
 			spatialHintScrollVisualsRotation = target;
 		}
 
-		internal void LookAt(Vector3 position)
+		public void SetSpatialHintLookAtRotation(Vector3 position)
 		{
 			var orig = spatialHintContentContainer.rotation;
 			spatialHintContentContainer.LookAt(position);
 			spatialHintContentContainer.rotation = orig;
 		}
 
-		internal void SetDragThresholdTriggerPosition (Vector3 position)
+		public void SetSpatialHintDragThresholdTriggerPosition(Vector3 position)
 		{
 			if (state == SpatialHintStateFlags.Hidden || position == m_SpatialHintUI.scrollVisualsDragThresholdTriggerPosition)
 				return;
@@ -130,7 +126,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_SpatialHintUI.scrollVisualsDragThresholdTriggerPosition = position;
 		}
 
-		internal void SetSpatialHintControlNode(Node controlNode)
+		public void SetSpatialHintControlNode(Node controlNode)
 		{
 			controllingNode = controlNode;
 			this.AddRayVisibilitySettings(this.RequestRayOriginFromNode(m_ControllingNode), this, false, false);

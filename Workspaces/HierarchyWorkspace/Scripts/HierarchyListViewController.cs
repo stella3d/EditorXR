@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -79,6 +79,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Func<string, bool> matchesFilter { private get; set; }
 		public Func<string> getSearchQuery { private get; set; }
+
+		public IUsesGameObjectLockingProvider provider { get; set; }
 
 		protected override void Setup()
 		{

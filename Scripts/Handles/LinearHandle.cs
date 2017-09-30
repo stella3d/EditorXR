@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -30,6 +30,7 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		Plane m_Plane;
 
 		public AxisFlags constraints { get { return m_Constraints; } }
+		public IUsesViewerScaleProvider provider { get; set; }
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{

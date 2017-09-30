@@ -243,6 +243,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public ActionMap actionMap { get { return m_ActionMap; } }
 
+		ILinkedObjectProvider IInjectedFunctionality<ILinkedObjectProvider>.provider { get; set; }
+		IRayToNodeProvider IInjectedFunctionality<IRayToNodeProvider>.provider { get; set; }
+		IControlHapticsProvider IInjectedFunctionality<IControlHapticsProvider>.provider { get; set; }
+		IRayVisibilitySettingsProvider IInjectedFunctionality<IRayVisibilitySettingsProvider>.provider { get; set; }
+
 		void Start()
 		{
 			if (!this.IsSharedUpdater(this))

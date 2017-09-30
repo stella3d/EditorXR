@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -25,6 +25,8 @@ namespace UnityEditor.Experimental.EditorVR.Handles
 		float m_ScrollRate;
 		Vector3 m_LastPosition;
 		float m_CurrentRadius;
+
+		public IUsesViewerScaleProvider provider { get; set; }
 
 		protected override HandleEventData GetHandleEventData(RayEventData eventData)
 		{

@@ -1,6 +1,5 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Actions
@@ -10,6 +9,8 @@ namespace UnityEditor.Experimental.EditorVR.Actions
 	{
 		public Action<GameObject> addToSpatialHash { private get; set; }
 		public Action<GameObject> removeFromSpatialHash { private get; set; }
+
+		public IDeleteSceneObjectProvider provider { get; set; }
 
 		public override void ExecuteAction()
 		{

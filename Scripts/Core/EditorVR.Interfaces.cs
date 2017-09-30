@@ -6,18 +6,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class Interfaces : Nested
+		class Interfaces : Nested, IConnectInterfacesProvider
 		{
 			readonly HashSet<object> m_ConnectedInterfaces = new HashSet<object>();
 
 			event Action<object, object> connectInterfaces;
 			event Action<object, object> disconnectInterfaces;
-
-			public Interfaces()
-			{
-				IConnectInterfacesMethods.connectInterfaces = ConnectInterfaces;
-				IConnectInterfacesMethods.disconnectInterfaces = DisconnectInterfaces;
-			}
 
 			internal void AttachInterfaceConnectors(object @object)
 			{
@@ -29,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			void ConnectInterfaces(object @object, object userData = null)
+			public void ConnectInterfaces(object @object, object userData = null)
 			{
 				if (!m_ConnectedInterfaces.Add(@object))
 					return;
@@ -38,7 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					connectInterfaces(@object, userData);
 			}
 
-			void DisconnectInterfaces(object @object, object userData = null)
+			public void DisconnectInterfaces(object @object, object userData = null)
 			{
 				m_ConnectedInterfaces.Remove(@object);
 

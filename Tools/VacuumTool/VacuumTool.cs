@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -29,6 +29,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		public Vector3 defaultOffset { private get; set; }
 		public Quaternion defaultTilt { private get; set; }
 		public Node node { private get; set; }
+
+		IRequestFeedbackProvider IInjectedFunctionality<IRequestFeedbackProvider>.provider { get; set; }
+		IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
 
 		void Start()
 		{

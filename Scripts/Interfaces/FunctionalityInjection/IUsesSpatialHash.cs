@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -7,31 +6,43 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Make use of the spatial hash
 	/// </summary>
-	public interface IUsesSpatialHash
+	public interface IUsesSpatialHash : IInjectedFunctionality<IUsesSpatialHashProvider>
 	{
 	}
 
-	public static class IUsesSpatialHashMethods
+	public interface IUsesSpatialHashProvider
 	{
-		internal static Action<GameObject> addToSpatialHash { get; set; }
-		internal static Action<GameObject> removeFromSpatialHash { get; set; }
-
 		/// <summary>
 		/// Add all renderers of a GameObject (and its children) to the spatial hash for queries, direct selection, etc.
 		/// </summary>
 		/// <param name="go">The GameObject to add</param>
-		public static void AddToSpatialHash(this IUsesSpatialHash obj, GameObject go)
+		void AddToSpatialHash(GameObject go);
+
+		/// <summary>
+		/// Remove all renderers of a GameObject (and its children) from the spatial hash
+		/// </summary>
+		/// <param name="go">The GameObject to remove</param>
+		void RemoveFromSpatialHash(GameObject go);
+	}
+
+	public static class IUsesSpatialHashMethods
+	{
+		/// <summary>
+		/// Add all renderers of a GameObject (and its children) to the spatial hash for queries, direct selection, etc.
+		/// </summary>
+		/// <param name="go">The GameObject to add</param>
+		public static void AddToSpatialHash(this IUsesSpatialHash @this, GameObject go)
 		{
-			addToSpatialHash(go);
+			@this.provider.AddToSpatialHash(go);
 		}
 
 		/// <summary>
 		/// Remove all renderers of a GameObject (and its children) from the spatial hash
 		/// </summary>
 		/// <param name="go">The GameObject to remove</param>
-		public static void RemoveFromSpatialHash(this IUsesSpatialHash obj, GameObject go)
+		public static void RemoveFromSpatialHash(this IUsesSpatialHash @this, GameObject go)
 		{
-			removeFromSpatialHash(go);
+			@this.provider.RemoveFromSpatialHash(go);
 		}
 	}
 }

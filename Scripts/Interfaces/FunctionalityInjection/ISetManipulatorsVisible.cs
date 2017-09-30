@@ -1,27 +1,32 @@
-﻿#if UNITY_EDITOR
-using System;
-
+#if UNITY_EDITOR
 namespace UnityEditor.Experimental.EditorVR
 {
 	/// <summary>
 	/// Provide access to show or hide manipulator(s)
 	/// </summary>
-	public interface ISetManipulatorsVisible
+	public interface ISetManipulatorsVisible : IInjectedFunctionality<ISetManipulatorsVisibleProvider>
 	{
+	}
+
+	public interface ISetManipulatorsVisibleProvider
+	{
+		/// <summary>
+		/// Show or hide the manipulator(s)
+		/// </summary>
+		/// <param name="caller">The calling object</param>
+		/// <param name="visibility">Whether the manipulators should be shown or hidden</param>
+		void SetManipulatorsVisible(ISetManipulatorsVisible caller, bool visibility);
 	}
 
 	public static class ISetManipulatorsVisibleMethods
 	{
-		internal static Action<ISetManipulatorsVisible, bool> setManipulatorsVisible { get; set; }
-
 		/// <summary>
 		/// Show or hide the manipulator(s)
 		/// </summary>
-		/// <param name="requester">The requesting object that is wanting to set all manipulators visible or hidden</param>
 		/// <param name="visibility">Whether the manipulators should be shown or hidden</param>
-		public static void SetManipulatorsVisible(this ISetManipulatorsVisible obj, ISetManipulatorsVisible requester, bool visibility)
+		public static void SetManipulatorsVisible(this ISetManipulatorsVisible @this, bool visibility)
 		{
-			setManipulatorsVisible(requester, visibility);
+			@this.provider.SetManipulatorsVisible(@this, visibility);
 		}
 	}
 }

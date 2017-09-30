@@ -18,7 +18,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[SerializeField]
 		GameObject m_PreviewCameraPrefab;
 
-		class Viewer : Nested, IInterfaceConnector, ISerializePreferences, IConnectInterfaces
+		class Viewer : Nested, IInterfaceConnector, ISerializePreferences, IConnectInterfaces, IUsesViewerScaleProvider,
+			IMoveCameraRigProvider, IUsesViewerBodyProvider, IGetVRPlayerObjectsProvider
 		{
 			[Serializable]
 			class Preferences
@@ -50,14 +51,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public bool hmdReady { get; private set; }
 
+			public IConnectInterfacesProvider provider { get; set; }
+
 			public Viewer()
 			{
-				IMoveCameraRigMethods.moveCameraRig = MoveCameraRig;
-				IUsesViewerBodyMethods.isOverShoulder = IsOverShoulder;
-				IUsesViewerBodyMethods.isAboveHead = IsAboveHead;
-				IUsesViewerScaleMethods.getViewerScale = GetViewerScale;
-				IUsesViewerScaleMethods.setViewerScale = SetViewerScale;
-				IGetVRPlayerObjectsMethods.getVRPlayerObjects = () => m_VRPlayerObjects;
+				IUsesViewerScaleMethods.defaultProvider = this;
 
 				VRView.hmdStatusChange += OnHMDStatusChange;
 
@@ -84,6 +82,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var usesCameraRig = @object as IUsesCameraRig;
 				if (usesCameraRig != null)
 					usesCameraRig.cameraRig = CameraUtils.GetCameraRig();
+
+				var moveCameraRig = @object as IMoveCameraRig;
+				if (moveCameraRig != null)
+					moveCameraRig.provider = this;
 			}
 
 			public void DisconnectInterface(object @object, object userData = null)
@@ -99,6 +101,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					SaveCameraState();
 
 				return m_Preferences;
+			}
+
+			public List<Renderer> GetVRPlayerObjects()
+			{
+				return m_VRPlayerObjects;
 			}
 
 			void OnHMDStatusChange(bool ready)
@@ -185,12 +192,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				evr.GetModule<SnappingModule>().ignoreList = m_VRPlayerObjects;
 			}
 
-			internal bool IsOverShoulder(Transform rayOrigin)
+			public bool IsOverShoulder(Transform rayOrigin)
 			{
 				return Overlaps(rayOrigin, m_PlayerBody.overShoulderTrigger);
 			}
 
-			bool IsAboveHead(Transform rayOrigin)
+			public bool IsAboveHead(Transform rayOrigin)
 			{
 				return Overlaps(rayOrigin, m_PlayerBody.aboveHeadTrigger);
 			}
@@ -278,17 +285,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					onComplete();
 			}
 
-			static void MoveCameraRig(Vector3 position, Vector3? viewdirection)
+			public void MoveCameraRig(Vector3 position, Vector3? viewdirection)
 			{
 				evr.StartCoroutine(UpdateCameraRig(position, viewdirection));
 			}
 
-			internal static float GetViewerScale()
+			public float GetViewerScale()
 			{
 				return CameraUtils.GetCameraRig().localScale.x;
 			}
 
-			void SetViewerScale(float scale)
+			public void SetViewerScale(float scale)
 			{
 				var camera = CameraUtils.GetMainCamera();
 				CameraUtils.GetCameraRig().localScale = Vector3.one * scale;

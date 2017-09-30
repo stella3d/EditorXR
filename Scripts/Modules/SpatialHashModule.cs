@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class SpatialHashModule : MonoBehaviour
+	sealed class SpatialHashModule : MonoBehaviour, IUsesSpatialHashProvider
 	{
 		readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
 
@@ -16,8 +16,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Awake()
 		{
-			IUsesSpatialHashMethods.addToSpatialHash = AddObject;
-			IUsesSpatialHashMethods.removeFromSpatialHash = RemoveObject;
 			spatialHash = new SpatialHash<Renderer>();
 		}
 
@@ -90,7 +88,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		public void AddObject(GameObject gameObject)
+		public void AddToSpatialHash(GameObject gameObject)
 		{
 			foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>())
 			{
@@ -98,7 +96,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 		}
 
-		public void RemoveObject(GameObject gameObject)
+		public void RemoveFromSpatialHash(GameObject gameObject)
 		{
 			foreach (var renderer in gameObject.GetComponentsInChildren<Renderer>(true))
 			{

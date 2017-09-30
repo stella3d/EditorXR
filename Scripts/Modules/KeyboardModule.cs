@@ -1,4 +1,4 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Helpers;
@@ -22,6 +22,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		readonly Dictionary<Transform, KeyboardMallet> m_KeyboardMallets = new Dictionary<Transform, KeyboardMallet>();
 		KeyboardUI m_NumericKeyboard;
 		KeyboardUI m_StandardKeyboard;
+
+		IRayVisibilitySettingsProvider IInjectedFunctionality<IRayVisibilitySettingsProvider>.provider { get; set; }
+		IForEachRayOriginProvider IInjectedFunctionality<IForEachRayOriginProvider>.provider { get; set; }
+		IConnectInterfacesProvider IInjectedFunctionality<IConnectInterfacesProvider>.provider { get; set; }
 
 		public KeyboardUI SpawnNumericKeyboard()
 		{
