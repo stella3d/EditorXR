@@ -1,12 +1,13 @@
 #if UNITY_EDITOR
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking
+	sealed class IntersectionModule : MonoBehaviour, IUsesGameObjectLocking, IRaycastProvider, IInterfaceConnector
 	{
 		class RayIntersection
 		{
@@ -210,7 +211,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			m_RaycastGameObjects[rayOrigin] = new RayIntersection { go = go, distance = hit.distance };
 		}
 
-		internal bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<Renderer> ignoreList = null)
+		public bool Raycast(Ray ray, out RaycastHit hit, out GameObject obj, float maxDistance = Mathf.Infinity, List<Renderer> ignoreList = null)
 		{
 			obj = null;
 			hit = new RaycastHit();
@@ -248,6 +249,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 
 			return result;
+		}
+
+		public void ConnectInterface(object @object, object userData = null)
+		{
+			var raycast = @object as IRaycast;
+			if (raycast != null)
+				raycast.provider = this;
+		}
+
+		public void DisconnectInterface(object @object, object userData = null)
+		{
 		}
 	}
 }

@@ -1,3 +1,6 @@
+using System;
+using UnityEngine;
+
 #if UNITY_EDITOR
 namespace UnityEditor.Experimental.EditorVR
 {

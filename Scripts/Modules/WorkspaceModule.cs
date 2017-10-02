@@ -208,6 +208,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var allWorkspaces = @object as IAllWorkspaces;
 			if (allWorkspaces != null)
 				allWorkspaces.allWorkspaces = workspaces;
+
+			var createWorkspace = @object as ICreateWorkspace;
+			if (createWorkspace != null)
+				createWorkspace.provider = this;
 		}
 
 		public void DisconnectInterface(object @object, object userData = null)

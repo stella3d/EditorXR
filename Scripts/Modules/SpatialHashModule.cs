@@ -2,12 +2,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class SpatialHashModule : MonoBehaviour, IUsesSpatialHashProvider
+	sealed class SpatialHashModule : MonoBehaviour, IUsesSpatialHashProvider, IInterfaceConnector
 	{
 		readonly List<Renderer> m_ChangedObjects = new List<Renderer>();
 
@@ -107,6 +108,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public Bounds GetMaxBounds()
 		{
 			return spatialHash.GetMaxBounds();
+		}
+
+		public void ConnectInterface(object @object, object userData = null)
+		{
+			var usesSpatialHash = @object as IUsesSpatialHash;
+			if (usesSpatialHash != null)
+				usesSpatialHash.provider = this;
+		}
+
+		public void DisconnectInterface(object @object, object userData = null)
+		{
 		}
 	}
 }

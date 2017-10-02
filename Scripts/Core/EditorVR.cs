@@ -146,10 +146,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			AddModule<HierarchyModule>();
 			AddModule<ProjectFolderModule>();
 
-			var viewer = GetNestedModule<Viewer>();
-			viewer.preserveCameraRig = preserveLayout;
-			viewer.InitializeCamera();
-
 			var deviceInputModule = AddModule<DeviceInputModule>();
 			deviceInputModule.InitializePlayerHandle();
 			deviceInputModule.CreateDefaultActionMapInputs();
@@ -240,6 +236,19 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			AddModule<FeedbackModule>();
 
+			foreach (var kvp in m_NestedModules)
+			{
+				this.ConnectInterfaces(kvp.Value);
+			}
+
+			foreach (var kvp in m_Modules)
+			{
+				this.ConnectInterfaces(kvp.Value);
+			}
+
+			var viewer = GetNestedModule<Viewer>();
+			viewer.preserveCameraRig = preserveLayout;
+			viewer.InitializeCamera();
 			viewer.AddPlayerModel();
 
 			GetNestedModule<Rays>().CreateAllProxies();
@@ -399,12 +408,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				foreach (var nested in m_NestedModules.Values)
 				{
-					var lateBinding = nested as ILateBindInterfaceMethods<T>;
+					var lateBinding = nested as IHasDependency<T>;
 					if (lateBinding != null)
-						lateBinding.LateBindInterfaceMethods((T)module);
+						lateBinding.ConnectDependency((T)module);
 				}
 
-				this.ConnectInterfaces(module);
 				m_Interfaces.AttachInterfaceConnectors(module);
 			}
 
@@ -425,10 +433,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				m_NestedModules.Add(type, nested);
 
 				if (m_Interfaces != null)
-				{
-					this.ConnectInterfaces(nested);
 					m_Interfaces.AttachInterfaceConnectors(nested);
-				}
 			}
 
 			return nested;
@@ -439,7 +444,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			foreach (var type in types)
 			{
 				var lateBindings = type.GetInterfaces().Where(i =>
-					i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ILateBindInterfaceMethods<>));
+					i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IHasDependency<>));
 
 				Nested nestedModule;
 				if (m_NestedModules.TryGetValue(type, out nestedModule))

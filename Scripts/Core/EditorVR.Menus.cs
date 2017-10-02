@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	{
 		const float k_MainMenuAutoHideDelay = 0.125f;
 		const float k_MainMenuAutoShowDelay = 0.25f;
-		class Menus : Nested, IInterfaceConnector, ILateBindInterfaceMethods<Tools>, IConnectInterfaces,
+		class Menus : Nested, IInterfaceConnector, IHasDependency<Tools>, IConnectInterfaces,
 			IUsesViewerScale, IInstantiateMenuUIProvider, IIsMainMenuVisibleProvider, IUsesCustomMenuOriginsProvider
 		{
 			internal class MenuHideData
@@ -46,6 +46,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var instantiateMenuUI = @object as IInstantiateMenuUI;
 				if (instantiateMenuUI != null)
 					instantiateMenuUI.provider = this;
+
+				var isMainMenuVisible = @object as IIsMainMenuVisible;
+				if (isMainMenuVisible != null)
+					isMainMenuVisible.provider = this;
+
+				var usesCustomMenuOrigins = @object as IUsesCustomMenuOrigins;
+				if (usesCustomMenuOrigins != null)
+					usesCustomMenuOrigins.provider = this;
 
 				var rayOrigin = userData as Transform;
 				var settingsMenuProvider = @object as ISettingsMenuProvider;
@@ -127,7 +135,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					m_MainMenus.Remove(rayOrigin);
 			}
 
-			public void LateBindInterfaceMethods(Tools provider)
+			public void ConnectDependency(Tools provider)
 			{
 				m_MainMenuTools = provider.allTools.Where(t => !Tools.IsDefaultTool(t)).ToList(); // Don't show tools that can't be selected/toggled
 			}

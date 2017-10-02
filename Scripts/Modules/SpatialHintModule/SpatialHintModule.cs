@@ -80,7 +80,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		INodeToRayProvider IInjectedFunctionality<INodeToRayProvider>.provider { get; set; }
 		IRayVisibilitySettingsProvider IInjectedFunctionality<IRayVisibilitySettingsProvider>.provider { get; set; }
 
-		void Awake()
+		void Start()
 		{
 			m_SpatialHintUI = this.InstantiateUI(m_SpatialHintUI.gameObject).GetComponent<SpatialHintUI>();
 			this.ConnectInterfaces(m_SpatialHintUI);

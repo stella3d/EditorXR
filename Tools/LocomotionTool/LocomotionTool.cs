@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 {
 	sealed class LocomotionTool : MonoBehaviour, ITool, ILocomotor, IUsesRayOrigin, IRayVisibilitySettings,
 		ICustomActionMap, ILinkedObject, IUsesViewerScale, ISettingsMenuItemProvider, ISerializePreferences,
-		IUsesProxyType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode
+		IUsesProxyType, IGetVRPlayerObjects, IBlockUIInteraction, IRequestFeedback, IUsesNode, IConnectInterfaces
 	{
 		const float k_FastMoveSpeed = 20f;
 		const float k_SlowMoveSpeed = 1f;
@@ -180,6 +180,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
 		IGetVRPlayerObjectsProvider IInjectedFunctionality<IGetVRPlayerObjectsProvider>.provider { get; set; }
 		IBlockUIInteractionProvider IInjectedFunctionality<IBlockUIInteractionProvider>.provider { get; set; }
+		IConnectInterfacesProvider IInjectedFunctionality<IConnectInterfacesProvider>.provider { get; set; }
 
 		void Start()
 		{
@@ -210,6 +211,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 			var viewerScaleObject = ObjectUtils.Instantiate(m_ViewerScaleVisualsPrefab, cameraRig, false);
 			m_ViewerScaleVisuals = viewerScaleObject.GetComponent<ViewerScaleVisuals>();
+			this.ConnectInterfaces(m_ViewerScaleVisuals);
 			viewerScaleObject.SetActive(false);
 
 			InputUtils.GetBindingDictionaryFromActionMap(m_ActionMap, m_Controls);

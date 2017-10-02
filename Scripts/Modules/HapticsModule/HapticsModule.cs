@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class HapticsModule : MonoBehaviour, IControlHapticsProvider
+	sealed class HapticsModule : MonoBehaviour, IControlHapticsProvider, IInterfaceConnector
 	{
 		public const float MaxDuration = 0.8f;
 
@@ -173,6 +173,16 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return channel;
 		}
 #endif
+		public void ConnectInterface(object @object, object userData = null)
+		{
+			var controlHaptics = @object as IControlHaptics;
+			if (controlHaptics != null)
+				controlHaptics.provider = this;
+		}
+
+		public void DisconnectInterface(object @object, object userData = null)
+		{
+		}
 	}
 }
 #endif

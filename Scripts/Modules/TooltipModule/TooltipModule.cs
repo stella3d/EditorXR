@@ -1,12 +1,13 @@
 #if UNITY_EDITOR
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class TooltipModule : MonoBehaviour, IUsesViewerScale, ISetTooltipVisibilityProvider
+	sealed class TooltipModule : MonoBehaviour, IUsesViewerScale, ISetTooltipVisibilityProvider, IInterfaceConnector
 	{
 		const float k_Delay = 0; // In case we want to bring back a delay
 		const float k_TransitionDuration = 0.1f;
@@ -316,6 +317,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 
 			ObjectUtils.Destroy(tooltipUI.gameObject);
+		}
+
+		public void ConnectInterface(object @object, object userData = null)
+		{
+			var setTooltipVisibility = @object as ISetTooltipVisibility;
+			if (setTooltipVisibility != null)
+				setTooltipVisibility.provider = this;
+		}
+
+		public void DisconnectInterface(object @object, object userData = null)
+		{
 		}
 	}
 }

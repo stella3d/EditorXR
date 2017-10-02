@@ -38,11 +38,22 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 				var usesDirectSelection = @object as IUsesDirectSelection;
 				if (usesDirectSelection != null)
+				{
+					usesDirectSelection.provider = this;
 					m_DirectSelectionUsers.Add(usesDirectSelection);
+				}
 
 				var twoHandedScaler = @object as ITwoHandedScaler;
 				if (twoHandedScaler != null)
 					m_TwoHandedScalers.Add(twoHandedScaler);
+
+				var canGrabObject = @object as ICanGrabObject;
+				if (canGrabObject != null)
+					canGrabObject.provider = this;
+
+				var getPointerLength = @object as IGetPointerLength;
+				if (getPointerLength != null)
+					getPointerLength.provider = this;
 			}
 
 			public void DisconnectInterface(object @object, object userData = null)

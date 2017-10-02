@@ -52,6 +52,38 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				if (rayToNode != null)
 					rayToNode.provider = this;
 
+				var forEachRayOrigin = @object as IForEachRayOrigin;
+				if (forEachRayOrigin != null)
+					forEachRayOrigin.provider = this;
+
+				var rayVisibilitySettings = @object as IRayVisibilitySettings;
+				if (rayVisibilitySettings != null)
+					rayVisibilitySettings.provider = this;
+
+				var setDefaultRayColor = @object as ISetDefaultRayColor;
+				if (setDefaultRayColor != null)
+					setDefaultRayColor.provider = this;
+
+				var getDefaultRayColor = @object as IGetDefaultRayColor;
+				if (getDefaultRayColor != null)
+					getDefaultRayColor.provider = this;
+
+				var getFieldGrabOrigin = @object as IGetFieldGrabOrigin;
+				if (getFieldGrabOrigin != null)
+					getFieldGrabOrigin.provider = this;
+
+				var getPreviewOrigin = @object as IGetPreviewOrigin;
+				if (getPreviewOrigin != null)
+					getPreviewOrigin.provider = this;
+
+				var usesRaycastResults = @object as IUsesRaycastResults;
+				if (usesRaycastResults != null)
+					usesRaycastResults.provider = this;
+
+				var getRayVisibility = @object as IGetRayVisibility;
+				if (getRayVisibility != null)
+					getRayVisibility.provider = this;
+
 				var rayOrigin = userData as Transform;
 				if (rayOrigin)
 				{
@@ -234,6 +266,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							var dpr = rayTransform.GetComponent<DefaultProxyRay>();
 							dpr.SetColor(highlightModule.highlightColor);
 							m_DefaultRays.Add(rayOrigin, dpr);
+							this.ConnectInterfaces(dpr);
 
 							keyboardModule.SpawnKeyboardMallet(rayOrigin);
 

@@ -78,6 +78,10 @@ namespace UnityEditor.Experimental.EditorVR
 			var feedbackReceiver = @object as IFeedbackReceiver;
 			if (feedbackReceiver != null)
 				m_FeedbackReceivers.Add(feedbackReceiver);
+
+			var requestFeedback = @object as IRequestFeedback;
+			if (requestFeedback != null)
+				requestFeedback.provider = this;
 		}
 
 		public void DisconnectInterface(object @object, object userData = null)

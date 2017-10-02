@@ -114,17 +114,14 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 		IPreviewInToolsMenuButtonProvider IInjectedFunctionality<IPreviewInToolsMenuButtonProvider>.provider { get; set; }
 		ISelectToolProvider IInjectedFunctionality<ISelectToolProvider>.provider { get; set; }
 
-		void Awake()
+		void Start()
 		{
 			m_MainMenuUI = this.InstantiateUI(m_MainMenuPrefab.gameObject).GetComponent<MainMenuUI>();
 			this.ConnectInterfaces(m_MainMenuUI);
 			m_MainMenuUI.alternateMenuOrigin = alternateMenuOrigin;
 			m_MainMenuUI.menuOrigin = menuOrigin;
 			m_MainMenuUI.Setup();
-		}
 
-		void Start()
-		{
 			CreateFaceButtons();
 			UpdateToolButtons();
 		}

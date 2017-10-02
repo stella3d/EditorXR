@@ -23,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		public static bool GetManipulatorDragState(this IGetManipulatorDragState @this)
 		{
-			return @this.GetManipulatorDragState();
+			return @this.provider.GetManipulatorDragState();
 		}
 	}
 }

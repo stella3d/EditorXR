@@ -1,12 +1,14 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class SceneObjectModule : MonoBehaviour, IUsesSpatialHash, IPlaceSceneObjectProvider, IPlaceSceneObjectsProvider, IDeleteSceneObjectProvider
+	sealed class SceneObjectModule : MonoBehaviour, IUsesSpatialHash, IInterfaceConnector,
+		IPlaceSceneObjectProvider, IPlaceSceneObjectsProvider, IDeleteSceneObjectProvider
 	{
 		const float k_InstantiateFOVDifference = -5f;
 		const float k_GrowDuration = 0.5f;
@@ -176,6 +178,25 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			}
 
 			Selection.objects = objects;
+		}
+
+		public void ConnectInterface(object @object, object userData = null)
+		{
+			var placeSceneObject = @object as IPlaceSceneObject;
+			if (placeSceneObject != null)
+				placeSceneObject.provider = this;
+
+			var placeSceneObjects = @object as IPlaceSceneObjects;
+			if (placeSceneObjects != null)
+				placeSceneObjects.provider = this;
+
+			var deleteSceneObject = @object as IDeleteSceneObject;
+			if (deleteSceneObject != null)
+				deleteSceneObject.provider = this;
+		}
+
+		public void DisconnectInterface(object @object, object userData = null)
+		{
 		}
 	}
 }

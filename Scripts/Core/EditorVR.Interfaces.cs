@@ -1,6 +1,7 @@
 #if UNITY_EDITOR && UNITY_EDITORVR
 using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -27,6 +28,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			{
 				if (!m_ConnectedInterfaces.Add(@object))
 					return;
+
+				var connectInterfacesObject = @object as IConnectInterfaces;
+				if (connectInterfacesObject != null)
+					connectInterfacesObject.provider = this;
 
 				if (connectInterfaces != null)
 					connectInterfaces(@object, userData);

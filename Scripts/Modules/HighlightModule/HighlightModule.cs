@@ -61,7 +61,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public void ConnectInterface(object @object, object userData = null)
 		{
 			var setHighlight = @object as ISetHighlight;
-			if (setHighlight == null)
+			if (setHighlight != null)
 				setHighlight.provider = this;
 
 			var customHighlight = @object as ICustomHighlight;

@@ -38,6 +38,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var linkedObject = @object as ILinkedObject;
 				if (linkedObject != null)
 				{
+					linkedObject.provider = this;
+
 					var type = @object.GetType();
 					List<ILinkedObject> linkedObjectList;
 					if (!m_LinkedObjects.TryGetValue(type, out linkedObjectList))

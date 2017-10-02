@@ -2,11 +2,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class LockModule : MonoBehaviour, IActions, ISelectionChanged, IUsesGameObjectLockingProvider
+	sealed class LockModule : MonoBehaviour, IActions, ISelectionChanged, IUsesGameObjectLockingProvider, IInterfaceConnector
 	{
 		class LockModuleAction : IAction, ITooltip
 		{
@@ -140,6 +141,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		public void OnSelectionChanged()
 		{
 			UpdateAction(Selection.activeGameObject);
+		}
+
+		public void ConnectInterface(object @object, object userData = null)
+		{
+			var usesGameObjectLocking = @object as IUsesGameObjectLocking;
+			if (usesGameObjectLocking != null)
+				usesGameObjectLocking.provider = this;
+		}
+
+		public void DisconnectInterface(object @object, object userData = null)
+		{
 		}
 	}
 }

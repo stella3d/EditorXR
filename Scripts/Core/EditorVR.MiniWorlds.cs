@@ -12,8 +12,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class MiniWorlds : Nested, ILateBindInterfaceMethods<DirectSelection>, IPlaceSceneObjects, IUsesViewerScale,
-			IUsesSpatialHash, IRayVisibilitySettings, IGetPointerLength, IIsInMiniWorldProvider
+		class MiniWorlds : Nested, IHasDependency<DirectSelection>, IPlaceSceneObjects, IUsesViewerScale,
+			IUsesSpatialHash, IRayVisibilitySettings, IGetPointerLength, IIsInMiniWorldProvider, IInterfaceConnector
 		{
 			internal class MiniWorldRay
 			{
@@ -211,7 +211,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				EditorApplication.hierarchyWindowChanged -= OnHierarchyChanged;
 			}
 
-			public void LateBindInterfaceMethods(DirectSelection provider)
+			public void ConnectDependency(DirectSelection provider)
 			{
 				provider.objectsGrabbed += OnObjectsGrabbed;
 				provider.objectsDropped += OnObjectsDropped;
@@ -633,6 +633,17 @@ namespace UnityEditor.Experimental.EditorVR.Core
 						}
 					}
 				}
+			}
+
+			public void ConnectInterface(object @object, object userData = null)
+			{
+				var isInMiniWorld = @object as IIsInMiniWorld;
+				if (isInMiniWorld != null)
+					isInMiniWorld.provider = this;
+			}
+
+			public void DisconnectInterface(object @object, object userData = null)
+			{
 			}
 		}
 	}

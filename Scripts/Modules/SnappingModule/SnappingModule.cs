@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	[MainMenuItem("Snapping", "Settings", "Select snapping modes")]
 	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
-		IRaycast, IUsesSnappingProvider
+		IRaycast, IUsesSnappingProvider, IInterfaceConnector
 	{
 		const float k_GroundPlaneScale = 1000f;
 
@@ -963,6 +963,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 				if (graphic.material == m_ButtonHighlightMaterial)
 					graphic.material = m_ButtonHighlightMaterialClone;
 			}
+		}
+
+		public void ConnectInterface(object @object, object userData = null)
+		{
+			var usesSnapping = @object as IUsesSnapping;
+			if (usesSnapping != null)
+				usesSnapping.provider = this;
+		}
+
+		public void DisconnectInterface(object @object, object userData = null)
+		{
 		}
 	}
 }

@@ -87,6 +87,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				var moveCameraRig = @object as IMoveCameraRig;
 				if (moveCameraRig != null)
 					moveCameraRig.provider = this;
+
+				var usesViewerScale = @object as IUsesViewerScale;
+				if (usesViewerScale != null)
+					usesViewerScale.provider = this;
+
+				var usesViewerBody = @object as IUsesViewerBody;
+				if (usesViewerBody != null)
+					usesViewerBody.provider = this;
+
+				var getVRPlayerObjects = @object as IGetVRPlayerObjects;
+				if (getVRPlayerObjects != null)
+					getVRPlayerObjects.provider = this;
 			}
 
 			public void DisconnectInterface(object @object, object userData = null)

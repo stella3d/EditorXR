@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -10,7 +11,8 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	// Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-	sealed class MultipleRayInputModule : BaseInputModule, IGetPointerLength, IConnectInterfaces, IIsHoveringOverUIProvider
+	sealed class MultipleRayInputModule : BaseInputModule, IGetPointerLength, IConnectInterfaces,
+		IIsHoveringOverUIProvider, IBlockUIInteractionProvider, IInterfaceConnector
 	{
 		public class RaycastSource : ICustomActionMap
 		{
@@ -450,11 +452,26 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			return m_RaycastSources.TryGetValue(rayOrigin, out source) && source.hasObject;
 		}
 
-		void SetUIBlockedForRayOrigin(Transform rayOrigin, bool blocked)
+		public void SetUIBlockedForRayOrigin(Transform rayOrigin, bool blocked)
 		{
 			RaycastSource source;
 			if (m_RaycastSources.TryGetValue(rayOrigin, out source))
 				source.blocked = blocked;
+		}
+
+		public void ConnectInterface(object @object, object userData = null)
+		{
+			var blockUIInteraction = @object as IBlockUIInteraction;
+			if (blockUIInteraction != null)
+				blockUIInteraction.provider = this;
+
+			var isHoveringOverUI = @object as IIsHoveringOverUI;
+			if (isHoveringOverUI != null)
+				isHoveringOverUI.provider = this;
+		}
+
+		public void DisconnectInterface(object @object, object userData = null)
+		{
 		}
 	}
 }
