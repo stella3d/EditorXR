@@ -7,7 +7,7 @@ using Object = UnityEngine.Object;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IControlHaptics, IRayToNode
+	sealed class SelectionModule : MonoBehaviour, IUsesGameObjectLocking, ISelectionChanged, IControlHaptics, IRayToNode, ISelectObjectProvider, IInterfaceConnector
 	{
 		[SerializeField]
 		HapticPulse m_HoverPulse;
@@ -23,12 +23,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 		IUsesGameObjectLockingProvider IInjectedFunctionality<IUsesGameObjectLockingProvider>.provider { get; set; }
 		IControlHapticsProvider IInjectedFunctionality<IControlHapticsProvider>.provider { get; set; }
 		IRayToNodeProvider IInjectedFunctionality<IRayToNodeProvider>.provider { get; set; }
-
-		void Awake()
-		{
-			ISelectObjectMethods.getSelectionCandidate = GetSelectionCandidate;
-			ISelectObjectMethods.selectObject = SelectObject;
-		}
 
 		public GameObject GetSelectionCandidate(GameObject hoveredObject, bool useGrouping = false)
 		{
@@ -109,6 +103,17 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			// Selection can change outside of this module, so stay in sync
 			if (Selection.objects.Length == 0)
 				m_CurrentGroupRoot = null;
+		}
+
+		public void ConnectInterface(object @object, object userData = null)
+		{
+			var selectObject = @object as ISelectObject;
+			if (selectObject != null)
+				selectObject.provider = this;
+		}
+
+		public void DisconnectInterface(object @object, object userData = null)
+		{
 		}
 	}
 }

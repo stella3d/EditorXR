@@ -18,8 +18,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		[SerializeField]
 		GameObject m_PreviewCameraPrefab;
 
-		class Viewer : Nested, IInterfaceConnector, ISerializePreferences, IConnectInterfaces, IUsesViewerScaleProvider,
-			IMoveCameraRigProvider, IUsesViewerBodyProvider, IGetVRPlayerObjectsProvider
+		class Viewer : Nested, IInterfaceConnector, ISerializePreferences, IConnectInterfaces, IGetPointerLength,
+			IUsesViewerScaleProvider, IMoveCameraRigProvider, IUsesViewerBodyProvider, IGetVRPlayerObjectsProvider
 		{
 			[Serializable]
 			class Preferences
@@ -51,7 +51,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			public bool hmdReady { get; private set; }
 
-			public IConnectInterfacesProvider provider { get; set; }
+			IConnectInterfacesProvider IInjectedFunctionality<IConnectInterfacesProvider>.provider { get; set; }
+			IGetPointerLengthProvider IInjectedFunctionality<IGetPointerLengthProvider>.provider { get; set; }
 
 			public Viewer()
 			{
@@ -202,9 +203,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return Overlaps(rayOrigin, m_PlayerBody.aboveHeadTrigger);
 			}
 
-			static bool Overlaps(Transform rayOrigin, Collider trigger)
+			bool Overlaps(Transform rayOrigin, Collider trigger)
 			{
-				var radius = DirectSelection.GetPointerLength(rayOrigin);
+				var radius = this.GetPointerLength(rayOrigin);
 
 				var colliders = Physics.OverlapSphere(rayOrigin.position, radius, -1, QueryTriggerInteraction.Collide);
 				foreach (var collider in colliders)

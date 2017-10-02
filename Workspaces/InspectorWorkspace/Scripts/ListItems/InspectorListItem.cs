@@ -46,6 +46,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public Action<int> toggleExpanded { private get; set; }
 
+		ISetHighlightProvider IInjectedFunctionality<ISetHighlightProvider>.provider { get; set; }
+		IGetFieldGrabOriginProvider IInjectedFunctionality<IGetFieldGrabOriginProvider>.provider { get; set; }
+
 		protected override bool singleClickDrag
 		{
 			get { return false; }

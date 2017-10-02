@@ -60,7 +60,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public virtual string searchQuery { get { return m_FilterUI.searchQuery; } }
 
-		public IMoveCameraRigProvider provider { get; set; }
+		IMoveCameraRigProvider IInjectedFunctionality<IMoveCameraRigProvider>.provider { get; set; }
 
 		public override void Setup()
 		{

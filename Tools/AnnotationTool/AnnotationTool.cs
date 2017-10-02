@@ -157,6 +157,8 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 	IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
 	IUsesSpatialHashProvider IInjectedFunctionality<IUsesSpatialHashProvider>.provider { get; set; }
 	ILinkedObjectProvider IInjectedFunctionality<ILinkedObjectProvider>.provider { get; set; }
+	IIsHoveringOverUIProvider IInjectedFunctionality<IIsHoveringOverUIProvider>.provider { get; set; }
+	IUsesCustomMenuOriginsProvider IInjectedFunctionality<IUsesCustomMenuOriginsProvider>.provider { get; set; }
 
 	void OnDestroy()
 	{

@@ -247,6 +247,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		IRayToNodeProvider IInjectedFunctionality<IRayToNodeProvider>.provider { get; set; }
 		IControlHapticsProvider IInjectedFunctionality<IControlHapticsProvider>.provider { get; set; }
 		IRayVisibilitySettingsProvider IInjectedFunctionality<IRayVisibilitySettingsProvider>.provider { get; set; }
+		IUsesDirectSelectionProvider IInjectedFunctionality<IUsesDirectSelectionProvider>.provider { get; set; }
+		ICanGrabObjectProvider IInjectedFunctionality<ICanGrabObjectProvider>.provider { get; set; }
+		ISelectObjectProvider IInjectedFunctionality<ISelectObjectProvider>.provider { get; set; }
+		IUsesSnappingProvider IInjectedFunctionality<IUsesSnappingProvider>.provider { get; set; }
+		ISetHighlightProvider IInjectedFunctionality<ISetHighlightProvider>.provider { get; set; }
+		IIsMainMenuVisibleProvider IInjectedFunctionality<IIsMainMenuVisibleProvider>.provider { get; set; }
+		IGetRayVisibilityProvider IInjectedFunctionality<IGetRayVisibilityProvider>.provider { get; set; }
 
 		void Start()
 		{

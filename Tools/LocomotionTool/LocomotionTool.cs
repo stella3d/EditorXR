@@ -105,7 +105,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		readonly List<ProxyFeedbackRequest> m_ScaleFeedback = new List<ProxyFeedbackRequest>();
 		readonly List<ProxyFeedbackRequest> m_RotateFeedback = new List<ProxyFeedbackRequest>();
 		readonly List<ProxyFeedbackRequest> m_ResetScaleFeedback = new List<ProxyFeedbackRequest>();
-		IRayVisibilitySettingsProvider m_Provider;
 
 		public ActionMap actionMap
 		{
@@ -180,6 +179,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		ILinkedObjectProvider IInjectedFunctionality<ILinkedObjectProvider>.provider { get; set; }
 		IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
 		IGetVRPlayerObjectsProvider IInjectedFunctionality<IGetVRPlayerObjectsProvider>.provider { get; set; }
+		IBlockUIInteractionProvider IInjectedFunctionality<IBlockUIInteractionProvider>.provider { get; set; }
 
 		void Start()
 		{

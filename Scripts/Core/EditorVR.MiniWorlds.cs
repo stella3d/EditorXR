@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	partial class EditorVR
 	{
 		class MiniWorlds : Nested, ILateBindInterfaceMethods<DirectSelection>, IPlaceSceneObjects, IUsesViewerScale,
-			IUsesSpatialHash, IRayVisibilitySettings
+			IUsesSpatialHash, IRayVisibilitySettings, IGetPointerLength, IIsInMiniWorldProvider
 		{
 			internal class MiniWorldRay
 			{
@@ -183,6 +183,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
 			IUsesSpatialHashProvider IInjectedFunctionality<IUsesSpatialHashProvider>.provider { get; set; }
 			IRayVisibilitySettingsProvider IInjectedFunctionality<IRayVisibilitySettingsProvider>.provider { get; set; }
+			IGetPointerLengthProvider IInjectedFunctionality<IGetPointerLengthProvider>.provider { get; set; }
 
 			// Local method use only -- created here to reduce garbage collection
 			readonly List<Renderer> m_IgnoreList = new List<Renderer>();
@@ -190,15 +191,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public MiniWorlds()
 			{
 				EditorApplication.hierarchyWindowChanged += OnHierarchyChanged;
-				IIsInMiniWorldMethods.isInMiniWorld = IsInMiniWorld;
 			}
 
-			bool IsInMiniWorld(Transform rayOrigin)
+			public bool IsInMiniWorld(Transform rayOrigin)
 			{
 				foreach (var miniWorld in m_Worlds)
 				{
 					var rayOriginPosition = rayOrigin.position;
-					var pointerPosition = rayOriginPosition + rayOrigin.forward * DirectSelection.GetPointerLength(rayOrigin);
+					var pointerPosition = rayOriginPosition + rayOrigin.forward * this.GetPointerLength(rayOrigin);
 					if (miniWorld.Contains(rayOriginPosition) || miniWorld.Contains(pointerPosition))
 						return true;
 				}
@@ -302,7 +302,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					miniWorldRayOrigin.localScale = Vector3.Scale(inverseScale, referenceTransform.localScale);
 
 					// Set miniWorldRayOrigin active state based on whether controller is inside corresponding MiniWorld
-					var originalPointerPosition = originalRayOrigin.position + originalRayOrigin.forward * DirectSelection.GetPointerLength(originalRayOrigin);
+					var originalPointerPosition = originalRayOrigin.position + originalRayOrigin.forward * this.GetPointerLength(originalRayOrigin);
 					var isContained = miniWorld.Contains(originalPointerPosition);
 					miniWorldRay.tester.active = isContained;
 					miniWorldRayOrigin.gameObject.SetActive(isContained);
@@ -368,7 +368,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 							}
 						}
 
-						var pointerLengthDiff = DirectSelection.GetPointerLength(to) - DirectSelection.GetPointerLength(from);
+						var pointerLengthDiff = this.GetPointerLength(to) - this.GetPointerLength(from);
 						directSelection.TransferHeldObjects(from, to, Vector3.forward * pointerLengthDiff);
 
 						if (overlapPair.HasValue)
@@ -476,7 +476,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 					var isContained = false;
 					foreach (var miniWorld in m_Worlds)
 					{
-						isContained |= miniWorld.Contains(rayOrigin.position + rayOrigin.forward * DirectSelection.GetPointerLength(rayOrigin));
+						isContained |= miniWorld.Contains(rayOrigin.position + rayOrigin.forward * this.GetPointerLength(rayOrigin));
 					}
 
 					if (isContained && !wasContained)

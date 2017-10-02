@@ -19,7 +19,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 		ProxyExtras m_ProxyExtras;
 
 		class Rays : Nested, IInterfaceConnector, IConnectInterfaces, IUsesViewerScale, IRayToNodeProvider,
-			IForEachRayOriginProvider, IRayVisibilitySettingsProvider
+			IForEachRayOriginProvider, IRayVisibilitySettingsProvider, ISetDefaultRayColorProvider,
+			IGetDefaultRayColorProvider, IGetFieldGrabOriginProvider, IGetPreviewOriginProvider,
+			IUsesRaycastResultsProvider, IGetRayVisibilityProvider
 		{
 			internal delegate void ForEachProxyDeviceCallback(DeviceData deviceData);
 
@@ -37,18 +39,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			IConnectInterfacesProvider IInjectedFunctionality<IConnectInterfacesProvider>.provider { get; set; }
 			IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
-
-			public Rays()
-			{
-				ISetDefaultRayColorMethods.setDefaultRayColor = SetDefaultRayColor;
-				IGetDefaultRayColorMethods.getDefaultRayColor = GetDefaultRayColor;
-
-				IGetFieldGrabOriginMethods.getFieldGrabOriginForRayOrigin = GetFieldGrabOriginForRayOrigin;
-				IGetPreviewOriginMethods.getPreviewOriginForRayOrigin = GetPreviewOriginForRayOrigin;
-				IUsesRaycastResultsMethods.getFirstGameObject = GetFirstGameObject;
-				IGetRayVisibilityMethods.isRayVisible = IsRayActive;
-				IGetRayVisibilityMethods.isConeVisible = IsConeActive;
-			}
 
 			internal override void OnDestroy()
 			{
@@ -361,7 +351,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return result;
 			}
 
-			static GameObject GetFirstGameObject(Transform rayOrigin)
+			public GameObject GetFirstGameObject(Transform rayOrigin)
 			{
 				var intersectionModule = evr.GetModule<IntersectionModule>();
 
@@ -396,7 +386,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return null;
 			}
 
-			Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
+			public Transform GetPreviewOriginForRayOrigin(Transform rayOrigin)
 			{
 				foreach (var proxy in m_Proxies)
 				{
@@ -408,7 +398,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return null;
 			}
 
-			Transform GetFieldGrabOriginForRayOrigin(Transform rayOrigin)
+			public Transform GetFieldGrabOriginForRayOrigin(Transform rayOrigin)
 			{
 				foreach (var proxy in m_Proxies)
 				{
@@ -420,13 +410,13 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return null;
 			}
 
-			static bool IsRayActive(Transform rayOrigin)
+			public bool IsRayVisible(Transform rayOrigin)
 			{
 				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 				return dpr == null || dpr.rayVisible;
 			}
 
-			static bool IsConeActive(Transform rayOrigin)
+			public bool IsConeVisible(Transform rayOrigin)
 			{
 				var dpr = rayOrigin.GetComponentInChildren<DefaultProxyRay>();
 				return dpr == null || dpr.coneVisible;
@@ -520,7 +510,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return null;
 			}
 
-			static void SetDefaultRayColor(Transform rayOrigin, Color color)
+			public void SetDefaultRayColor(Transform rayOrigin, Color color)
 			{
 				if (rayOrigin)
 				{
@@ -535,7 +525,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				highlightModule.highlightColor = color;
 			}
 
-			static Color GetDefaultRayColor(Transform rayOrigin)
+			public Color GetDefaultRayColor(Transform rayOrigin)
 			{
 				if (rayOrigin)
 				{

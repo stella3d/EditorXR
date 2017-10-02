@@ -41,9 +41,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
 
-		IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
-		IRequestFeedbackProvider IInjectedFunctionality<IRequestFeedbackProvider>.provider { get; set; }
-
 		public Transform rayOrigin { get; set; }
 		public Node node { get; set; }
 
@@ -51,10 +48,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
 		public ActionMap standardActionMap { private get; set; }
 
+		IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
+		IRequestFeedbackProvider IInjectedFunctionality<IRequestFeedbackProvider>.provider { get; set; }
 		IConnectInterfacesProvider IInjectedFunctionality<IConnectInterfacesProvider>.provider { get; set; }
 		IUsesSpatialHashProvider IInjectedFunctionality<IUsesSpatialHashProvider>.provider { get; set; }
 		ISelectToolProvider IInjectedFunctionality<ISelectToolProvider>.provider { get; set; }
 		IRayVisibilitySettingsProvider IInjectedFunctionality<IRayVisibilitySettingsProvider>.provider { get; set; }
+		IInstantiateMenuUIProvider IInjectedFunctionality<IInstantiateMenuUIProvider>.provider { get; set; }
+		IIsHoveringOverUIProvider IInjectedFunctionality<IIsHoveringOverUIProvider>.provider { get; set; }
+		IIsMainMenuVisibleProvider IInjectedFunctionality<IIsMainMenuVisibleProvider>.provider { get; set; }
 
 		void Start()
 		{

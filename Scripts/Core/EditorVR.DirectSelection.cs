@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 {
 	partial class EditorVR
 	{
-		class DirectSelection : Nested, IInterfaceConnector
+		class DirectSelection : Nested, IInterfaceConnector, IUsesDirectSelectionProvider, ICanGrabObjectProvider, IGetPointerLengthProvider
 		{
 			readonly Dictionary<Transform, GameObject> m_DirectSelections = new Dictionary<Transform, GameObject>();
 			readonly Dictionary<Transform, HashSet<Transform>> m_GrabbedObjects = new Dictionary<Transform, HashSet<Transform>>();
@@ -24,16 +24,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			public event Action<Transform, HashSet<Transform>> objectsGrabbed;
 			public event Action<Transform, Transform[]> objectsDropped;
 			public event Action<Transform, Transform> objectsTransferred;
-
-			public DirectSelection()
-			{
-				IUsesDirectSelectionMethods.getDirectSelection = () => m_DirectSelections;
-				IUsesDirectSelectionMethods.resetDirectSelectionState = ResetDirectSelectionState;
-
-				ICanGrabObjectMethods.canGrabObject = CanGrabObject;
-
-				IGetPointerLengthMethods.getPointerLength = GetPointerLength;
-			}
 
 			public void ConnectInterface(object @object, object userData = null)
 			{
@@ -68,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			}
 
 			// NOTE: This is for the length of the pointer object, not the length of the ray coming out of the pointer
-			internal static float GetPointerLength(Transform rayOrigin)
+			public float GetPointerLength(Transform rayOrigin)
 			{
 				var length = 0f;
 
@@ -141,7 +131,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return null;
 			}
 
-			static bool CanGrabObject(GameObject selection, Transform rayOrigin)
+			public bool CanGrabObject(GameObject selection, Transform rayOrigin)
 			{
 				if (selection.CompareTag(k_VRPlayerTag) && !evr.GetNestedModule<MiniWorlds>().rays.ContainsKey(rayOrigin))
 					return false;
@@ -248,7 +238,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			void ResetDirectSelectionState()
+			public Dictionary<Transform, GameObject> GetDirectSelection()
+			{
+				return m_DirectSelections;
+			}
+
+			public void ResetDirectSelectionState()
 			{
 				foreach (var usesDirectSelection in m_DirectSelectionUsers)
 				{

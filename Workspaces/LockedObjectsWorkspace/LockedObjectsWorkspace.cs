@@ -46,7 +46,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public Action<GameObject, bool> setLocked { get; set; }
 		public Func<GameObject, bool> isLocked { get; set; }
 
-		public IUsesGameObjectLockingProvider provider { get; set; }
+		IUsesGameObjectLockingProvider IInjectedFunctionality<IUsesGameObjectLockingProvider>.provider { get; set; }
 
 		public override void Setup()
 		{

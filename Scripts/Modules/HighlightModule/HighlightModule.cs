@@ -8,7 +8,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking, IInterfaceConnector
+	sealed class HighlightModule : MonoBehaviour, IUsesGameObjectLocking, IInterfaceConnector, ISetHighlightProvider
 	{
 		class HighlightData
 		{
@@ -49,8 +49,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Awake()
 		{
-			ISetHighlightMethods.setHighlight = SetHighlight;
-
 			m_RayHighlightMaterial = Instantiate(m_RayHighlightMaterial);
 			if (EditorPrefs.HasKey(k_SelectionOutlinePrefsKey))
 			{
@@ -62,6 +60,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		public void ConnectInterface(object @object, object userData = null)
 		{
+			var setHighlight = @object as ISetHighlight;
+			if (setHighlight == null)
+				setHighlight.provider = this;
+
 			var customHighlight = @object as ICustomHighlight;
 			if (customHighlight != null)
 				this.customHighlight += customHighlight.OnHighlight;

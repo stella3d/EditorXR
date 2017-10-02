@@ -395,6 +395,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public event Action hovered;
 
+		public ISetTooltipVisibilityProvider provider { get; set; }
+
 		void Awake()
 		{
 			m_OriginalLocalPosition = transform.localPosition;

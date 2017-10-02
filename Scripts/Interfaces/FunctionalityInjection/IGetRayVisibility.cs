@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -7,31 +6,43 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Provides access to checks that can test whether parts of the default ray are visible
 	/// </summary>
-	public interface IGetRayVisibility
+	public interface IGetRayVisibility : IInjectedFunctionality<IGetRayVisibilityProvider>
 	{
 	}
 
-	public static class IGetRayVisibilityMethods
+	public interface IGetRayVisibilityProvider
 	{
-		internal static Func<Transform, bool> isRayVisible { get; set; }
-		internal static Func<Transform, bool> isConeVisible { get; set; }
-
 		/// <summary>
 		/// Returns whether the specified ray is visible
 		/// </summary>
 		/// <param name="rayOrigin">The rayOrigin that is being checked</param>
-		public static bool IsRayVisible(this IGetRayVisibility obj, Transform rayOrigin)
+		bool IsRayVisible(Transform rayOrigin);
+
+		/// <summary>
+		/// Returns whether the specified cone is visible
+		/// </summary>
+		/// <param name="rayOrigin">The rayOrigin that is being checked</param>
+		bool IsConeVisible(Transform rayOrigin);
+	}
+
+	public static class IGetRayVisibilityMethods
+	{
+		/// <summary>
+		/// Returns whether the specified ray is visible
+		/// </summary>
+		/// <param name="rayOrigin">The rayOrigin that is being checked</param>
+		public static bool IsRayVisible(this IGetRayVisibility @this, Transform rayOrigin)
 		{
-			return isRayVisible(rayOrigin);
+			return @this.provider.IsRayVisible(rayOrigin);
 		}
 
 		/// <summary>
 		/// Returns whether the specified cone is visible
 		/// </summary>
 		/// <param name="rayOrigin">The rayOrigin that is being checked</param>
-		public static bool IsConeVisible(this IGetRayVisibility obj, Transform rayOrigin)
+		public static bool IsConeVisible(this IGetRayVisibility @this, Transform rayOrigin)
 		{
-			return isConeVisible(rayOrigin);
+			return @this.provider.IsConeVisible(rayOrigin);
 		}
 	}
 }

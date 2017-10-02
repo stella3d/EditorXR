@@ -27,7 +27,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 		public Action<TIndex, Transform, bool> setRowGrabbed { protected get; set; }
 		public Func<Transform, ListViewItem<TData, TIndex>> getGrabbedRow { protected get; set; }
 
-		public IUsesViewerScaleProvider provider { get; set; }
+		IUsesViewerScaleProvider IInjectedFunctionality<IUsesViewerScaleProvider>.provider { get; set; }
+		IGetPreviewOriginProvider IInjectedFunctionality<IGetPreviewOriginProvider>.provider { get; set; }
 
 		protected virtual void OnDragStarted(BaseHandle handle, HandleEventData eventData)
 		{

@@ -13,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	[MainMenuItem("Snapping", "Settings", "Select snapping modes")]
 	sealed class SnappingModule : MonoBehaviour, IUsesViewerScale, ISettingsMenuProvider, ISerializePreferences,
-		IRaycast
+		IRaycast, IUsesSnappingProvider
 	{
 		const float k_GroundPlaneScale = 1000f;
 
@@ -373,10 +373,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		void Awake()
 		{
-			IUsesSnappingMethods.manipulatorSnap = ManipulatorSnap;
-			IUsesSnappingMethods.directSnap = DirectSnap;
-			IUsesSnappingMethods.clearSnappingState = ClearSnappingState;
-
 			m_GroundPlane = ObjectUtils.Instantiate(m_GroundPlane, transform);
 			m_GroundPlane.SetActive(false);
 

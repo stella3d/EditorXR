@@ -64,6 +64,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 		ILinkedObjectProvider IInjectedFunctionality<ILinkedObjectProvider>.provider { get; set; }
 		IGetManiuplatorDragStateProvider IInjectedFunctionality<IGetManiuplatorDragStateProvider>.provider { get; set; }
 		IRayToNodeProvider IInjectedFunctionality<IRayToNodeProvider>.provider { get; set; }
+		IUsesRaycastResultsProvider IInjectedFunctionality<IUsesRaycastResultsProvider>.provider { get; set; }
+		ISetHighlightProvider IInjectedFunctionality<ISetHighlightProvider>.provider { get; set; }
+		ISelectObjectProvider IInjectedFunctionality<ISelectObjectProvider>.provider { get; set; }
+		IIsHoveringOverUIProvider IInjectedFunctionality<IIsHoveringOverUIProvider>.provider { get; set; }
+		IUsesDirectSelectionProvider IInjectedFunctionality<IUsesDirectSelectionProvider>.provider { get; set; }
+		ICanGrabObjectProvider IInjectedFunctionality<ICanGrabObjectProvider>.provider { get; set; }
+		IGetRayVisibilityProvider IInjectedFunctionality<IGetRayVisibilityProvider>.provider { get; set; }
+		IIsMainMenuVisibleProvider IInjectedFunctionality<IIsMainMenuVisibleProvider>.provider { get; set; }
+		IIsInMiniWorldProvider IInjectedFunctionality<IIsInMiniWorldProvider>.provider { get; set; }
+		IGetDefaultRayColorProvider IInjectedFunctionality<IGetDefaultRayColorProvider>.provider { get; set; }
+		ISetDefaultRayColorProvider IInjectedFunctionality<ISetDefaultRayColorProvider>.provider { get; set; }
+		ISetTooltipVisibilityProvider IInjectedFunctionality<ISetTooltipVisibilityProvider>.provider { get; set; }
 
 		void Start()
 		{

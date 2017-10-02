@@ -6,7 +6,7 @@ using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
-	sealed class TooltipModule : MonoBehaviour, IUsesViewerScale
+	sealed class TooltipModule : MonoBehaviour, IUsesViewerScale, ISetTooltipVisibilityProvider
 	{
 		const float k_Delay = 0; // In case we want to bring back a delay
 		const float k_TransitionDuration = 0.1f;
@@ -49,12 +49,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		// Local method use only -- created here to reduce garbage collection
 		readonly List<ITooltip> m_TooltipsToHide = new List<ITooltip>();
-
-		void Awake()
-		{
-			ISetTooltipVisibilityMethods.showTooltip = ShowTooltip;
-			ISetTooltipVisibilityMethods.hideTooltip = HideTooltip;
-		}
 
 		void Start()
 		{

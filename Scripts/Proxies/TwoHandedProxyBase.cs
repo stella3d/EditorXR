@@ -74,12 +74,15 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			}
 		}
 
-		private bool m_Hidden;
+		bool m_Hidden;
 
 		public Dictionary<Transform, Transform> menuOrigins { get; set; }
 		public Dictionary<Transform, Transform> alternateMenuOrigins { get; set; }
 		public Dictionary<Transform, Transform> previewOrigins { get; set; }
 		public Dictionary<Transform, Transform> fieldGrabOrigins { get; set; }
+
+		ISetTooltipVisibilityProvider IInjectedFunctionality<ISetTooltipVisibilityProvider>.provider { get; set; }
+		ISetHighlightProvider IInjectedFunctionality<ISetHighlightProvider>.provider { get; set; }
 
 		public virtual void Awake()
 		{

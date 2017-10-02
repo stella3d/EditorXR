@@ -207,6 +207,8 @@ namespace UnityEditor.Experimental.EditorVR.Menus
 
 		public event Action hovered;
 
+		public ISetTooltipVisibilityProvider provider { get; set; }
+
 		void Awake()
 		{
 			m_InsetMaterial = MaterialUtils.GetMaterialClone(m_InsetMeshRenderer);

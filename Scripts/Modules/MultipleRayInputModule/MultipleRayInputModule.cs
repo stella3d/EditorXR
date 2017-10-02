@@ -10,7 +10,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
 	// Based in part on code provided by VREAL at https://github.com/VREALITY/ViveUGUIModule/, which is licensed under the MIT License
-	sealed class MultipleRayInputModule : BaseInputModule, IGetPointerLength, IConnectInterfaces
+	sealed class MultipleRayInputModule : BaseInputModule, IGetPointerLength, IConnectInterfaces, IIsHoveringOverUIProvider
 	{
 		public class RaycastSource : ICustomActionMap
 		{
@@ -150,8 +150,6 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
 		protected override void Awake()
 		{
-			IBlockUIInteractionMethods.setUIBlockedForRayOrigin = SetUIBlockedForRayOrigin;
-			IIsHoveringOverUIMethods.isHoveringOverUI = IsHoveringOverUI;
 			base.Awake();
 
 			s_LayerMask = LayerMask.GetMask("UI");

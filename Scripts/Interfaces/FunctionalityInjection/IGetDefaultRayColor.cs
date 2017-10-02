@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -7,21 +6,29 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Implementors can get the color of the default ray
 	/// </summary>
-	public interface IGetDefaultRayColor
+	public interface IGetDefaultRayColor : IInjectedFunctionality<IGetDefaultRayColorProvider>
 	{
+	}
+
+	public interface IGetDefaultRayColorProvider
+	{
+		/// <summary>
+		/// Get the color of the default ray
+		/// <param name="rayOrigin">The ray on which to get the color</param>
+		/// </summary>
+		Color GetDefaultRayColor(Transform rayOrigin);
 	}
 
 	public static class IGetDefaultRayColorMethods
 	{
-		internal static Func<Transform, Color> getDefaultRayColor { get; set; }
-
 		/// <summary>
 		/// Get the color of the default ray
-		/// <param name="rayOrigin">The ray on which to set the color</param>
+		/// <param name="rayOrigin">The ray on which to get the color</param>
 		/// </summary>
-		public static Color GetDefaultRayColor(this IGetDefaultRayColor obj, Transform rayOrigin)
+		/// <param name="rayOrigin">The rayorigin of which to get the color</param>
+		public static Color GetDefaultRayColor(this IGetDefaultRayColor @this, Transform rayOrigin)
 		{
-			return getDefaultRayColor(rayOrigin);
+			return @this.provider.GetDefaultRayColor(rayOrigin);
 		}
 	}
 }

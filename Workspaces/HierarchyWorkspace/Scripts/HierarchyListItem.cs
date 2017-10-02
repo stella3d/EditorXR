@@ -105,7 +105,8 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public bool isStillSettling { private set; get; }
 
-		public IUsesViewerBodyProvider provider { get; set; }
+		IUsesViewerBodyProvider IInjectedFunctionality<IUsesViewerBodyProvider>.provider { get; set; }
+		IGetFieldGrabOriginProvider IInjectedFunctionality<IGetFieldGrabOriginProvider>.provider { get; set; }
 
 		public override void Setup(HierarchyData data)
 		{

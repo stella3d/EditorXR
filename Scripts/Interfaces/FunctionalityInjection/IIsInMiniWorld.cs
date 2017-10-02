@@ -1,5 +1,4 @@
 ﻿#if UNITY_EDITOR
-using System;
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -7,21 +6,28 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Provides access to checks that can test whether a rayOrigin is contained in a miniworld
 	/// </summary>
-	public interface IIsInMiniWorld
+	public interface IIsInMiniWorld : IInjectedFunctionality<IIsInMiniWorldProvider>
 	{
 	}
 
-	public static class IIsInMiniWorldMethods
+	public interface IIsInMiniWorldProvider
 	{
-		internal static Func<Transform, bool> isInMiniWorld { get; set; }
-
 		/// <summary>
 		/// Returns whether the specified ray is contained in a miniworld
 		/// </summary>
 		/// <param name="rayOrigin">The rayOrigin that is being checked</param>
-		public static bool IsInMiniWorld(this IIsInMiniWorld obj, Transform rayOrigin)
+		bool IsInMiniWorld(Transform rayOrigin);
+	}
+
+	public static class IIsInMiniWorldMethods
+	{
+		/// <summary>
+		/// Returns whether the specified ray is contained in a miniworld
+		/// </summary>
+		/// <param name="rayOrigin">The rayOrigin that is being checked</param>
+		public static bool IsInMiniWorld(this IIsInMiniWorld @this, Transform rayOrigin)
 		{
-			return isInMiniWorld(rayOrigin);
+			return @this.provider.IsInMiniWorld(rayOrigin);
 		}
 	}
 }

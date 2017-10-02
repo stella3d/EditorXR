@@ -13,7 +13,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
 	{
 		const float k_MainMenuAutoHideDelay = 0.125f;
 		const float k_MainMenuAutoShowDelay = 0.25f;
-		class Menus : Nested, IInterfaceConnector, ILateBindInterfaceMethods<Tools>, IConnectInterfaces, IUsesViewerScale
+		class Menus : Nested, IInterfaceConnector, ILateBindInterfaceMethods<Tools>, IConnectInterfaces,
+			IUsesViewerScale, IInstantiateMenuUIProvider, IIsMainMenuVisibleProvider, IUsesCustomMenuOriginsProvider
 		{
 			internal class MenuHideData
 			{
@@ -40,16 +41,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			readonly List<IWorkspace> m_WorkspaceComponents = new List<IWorkspace>();
 			readonly Collider[] m_WorkspaceOverlaps = new Collider[k_PossibleOverlaps];
 
-			public Menus()
-			{
-				IInstantiateMenuUIMethods.instantiateMenuUI = InstantiateMenuUI;
-				IIsMainMenuVisibleMethods.isMainMenuVisible = IsMainMenuVisible;
-				IUsesCustomMenuOriginsMethods.getCustomMenuOrigin = GetCustomMenuOrigin;
-				IUsesCustomMenuOriginsMethods.getCustomAlternateMenuOrigin = GetCustomAlternateMenuOrigin;
-			}
-
 			public void ConnectInterface(object @object, object userData = null)
 			{
+				var instantiateMenuUI = @object as IInstantiateMenuUI;
+				if (instantiateMenuUI != null)
+					instantiateMenuUI.provider = this;
+
 				var rayOrigin = userData as Transform;
 				var settingsMenuProvider = @object as ISettingsMenuProvider;
 				if (settingsMenuProvider != null)
@@ -144,7 +141,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				deviceData.toolsMenu.alternateMenuVisible = alternateMenu.menuHideFlags == 0;
 			}
 
-			static Transform GetCustomMenuOrigin(Transform rayOrigin)
+			public Transform GetCustomMenuOrigin(Transform rayOrigin)
 			{
 				Transform mainMenuOrigin = null;
 
@@ -159,7 +156,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				return mainMenuOrigin;
 			}
 
-			static Transform GetCustomAlternateMenuOrigin(Transform rayOrigin)
+			public Transform GetCustomAlternateMenuOrigin(Transform rayOrigin)
 			{
 				Transform alternateMenuOrigin = null;
 
@@ -484,7 +481,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			static GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
+			public GameObject InstantiateMenuUI(Transform rayOrigin, IMenu prefab)
 			{
 				var ui = evr.GetNestedModule<UI>();
 				GameObject go = null;
@@ -556,7 +553,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 				}
 			}
 
-			static bool IsMainMenuVisible(Transform rayOrigin)
+			public bool IsMainMenuVisible(Transform rayOrigin)
 			{
 				foreach (var deviceData in evr.m_DeviceData)
 				{

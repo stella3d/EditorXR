@@ -7,23 +7,37 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Provides access to transform roots for custom menus
 	/// </summary>
-	public interface IUsesCustomMenuOrigins
+	public interface IUsesCustomMenuOrigins : IInjectedFunctionality<IUsesCustomMenuOriginsProvider>
 	{
 	}
 
-	public static class IUsesCustomMenuOriginsMethods
+	public interface IUsesCustomMenuOriginsProvider
 	{
-		internal static Func<Transform, Transform> getCustomMenuOrigin { get; set; }
-		internal static Func<Transform, Transform> getCustomAlternateMenuOrigin { get; set; }
-
 		/// <summary>
 		/// Get the root transform for custom menus for a given ray origin
 		/// </summary>
 		/// <param name="rayOrigin">The ray origin for which we want custom the menu origin</param>
 		/// <returns></returns>
-		public static Transform GetCustomMenuOrigin(this IUsesCustomMenuOrigins obj, Transform rayOrigin)
+		Transform GetCustomMenuOrigin(Transform rayOrigin);
+
+		/// <summary>
+		/// Get the root transform for custom alternate menus for a given ray origin
+		/// </summary>
+		/// <param name="rayOrigin">The ray origin for which we want the alternate menu origin</param>
+		/// <returns></returns>
+		Transform GetCustomAlternateMenuOrigin(Transform rayOrigin);
+	}
+
+	public static class IUsesCustomMenuOriginsMethods
+	{
+		/// <summary>
+		/// Get the root transform for custom menus for a given ray origin
+		/// </summary>
+		/// <param name="rayOrigin">The ray origin for which we want custom the menu origin</param>
+		/// <returns></returns>
+		public static Transform GetCustomMenuOrigin(this IUsesCustomMenuOrigins @this, Transform rayOrigin)
 		{
-			return getCustomMenuOrigin(rayOrigin);
+			return @this.provider.GetCustomMenuOrigin(rayOrigin);
 		}
 
 		/// <summary>
@@ -31,9 +45,9 @@ namespace UnityEditor.Experimental.EditorVR
 		/// </summary>
 		/// <param name="rayOrigin">The ray origin for which we want the alternate menu origin</param>
 		/// <returns></returns>
-		public static Transform GetCustomAlternateMenuOrigin(this IUsesCustomMenuOrigins obj, Transform rayOrigin)
+		public static Transform GetCustomAlternateMenuOrigin(this IUsesCustomMenuOrigins @this, Transform rayOrigin)
 		{
-			return getCustomAlternateMenuOrigin(rayOrigin);
+			return @this.provider.GetCustomAlternateMenuOrigin(rayOrigin);
 		}
 	}
 }

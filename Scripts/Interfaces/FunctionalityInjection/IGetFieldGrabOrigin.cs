@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -7,21 +6,28 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Implementors receive a field grab origin transform
 	/// </summary>
-	public interface IGetFieldGrabOrigin
+	public interface IGetFieldGrabOrigin : IInjectedFunctionality<IGetFieldGrabOriginProvider>
 	{
+	}
+
+	public interface IGetFieldGrabOriginProvider
+	{
+		/// <summary>
+		/// Get the field grab transform attached to the given rayOrigin
+		/// </summary>
+		/// <param name="rayOrigin">The rayOrigin that is grabbing the field</param>
+		Transform GetFieldGrabOriginForRayOrigin(Transform rayOrigin);
 	}
 
 	public static class IGetFieldGrabOriginMethods
 	{
-		internal static Func<Transform, Transform> getFieldGrabOriginForRayOrigin { get; set; }
-
 		/// <summary>
 		/// Get the field grab transform attached to the given rayOrigin
 		/// </summary>
 		/// <param name="rayOrigin">The rayOrigin that is grabbing the field</param>
 		public static Transform GetFieldGrabOriginForRayOrigin(this IGetFieldGrabOrigin obj, Transform rayOrigin)
 		{
-			return getFieldGrabOriginForRayOrigin(rayOrigin);
+			return obj.provider.GetFieldGrabOriginForRayOrigin(rayOrigin);
 		}
 	}
 }

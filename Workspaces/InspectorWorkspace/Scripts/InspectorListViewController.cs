@@ -59,7 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
 		public event Action<List<InspectorData>, PropertyData> arraySizeChanged;
 
-		public IUsesGameObjectLockingProvider provider { get; set; }
+		IUsesGameObjectLockingProvider IInjectedFunctionality<IUsesGameObjectLockingProvider>.provider { get; set; }
 
 		protected override void Setup()
 		{

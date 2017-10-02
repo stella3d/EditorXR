@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -7,22 +6,30 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Gives decorated class access to hover/intersection detection
 	/// </summary>
-	public interface IUsesRaycastResults
+	public interface IUsesRaycastResults : IInjectedFunctionality<IUsesRaycastResultsProvider>
 	{
 	}
 
-	public static class IUsesRaycastResultsMethods
+	public interface IUsesRaycastResultsProvider
 	{
-		internal static Func<Transform, GameObject> getFirstGameObject { get; set; }
-
 		/// <summary>
 		/// Method used to test hover/intersection
 		/// Returns the first GameObject being hovered over, or intersected with
 		/// </summary>
 		/// <param name="rayOrigin">The rayOrigin for intersection purposes</param>
-		public static GameObject GetFirstGameObject(this IUsesRaycastResults obj, Transform rayOrigin)
+		GameObject GetFirstGameObject(Transform rayOrigin);
+	}
+
+	public static class IUsesRaycastResultsMethods
+	{
+		/// <summary>
+		/// Method used to test hover/intersection
+		/// Returns the first GameObject being hovered over, or intersected with
+		/// </summary>
+		/// <param name="rayOrigin">The rayOrigin for intersection purposes</param>
+		public static GameObject GetFirstGameObject(this IUsesRaycastResults @this, Transform rayOrigin)
 		{
-			return getFirstGameObject(rayOrigin);
+			return @this.provider.GetFirstGameObject(rayOrigin);
 		}
 	}
 }

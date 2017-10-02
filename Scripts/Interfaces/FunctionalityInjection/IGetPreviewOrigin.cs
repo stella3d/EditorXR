@@ -1,5 +1,4 @@
-﻿#if UNITY_EDITOR
-using System;
+#if UNITY_EDITOR
 using UnityEngine;
 
 namespace UnityEditor.Experimental.EditorVR
@@ -7,21 +6,28 @@ namespace UnityEditor.Experimental.EditorVR
 	/// <summary>
 	/// Implementors receive a preview origin transform
 	/// </summary>
-	public interface IGetPreviewOrigin
+	public interface IGetPreviewOrigin : IInjectedFunctionality<IGetPreviewOriginProvider>
 	{
 	}
 
-	public static class IGetPreviewOriginMethods
+	public interface IGetPreviewOriginProvider
 	{
-		internal static Func<Transform, Transform> getPreviewOriginForRayOrigin { get; set; }
-
 		/// <summary>
 		/// Get the preview transform attached to the given rayOrigin
 		/// </summary>
 		/// <param name="rayOrigin">The rayOrigin where the preview will occur</param>
-		public static Transform GetPreviewOriginForRayOrigin(this IGetPreviewOrigin obj, Transform rayOrigin)
+		Transform GetPreviewOriginForRayOrigin(Transform rayOrigin);
+	}
+
+	public static class IGetPreviewOriginMethods
+	{
+		/// <summary>
+		/// Get the preview transform attached to the given rayOrigin
+		/// </summary>
+		/// <param name="rayOrigin">The rayOrigin where the preview will occur</param>
+		public static Transform GetPreviewOriginForRayOrigin(this IGetPreviewOrigin @this, Transform rayOrigin)
 		{
-			return getPreviewOriginForRayOrigin(rayOrigin);
+			return @this.provider.GetPreviewOriginForRayOrigin(rayOrigin);
 		}
 	}
 }
