@@ -67,7 +67,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			var removeList = new List<InputControl>();
 			foreach (var lockedControl in m_LockedControls)
 			{
-				if (Mathf.Approximately(lockedControl.rawValue, lockedControl.provider.GetControlData(lockedControl.index).defaultValue))
+				// Mathf.Approximately will not work in all cases, so we compare with greater flexibility
+				const float flexibility = 0.00001f;
+				var defaultValue = lockedControl.provider.GetControlData(lockedControl.index).defaultValue;
+				if (lockedControl.rawValue >= defaultValue - flexibility && lockedControl.rawValue <= defaultValue + flexibility)
 					removeList.Add(lockedControl);
 				else
 					ConsumeControl(lockedControl);
