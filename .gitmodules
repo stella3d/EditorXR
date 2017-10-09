@@ -4,3 +4,7 @@
 [submodule "libs/VRLineRenderer"]
 	path = libs/VRLineRenderer
 	url = https://github.com/Unity-Technologies/VRLineRenderer
+[submodule "libs/xr-authoring"]
+	path = libs/xr-authoring
+	url = https://github.com/Unity-Technologies/xr-authoring.git
+	branch = native-input
