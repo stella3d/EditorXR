@@ -242,9 +242,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
 			GetNestedModule<Rays>().CreateAllProxies();
 
-		    var debugInputObj = ObjectUtils.Instantiate(new GameObject("DebugInput"));
-		    debugInputObj.AddComponent<DebugInput>();
-
 			// In case we have anything selected at start, set up manipulators, inspector, etc.
 			EditorApplication.delayCall += OnSelectionChanged;
 		}
