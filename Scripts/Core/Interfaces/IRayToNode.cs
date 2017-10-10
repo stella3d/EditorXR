@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using System;
 using UnityEngine;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {

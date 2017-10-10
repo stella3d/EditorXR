@@ -7,6 +7,7 @@ using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {

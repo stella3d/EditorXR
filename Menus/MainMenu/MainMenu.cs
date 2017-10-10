@@ -8,6 +8,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEngine;
 using UnityEngine.InputNew;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {

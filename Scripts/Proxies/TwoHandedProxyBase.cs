@@ -6,6 +6,7 @@ using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {

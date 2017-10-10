@@ -1,4 +1,4 @@
-﻿namespace UnityEditor.Experimental.EditorVR
+﻿namespace UnityEditor.Experimental.EditorVR.Delete
 {
 	/// <summary>
 	/// A tracked node within the system

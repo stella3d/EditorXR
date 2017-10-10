@@ -9,6 +9,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {

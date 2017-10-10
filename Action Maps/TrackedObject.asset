@@ -35,18 +35,18 @@ MonoBehaviour:
     m_DeviceSlots:
     - m_Key: 1
       m_Type:
-        m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+        m_TypeName: UnityEngine.InputNew.OculusTouchController, Assembly-CSharp, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
       m_TagIndex: 0
     - m_Key: 2
       m_Type:
-        m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+        m_TypeName: UnityEngine.InputNew.OculusTouchController, Assembly-CSharp, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
       m_TagIndex: 1
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
-      - controlIndex: 10
+      - controlIndex: 0
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -55,7 +55,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 11
+      - controlIndex: 1
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -64,84 +64,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 12
-        deviceKey: 1
-      deadZone: 0.3
-      buttonAxisSources: []
-      gravity: 1000
-      sensitivity: 1000
-      snap: 1
-      primaryIsButtonAxis: 0
-    - sources: []
-      deadZone: 0.3
-      buttonAxisSources: []
-      gravity: 1000
-      sensitivity: 1000
-      snap: 1
-      primaryIsButtonAxis: 0
-    - sources:
-      - controlIndex: 10
-        deviceKey: 2
-      deadZone: 0.3
-      buttonAxisSources: []
-      gravity: 1000
-      sensitivity: 1000
-      snap: 1
-      primaryIsButtonAxis: 0
-    - sources:
-      - controlIndex: 11
-        deviceKey: 2
-      deadZone: 0.3
-      buttonAxisSources: []
-      gravity: 1000
-      sensitivity: 1000
-      snap: 1
-      primaryIsButtonAxis: 0
-    - sources:
-      - controlIndex: 12
-        deviceKey: 2
-      deadZone: 0.3
-      buttonAxisSources: []
-      gravity: 1000
-      sensitivity: 1000
-      snap: 1
-      primaryIsButtonAxis: 0
-    - sources: []
-      deadZone: 0.3
-      buttonAxisSources: []
-      gravity: 1000
-      sensitivity: 1000
-      snap: 1
-      primaryIsButtonAxis: 0
-    - sources:
-      - controlIndex: 13
-        deviceKey: 1
-      deadZone: 0.3
-      buttonAxisSources: []
-      gravity: 1000
-      sensitivity: 1000
-      snap: 1
-      primaryIsButtonAxis: 0
-    - sources:
-      - controlIndex: 14
-        deviceKey: 1
-      deadZone: 0.3
-      buttonAxisSources: []
-      gravity: 1000
-      sensitivity: 1000
-      snap: 1
-      primaryIsButtonAxis: 0
-    - sources:
-      - controlIndex: 15
-        deviceKey: 1
-      deadZone: 0.3
-      buttonAxisSources: []
-      gravity: 1000
-      sensitivity: 1000
-      snap: 1
-      primaryIsButtonAxis: 0
-    - sources:
-      - controlIndex: 16
+      - controlIndex: 2
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -157,7 +80,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 13
+      - controlIndex: 0
         deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
@@ -166,7 +89,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 14
+      - controlIndex: 1
         deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
@@ -175,7 +98,66 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 15
+      - controlIndex: 2
+        deviceKey: 2
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources: []
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 3
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 4
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 5
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 6
+        deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources: []
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 3
         deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
@@ -184,7 +166,25 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 16
+      - controlIndex: 4
+        deviceKey: 2
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 5
+        deviceKey: 2
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 6
         deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
@@ -229,6 +229,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Right Position.X
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000010499948952
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -249,6 +250,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Right Position.Z
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000011150845918
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -269,6 +271,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Right Position
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000011399545658
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -289,6 +292,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Left Rotation
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000011465318430
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -309,6 +313,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Right Rotation
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000011632217576
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -329,6 +334,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Left Rotation.W
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000012061762406
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -349,6 +355,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Left Rotation.Y
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000012296404806
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -369,6 +376,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Right Position.Y
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000012306099208
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -389,6 +397,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Right Rotation.X
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000012382641376
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -409,6 +418,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Right Rotation.Y
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000012637430000
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -429,6 +439,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Right Rotation.Z
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000012697452144
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -449,6 +460,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Left Position.X
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000013037932804
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -469,6 +481,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Left Position.Y
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000013194096026
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -489,6 +502,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Left Position
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000013195994428
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -509,6 +523,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Left Rotation.Z
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000013828770450
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -529,6 +544,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Right Rotation.W
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000014064690054
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -549,6 +565,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Left Position.Z
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000014192652546
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -569,3 +586,4 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Left Rotation.X
     defaultValue: 0
+    invert: 0

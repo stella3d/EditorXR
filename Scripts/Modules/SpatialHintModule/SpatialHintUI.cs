@@ -4,6 +4,7 @@ using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {

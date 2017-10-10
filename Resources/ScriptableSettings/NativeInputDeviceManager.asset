@@ -8,7 +8,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e3ab5e5f6e1918e49bdb6bce768135c0, type: 3}
-  m_Name: TrackedNodeDeviceManager
+  m_Script: {fileID: 11500000, guid: 6795025fb228d854f8a520911514ba52, type: 3}
+  m_Name: NativeInputDeviceManager
   m_EditorClassIdentifier: 
-  m_TrackedNodeDevices: []
+  m_DeviceRecords: []

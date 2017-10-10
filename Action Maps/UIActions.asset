@@ -20,13 +20,13 @@ MonoBehaviour:
     m_DeviceSlots:
     - m_Key: 1
       m_Type:
-        m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+        m_TypeName: UnityEngine.InputNew.OculusTouchController, Assembly-CSharp, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
       m_TagIndex: -1
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
-      - controlIndex: 2
+      - controlIndex: 13
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -35,7 +35,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 1
+      - controlIndex: 23
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -44,7 +44,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 0
+      - controlIndex: 22
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -74,6 +74,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: VerticalScroll
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000011897076616
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -94,6 +95,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: HorizontalScroll
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000012573131854
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -114,3 +116,4 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Select
     defaultValue: 0
+    invert: 0

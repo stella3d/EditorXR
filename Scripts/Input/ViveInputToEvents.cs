@@ -166,7 +166,7 @@ namespace UnityEditor.Experimental.EditorVR.Input
 			if (localPosition == m_LastPositionValues[steamDeviceIndex] && localRotation == m_LastRotationValues[steamDeviceIndex])
 				return;
 
-			var inputEvent = InputSystem.CreateEvent<VREvent>();
+			var inputEvent = InputSystem.CreateEvent<TrackingEvent>();
 			inputEvent.deviceType = typeof(VRInputDevice);
 			inputEvent.deviceIndex = deviceIndex;
 			inputEvent.localPosition = localPosition;
@@ -178,6 +178,6 @@ namespace UnityEditor.Experimental.EditorVR.Input
 			InputSystem.QueueEvent(inputEvent);
 		}
 #endif
-	}
+    }
 }
 #endif

@@ -7,6 +7,7 @@ using UnityEditor.Experimental.EditorVR.Manipulators;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {

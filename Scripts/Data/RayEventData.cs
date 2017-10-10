@@ -1,6 +1,7 @@
 ﻿#if UNITY_EDITOR
 using UnityEngine;
 using UnityEngine.EventSystems;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {

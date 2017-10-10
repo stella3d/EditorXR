@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {
@@ -42,7 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 			for (int i = 0; i < devices.Count; i++)
 			{
 				var device = devices[i];
-				if (device is VRInputDevice && device.tagIndex != -1)
+				if (device is TrackedController && device.tagIndex != -1)
 					m_SystemDevices.Add(device);
 			}
 

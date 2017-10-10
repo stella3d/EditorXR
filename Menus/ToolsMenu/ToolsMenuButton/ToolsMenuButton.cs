@@ -9,6 +9,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {

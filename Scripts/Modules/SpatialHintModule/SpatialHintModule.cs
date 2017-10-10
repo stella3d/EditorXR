@@ -3,6 +3,7 @@ using System;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEngine;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR.Modules
 {

@@ -15,6 +15,7 @@ using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
 using UnityEngine.VR;
+using XRAuthoring;
 
 [MainMenuItem("Annotation", "Create", "Draw in 3D")]
 public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOrigin, IRayVisibilitySettings,

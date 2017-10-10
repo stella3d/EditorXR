@@ -1,9 +1,9 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
-using UnityEditor.Experimental.EditorVR.Core;
 using UnityEngine;
 using UnityEngine.InputNew;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR.Menus
 {

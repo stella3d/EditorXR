@@ -2,6 +2,7 @@
 using System;
 using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEngine;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR
 {

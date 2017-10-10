@@ -9,6 +9,8 @@ using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using XRAuthoring;
+using XRAuthoring.Modules;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
@@ -239,6 +241,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 			viewer.AddPlayerModel();
 
 			GetNestedModule<Rays>().CreateAllProxies();
+
+		    var debugInputObj = ObjectUtils.Instantiate(new GameObject("DebugInput"));
+		    debugInputObj.AddComponent<DebugInput>();
 
 			// In case we have anything selected at start, set up manipulators, inspector, etc.
 			EditorApplication.delayCall += OnSelectionChanged;

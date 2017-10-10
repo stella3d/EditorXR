@@ -1,5 +1,5 @@
 ﻿#if UNITY_EDITOR
-using UnityEditor.Experimental.EditorVR.Core;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR
 {

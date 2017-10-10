@@ -21,18 +21,18 @@ MonoBehaviour:
     m_DeviceSlots:
     - m_Key: 1
       m_Type:
-        m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+        m_TypeName: UnityEngine.InputNew.OculusTouchController, Assembly-CSharp, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
       m_TagIndex: 0
     - m_Key: 2
       m_Type:
-        m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+        m_TypeName: UnityEngine.InputNew.OculusTouchController, Assembly-CSharp, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
       m_TagIndex: 1
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
-      - controlIndex: 3
+      - controlIndex: 16
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -41,7 +41,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 3
+      - controlIndex: 16
         deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
@@ -50,7 +50,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 3
+      - controlIndex: 16
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -59,7 +59,7 @@ MonoBehaviour:
       snap: 1
       primaryIsButtonAxis: 0
     - sources:
-      - controlIndex: 3
+      - controlIndex: 16
         deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
@@ -90,6 +90,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Move Resize Right
     defaultValue: 0
+    invert: 0
 --- !u!114 &114000012773243498
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -110,6 +111,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: Move Resize Left
     defaultValue: 0
+    invert: 0
 --- !u!114 &114614252640910138
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -130,6 +132,7 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: MiniWorld Pan/Zoom Left
     defaultValue: 0
+    invert: 0
 --- !u!114 &114687961567215380
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -150,3 +153,4 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: MiniWorld Pan/Zoom Right
     defaultValue: 0
+    invert: 0

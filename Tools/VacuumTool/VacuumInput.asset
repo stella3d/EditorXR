@@ -18,13 +18,13 @@ MonoBehaviour:
     m_DeviceSlots:
     - m_Key: 1
       m_Type:
-        m_TypeName: UnityEngine.InputNew.VRInputDevice, Assembly-CSharp, Version=0.0.0.0,
+        m_TypeName: UnityEngine.InputNew.OculusTouchController, Assembly-CSharp, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
       m_TagIndex: -1
     m_ActionMap: {fileID: 11400000}
     m_Bindings:
     - sources:
-      - controlIndex: 3
+      - controlIndex: 16
         deviceKey: 1
       deadZone: 0.3
       buttonAxisSources: []
@@ -54,3 +54,4 @@ MonoBehaviour:
         Culture=neutral, PublicKeyToken=null
     name: vacuum
     defaultValue: 0
+    invert: 0
