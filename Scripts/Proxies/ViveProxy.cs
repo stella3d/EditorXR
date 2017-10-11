@@ -1,41 +1,43 @@
-﻿#if UNITY_EDITOR
+#if UNITY_EDITOR
 using System;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.VR;
+using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-	sealed class ViveProxy : TwoHandedProxyBase
-	{
-		[SerializeField]
-		GameObject m_LeftHandTouchProxyPrefab;
+    sealed class ViveProxy : TwoHandedProxyBase
+    {
+        [SerializeField]
+        GameObject m_LeftHandTouchProxyPrefab;
 
-		[SerializeField]
-		GameObject m_RightHandTouchProxyPrefab;
+        [SerializeField]
+        GameObject m_RightHandTouchProxyPrefab;
 
 #if ENABLE_STEAMVR_INPUT
 		SteamVR_RenderModel m_LeftModel;
 		SteamVR_RenderModel m_RightModel;
 #endif
 
-		public override void Awake()
-		{
-			if (UnityEngine.XR.XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0)
-			{
-				m_LeftHandProxyPrefab = m_LeftHandTouchProxyPrefab;
-				m_RightHandProxyPrefab = m_RightHandTouchProxyPrefab;
-			}
-			
-			base.Awake();
-			m_InputToEvents = ObjectUtils.AddComponent<ViveInputToEvents>(gameObject);
+        public override void Awake()
+        {
+#if UNITY_2017_2_OR_NEWER
+            if (XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                m_LeftHandProxyPrefab = m_LeftHandTouchProxyPrefab;
+                m_RightHandProxyPrefab = m_RightHandTouchProxyPrefab;
+            }
+
+            base.Awake();
+            m_InputToEvents = ObjectUtils.AddComponent<ViveInputToEvents>(gameObject);
 
 #if !ENABLE_STEAMVR_INPUT
-			enabled = false;
+            enabled = false;
 #endif
-		}
+#endif
+        }
 
 #if ENABLE_STEAMVR_INPUT
 		public override IEnumerator Start()
@@ -75,6 +77,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			base.Update();
 		}
 #endif
-	}
+    }
 }
 #endif

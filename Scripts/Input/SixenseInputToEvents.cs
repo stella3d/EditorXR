@@ -9,11 +9,11 @@ using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Input
 {
-	/// <summary>
-	/// Sends events to the input system based on native Sixense SDK calls
-	/// </summary>
-	sealed class SixenseInputToEvents : BaseInputToEvents
-	{
+    /// <summary>
+    /// Sends events to the input system based on native Sixense SDK calls
+    /// </summary>
+    sealed class SixenseInputToEvents : BaseInputToEvents
+    {
 #if ENABLE_SIXENSE_INPUT
 		const uint k_ControllerCount = SixenseInput.MAX_CONTROLLERS;
 		const int k_AxisCount = (int)VRInputDevice.VRControl.Analog9 + 1;
@@ -182,8 +182,6 @@ namespace UnityEditor.Experimental.EditorVR.Input
 
 		void CalibrateControllers()
 		{
-#if UNITY_2017_2_OR_NEWER
-
 			// Assume controllers are on the side of the HMD and facing forward (aligned with base)
 			var span = (SixenseInput.Controllers[1].Position * k_HydraUnits - SixenseInput.Controllers[0].Position * k_HydraUnits).magnitude;
 
@@ -198,7 +196,6 @@ namespace UnityEditor.Experimental.EditorVR.Input
 				(m_RotationOffset * SixenseInput.Controllers[0].Position * k_HydraUnits);
 			m_ControllerOffsets[1] = VRView.cameraRig.InverseTransformPoint(headPivot.position + (headPivot.right * span * 0.5f)) -
 				(m_RotationOffset * SixenseInput.Controllers[1].Position * k_HydraUnits);
-#endif
 		}
 #endif
     }
