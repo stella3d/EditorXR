@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
     public class ProxyFeedbackRequest : FeedbackRequest
     {
         public int priority;
-        public VRInputDevice.VRControl control;
+        public int controlIndex;
         public Node node;
         public string tooltipText;
     }
@@ -45,7 +45,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         List<Transform> m_ProxyMeshRoots = new List<Transform>();
 
-        readonly Dictionary<Node, Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject>> m_Buttons = new Dictionary<Node, Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject>>();
+        readonly Dictionary<Node, Dictionary<VRControl, ProxyHelper.ButtonObject>> m_Buttons = new Dictionary<Node, Dictionary<VRControl, ProxyHelper.ButtonObject>>();
 
         public Transform leftHand { get { return m_LeftHand; } }
         public Transform rightHand { get { return m_RightHand; } }
@@ -92,14 +92,14 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             m_ProxyMeshRoots.Add(leftProxyHelper.meshRoot);
             m_ProxyMeshRoots.Add(rightProxyHelper.meshRoot);
 
-            var leftButtons = new Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject>();
+            var leftButtons = new Dictionary<VRControl, ProxyHelper.ButtonObject>();
             foreach (var button in leftProxyHelper.buttons)
             {
                 leftButtons[button.control] = button;
             }
             m_Buttons[Node.LeftHand] = leftButtons;
 
-            var rightButtons = new Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject>();
+            var rightButtons = new Dictionary<VRControl, ProxyHelper.ButtonObject>();
             foreach (var button in rightProxyHelper.buttons)
             {
                 rightButtons[button.control] = button;
@@ -203,8 +203,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     ProxyFeedbackRequest request = null;
                     foreach (var req in m_FeedbackRequests)
                     {
-                        var matchChanged = req.node == changedRequest.node && req.control == changedRequest.control;
-                        var matchButton = req.node == proxyNode.Key && req.control == kvp.Key;
+                        var matchChanged = req.node == changedRequest.node && req.controlIndex == changedRequest.controlIndex;
+                        var reqVRControl = VRControlFromControlIndex(req.controlIndex);
+                        var matchButton = req.node == proxyNode.Key && reqVRControl.HasValue && reqVRControl.Value == kvp.Key;
                         var sameCaller = req.caller == changedRequest.caller;
                         var priority = request == null || req.priority >= request.priority;
                         if (matchButton && priority && (matchChanged || sameCaller))
@@ -232,6 +233,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
+        protected abstract VRControl? VRControlFromControlIndex(int controlIndex);
+
         public void RemoveFeedbackRequest(FeedbackRequest request)
         {
             var proxyRequest = request as ProxyFeedbackRequest;
@@ -241,11 +244,12 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         void RemoveFeedbackRequest(ProxyFeedbackRequest request)
         {
-            Dictionary<VRInputDevice.VRControl, ProxyHelper.ButtonObject> buttons;
+            Dictionary<VRControl, ProxyHelper.ButtonObject> buttons;
             if (m_Buttons.TryGetValue(request.node, out buttons))
             {
                 ProxyHelper.ButtonObject button;
-                if (buttons.TryGetValue(request.control, out button))
+                var reqVRControl = VRControlFromControlIndex(request.controlIndex);
+                if (reqVRControl.HasValue && buttons.TryGetValue(reqVRControl.Value, out button))
                 {
                     if (button.renderer)
                         this.SetHighlight(button.renderer.gameObject, false);

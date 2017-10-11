@@ -43,7 +43,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             }
         }
 
-        public static void GetBindingDictionaryFromActionMap(ActionMap actionMap, Dictionary<string, List<VRInputDevice.VRControl>> bindingDictionary)
+        public static void GetBindingDictionaryFromActionMap(ActionMap actionMap, Dictionary<string, List<int>> bindingDictionary)
         {
             var actions = actionMap.actions;
             foreach (var scheme in actionMap.controlSchemes)
@@ -53,16 +53,16 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
                 {
                     var binding = bindings[i];
                     var action = actions[i].name;
-                    List<VRInputDevice.VRControl> controls;
+                    List<int> controls;
                     if (!bindingDictionary.TryGetValue(action, out controls))
                     {
-                        controls = new List<VRInputDevice.VRControl>();
+                        controls = new List<int>();
                         bindingDictionary[action] = controls;
                     }
 
                     foreach (var source in binding.sources)
                     {
-                        bindingDictionary[action].Add((VRInputDevice.VRControl)source.controlIndex);
+                        bindingDictionary[action].Add(source.controlIndex);
                     }
                 }
             }

@@ -5,6 +5,7 @@ using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
@@ -17,7 +18,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         float m_LastClickTime;
         readonly Dictionary<Transform, Coroutine> m_VacuumingCoroutines = new Dictionary<Transform, Coroutine>();
 
-        readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+        readonly Dictionary<string, List<int>> m_Controls = new Dictionary<string, List<int>>();
         readonly List<ProxyFeedbackRequest> m_Feedback = new List<ProxyFeedbackRequest>();
 
         public ActionMap actionMap { get { return m_ActionMap; } }
@@ -76,7 +77,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                             {
                                 var request = new ProxyFeedbackRequest
                                 {
-                                    control = id,
+                                    controlIndex = id,
                                     node = node.Value,
                                     tooltipText = "Double-tap to summon workspace"
                                 };

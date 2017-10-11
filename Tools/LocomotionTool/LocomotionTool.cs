@@ -9,6 +9,7 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
@@ -98,7 +99,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         Toggle m_BlinkToggle;
         bool m_BlockValueChangedListener;
 
-        readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+        readonly Dictionary<string, List<int>> m_Controls = new Dictionary<string, List<int>>();
         readonly List<ProxyFeedbackRequest> m_MainButtonFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_SpeedFeedback = new List<ProxyFeedbackRequest>();
         readonly List<ProxyFeedbackRequest> m_CrawlFeedback = new List<ProxyFeedbackRequest>();
@@ -792,7 +793,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void ShowCrawlFeedback()
         {
-            List<VRInputDevice.VRControl> ids;
+            List<int> ids;
             if (m_Controls.TryGetValue("Crawl", out ids))
             {
                 foreach (var id in ids)
@@ -800,7 +801,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     var request = new ProxyFeedbackRequest
                     {
                         node = node.Value,
-                        control = id,
+                        controlIndex = id,
                         tooltipText = "Crawl"
                     };
 
@@ -812,7 +813,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void ShowMainButtonFeedback()
         {
-            List<VRInputDevice.VRControl> ids;
+            List<int> ids;
             if (m_Controls.TryGetValue("Blink", out ids))
             {
                 foreach (var id in ids)
@@ -820,7 +821,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     var request = new ProxyFeedbackRequest
                     {
                         node = node.Value,
-                        control = id,
+                        controlIndex = id,
                         tooltipText = m_Preferences.blinkMode ? "Blink" : "Fly"
                     };
 
@@ -832,14 +833,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void ShowRotateFeedback()
         {
-            List<VRInputDevice.VRControl> ids;
+            List<int> ids;
             if (m_Controls.TryGetValue("Rotate", out ids))
             {
                 foreach (var id in ids)
                 {
                     var request = new ProxyFeedbackRequest
                     {
-                        control = id,
+                        controlIndex = id,
                         node = node.Value,
                         tooltipText = "Rotate"
                     };
@@ -852,14 +853,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void ShowAltRotateFeedback()
         {
-            List<VRInputDevice.VRControl> ids;
+            List<int> ids;
             if (m_Controls.TryGetValue("Blink", out ids))
             {
                 foreach (var id in ids)
                 {
                     var request = new ProxyFeedbackRequest
                     {
-                        control = id,
+                        controlIndex = id,
                         node = node.Value,
                         tooltipText = "Rotate"
                     };
@@ -872,14 +873,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void ShowScaleFeedback()
         {
-            List<VRInputDevice.VRControl> ids;
+            List<int> ids;
             if (m_Controls.TryGetValue("Crawl", out ids))
             {
                 foreach (var id in ids)
                 {
                     var request = new ProxyFeedbackRequest
                     {
-                        control = id,
+                        controlIndex = id,
                         node = node == Node.LeftHand ? Node.RightHand : Node.LeftHand,
                         tooltipText = "Scale"
                     };
@@ -892,14 +893,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void ShowResetScaleFeedback()
         {
-            List<VRInputDevice.VRControl> ids;
+            List<int> ids;
             if (m_Controls.TryGetValue("ScaleReset", out ids))
             {
                 foreach (var id in ids)
                 {
                     var request = new ProxyFeedbackRequest
                     {
-                        control = id,
+                        controlIndex = id,
                         node = node.Value,
                         tooltipText = "Reset scale"
                     };
@@ -915,7 +916,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 {
                     var request = new ProxyFeedbackRequest
                     {
-                        control = id,
+                        controlIndex = id,
                         node = node.Value,
                         tooltipText = "Reset position rotation and scale"
                     };
@@ -928,7 +929,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         void ShowSpeedFeedback()
         {
-            List<VRInputDevice.VRControl> ids;
+            List<int> ids;
             if (m_Controls.TryGetValue("Speed", out ids))
             {
                 foreach (var id in ids)
@@ -936,7 +937,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     var request = new ProxyFeedbackRequest
                     {
                         node = node.Value,
-                        control = id,
+                        controlIndex = id,
                         tooltipText = m_Preferences.blinkMode ? "Extra distance" : "Extra speed"
                     };
 

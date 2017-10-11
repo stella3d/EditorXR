@@ -1,7 +1,6 @@
 ﻿#if UNITY_EDITOR
 using System;
 using UnityEngine;
-using UnityEngine.InputNew;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
@@ -14,7 +13,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public class ButtonObject
         {
             [SerializeField]
-            VRInputDevice.VRControl m_Control;
+            VRControl m_Control;
 
             [SerializeField]
             Transform m_Transform;
@@ -22,7 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             [SerializeField]
             Renderer m_Renderer;
 
-            public VRInputDevice.VRControl control { get { return m_Control; } }
+            public VRControl control { get { return m_Control; } }
 
             public Transform transform { get { return m_Transform; } }
 

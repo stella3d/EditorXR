@@ -4,6 +4,7 @@ using UnityEditor.Experimental.EditorVR.Proxies;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using XRAuthoring;
 
 namespace UnityEditor.Experimental.EditorVR.Tools
 {
@@ -32,7 +33,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         PrimitiveCreationStates m_State = PrimitiveCreationStates.StartPoint;
 
-        readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+        readonly Dictionary<string, List<int>> m_Controls = new Dictionary<string, List<int>>();
 
         public Transform rayOrigin { get; set; }
         public Node? node { get; set; }
@@ -66,7 +67,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     this.AddFeedbackRequest(new ProxyFeedbackRequest
                     {
                         node = node.Value,
-                        control = id,
+                        controlIndex = id,
                         tooltipText = "Draw"
                     });
                 }

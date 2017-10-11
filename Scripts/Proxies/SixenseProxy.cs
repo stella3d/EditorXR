@@ -12,6 +12,11 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             transform.position = CameraUtils.GetCameraRig().position; // Reference position should be the camera rig root, so remove any offsets
             m_InputToEvents = ObjectUtils.AddComponent<SixenseInputToEvents>(gameObject);
         }
+
+        protected override VRControl? VRControlFromControlIndex(int controlIndex)
+        {
+            return null;
+        }
     }
 }
 #endif

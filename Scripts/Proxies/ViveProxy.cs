@@ -6,6 +6,9 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.XR;
 
+using TrackedControllerControl = UnityEngine.InputNew.TrackedController.TrackedControllerControl;
+using OpenVRControllerControl = UnityEngine.InputNew.OpenVRController.OpenVRControllerControl;
+
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
     sealed class ViveProxy : TwoHandedProxyBase
@@ -77,6 +80,32 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			base.Update();
 		}
 #endif
+
+        protected override VRControl? VRControlFromControlIndex(int controlIndex)
+        {
+            switch (controlIndex)
+            {
+                case (int)TrackedControllerControl.Action1:
+                    return VRControl.Action2;
+                case (int)OpenVRControllerControl.Trigger:
+                    return VRControl.Trigger1;
+                case (int)OpenVRControllerControl.TriggerTouch:
+                    return VRControl.Trigger1Touch;
+                case (int)OpenVRControllerControl.Grip:
+                    return VRControl.Trigger2;
+                case (int)OpenVRControllerControl.TrackpadPress:
+                    return VRControl.LeftStickButton;
+                case (int)OpenVRControllerControl.TrackpadTouch:
+                    return VRControl.LeftStickTouch;
+                case (int)OpenVRControllerControl.TrackpadX:
+                    return VRControl.LeftStickX;
+                case (int)OpenVRControllerControl.TrackpadY:
+                    return VRControl.LeftStickY;
+                case (int)OpenVRControllerControl.Trackpad:
+                    return VRControl.LeftStick;
+            }
+            return null;
+        }
     }
 }
 #endif

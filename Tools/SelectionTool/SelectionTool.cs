@@ -36,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         Color m_MultiselectRayColor;
         bool m_MultiSelect;
 
-        readonly Dictionary<string, List<VRInputDevice.VRControl>> m_Controls = new Dictionary<string, List<VRInputDevice.VRControl>>();
+        readonly Dictionary<string, List<int>> m_Controls = new Dictionary<string, List<int>>();
         readonly List<ProxyFeedbackRequest> m_SelectFeedback = new List<ProxyFeedbackRequest>();
 
         readonly Dictionary<Transform, GameObject> m_HoverGameObjects = new Dictionary<Transform, GameObject>();
@@ -324,7 +324,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     var request = new ProxyFeedbackRequest
                     {
                         node = node.Value,
-                        control = id,
+                        controlIndex = id,
                         tooltipText = "Select"
                     };
 
