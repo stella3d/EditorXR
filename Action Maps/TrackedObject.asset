@@ -35,12 +35,12 @@ MonoBehaviour:
     m_DeviceSlots:
     - m_Key: 1
       m_Type:
-        m_TypeName: UnityEngine.InputNew.OculusTouchController, Assembly-CSharp, Version=0.0.0.0,
+        m_TypeName: UnityEngine.InputNew.TrackedController, Assembly-CSharp, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
       m_TagIndex: 0
     - m_Key: 2
       m_Type:
-        m_TypeName: UnityEngine.InputNew.OculusTouchController, Assembly-CSharp, Version=0.0.0.0,
+        m_TypeName: UnityEngine.InputNew.TrackedController, Assembly-CSharp, Version=0.0.0.0,
           Culture=neutral, PublicKeyToken=null
       m_TagIndex: 1
     m_ActionMap: {fileID: 11400000}

@@ -17,7 +17,7 @@ MonoBehaviour:
   - {fileID: 114614252640910138}
   - {fileID: 114687961567215380}
   m_ControlSchemes:
-  - m_Name: VR
+  - m_Name: Oculus
     m_DeviceSlots:
     - m_Key: 1
       m_Type:
@@ -61,6 +61,56 @@ MonoBehaviour:
     - sources:
       - controlIndex: 16
         deviceKey: 2
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+  - m_Name: OpenVR
+    m_DeviceSlots:
+    - m_Key: 3
+      m_Type:
+        m_TypeName: UnityEngine.InputNew.OpenVRController, Assembly-CSharp, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
+      m_TagIndex: 0
+    - m_Key: 4
+      m_Type:
+        m_TypeName: UnityEngine.InputNew.OpenVRController, Assembly-CSharp, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
+      m_TagIndex: 1
+    m_ActionMap: {fileID: 11400000}
+    m_Bindings:
+    - sources:
+      - controlIndex: 12
+        deviceKey: 3
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 12
+        deviceKey: 4
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 12
+        deviceKey: 3
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 12
+        deviceKey: 4
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000

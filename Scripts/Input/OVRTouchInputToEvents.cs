@@ -35,27 +35,29 @@ namespace UnityEditor.Experimental.EditorVR.Input
 
         void Update()
         {
-            var isActive = false;
-            var names = Input.GetJoystickNames();
-            for (var i = 0; i < k_ControllerCount; i++)
-            {
-                var joystickName = i == 0 ? k_LeftControllerName : k_RightControllerName;
-                var joystickIndex = Array.IndexOf(names, joystickName);
-                if (joystickIndex >= 0)
-                {
-                    isActive = true;
-                    m_JoystickIndices[i] = joystickIndex;
-                    for (var j = 0; j < JoystickInputToEvents.axisCount; j++)
-                    {
-                        m_AxisNames[i, j] = string.Format("Analog{0}_Joy{1}", j + 1, joystickIndex + 1);
-                    }
-                }
-            }
+            active = true;
 
-            active = isActive;
+            //var isActive = false;
+            //var names = Input.GetJoystickNames();
+            //for (var i = 0; i < k_ControllerCount; i++)
+            //{
+            //    var joystickName = i == 0 ? k_LeftControllerName : k_RightControllerName;
+            //    var joystickIndex = Array.IndexOf(names, joystickName);
+            //    if (joystickIndex >= 0)
+            //    {
+            //        isActive = true;
+            //        m_JoystickIndices[i] = joystickIndex;
+            //        for (var j = 0; j < JoystickInputToEvents.axisCount; j++)
+            //        {
+            //            m_AxisNames[i, j] = string.Format("Analog{0}_Joy{1}", j + 1, joystickIndex + 1);
+            //        }
+            //    }
+            //}
 
-            if (!active)
-                return;
+            //active = isActive;
+
+            //if (!active)
+            //    return;
 
             //for (VRInputDevice.Handedness hand = VRInputDevice.Handedness.Left;
             //	(int)hand <= (int)VRInputDevice.Handedness.Right;

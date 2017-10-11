@@ -17,7 +17,7 @@ MonoBehaviour:
   - {fileID: 114000012846788584}
   - {fileID: 114000013847254512}
   m_ControlSchemes:
-  - m_Name: RadialMenu
+  - m_Name: Oculus
     m_DeviceSlots:
     - m_Key: 1
       m_Type:
@@ -47,6 +47,49 @@ MonoBehaviour:
     - sources:
       - controlIndex: 23
         deviceKey: 1
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources: []
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+  - m_Name: OpenVR
+    m_DeviceSlots:
+    - m_Key: 2
+      m_Type:
+        m_TypeName: UnityEngine.InputNew.OpenVRController, Assembly-CSharp, Version=0.0.0.0,
+          Culture=neutral, PublicKeyToken=null
+      m_TagIndex: -1
+    m_ActionMap: {fileID: 11400000}
+    m_Bindings:
+    - sources:
+      - controlIndex: 13
+        deviceKey: 2
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 15
+        deviceKey: 2
+      deadZone: 0.3
+      buttonAxisSources: []
+      gravity: 1000
+      sensitivity: 1000
+      snap: 1
+      primaryIsButtonAxis: 0
+    - sources:
+      - controlIndex: 16
+        deviceKey: 2
       deadZone: 0.3
       buttonAxisSources: []
       gravity: 1000
