@@ -7,10 +7,6 @@ using UnityEditor.Experimental.EditorVR.Helpers;
 using System.Reflection;
 using UnityEngine.XR;
 
-#if ENABLE_STEAMVR_INPUT
-using Valve.VR;
-#endif
-
 namespace UnityEditor.Experimental.EditorVR.Core
 {
     sealed class VRView : EditorWindow
@@ -347,14 +343,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         static bool GetIsUserPresent()
         {
 #if UNITY_2017_2_OR_NEWER
-#if ENABLE_OVR_INPUT
-            if (XRSettings.loadedDeviceName == "Oculus")
-                return OVRPlugin.userPresent;
-#endif
-#if ENABLE_STEAMVR_INPUT
-			if (XRSettings.loadedDeviceName == "OpenVR")
-				return OpenVR.System.GetTrackedDeviceActivityLevel(0) == EDeviceActivityLevel.k_EDeviceActivityLevel_UserInteraction;
-#endif
+            return XRDevice.userPresence == UserPresenceState.Present;
 #endif
             return true;
         }
