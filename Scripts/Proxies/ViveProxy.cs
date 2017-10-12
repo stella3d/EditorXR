@@ -1,9 +1,8 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections;
-using UnityEditor.Experimental.EditorVR.Input;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
+using UnityEngine.InputNew;
 using UnityEngine.XR;
 
 using TrackedControllerControl = UnityEngine.InputNew.TrackedController.TrackedControllerControl;
@@ -11,7 +10,7 @@ using OpenVRControllerControl = UnityEngine.InputNew.OpenVRController.OpenVRCont
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-    sealed class ViveProxy : TwoHandedProxyBase
+    sealed class ViveProxy : TwoHandedProxyBase<OpenVRController>
     {
         [SerializeField]
         GameObject m_LeftHandTouchProxyPrefab;
@@ -22,6 +21,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 #if ENABLE_STEAMVR_INPUT
 		SteamVR_RenderModel m_LeftModel;
 		SteamVR_RenderModel m_RightModel;
+
+        readonly int[] m_SteamDeviceIndices = { -1, -1 };
 #endif
 
         public override void Awake()
@@ -34,7 +35,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
 
             base.Awake();
-            m_InputToEvents = ObjectUtils.AddComponent<ViveInputToEvents>(gameObject);
 
 #if !ENABLE_STEAMVR_INPUT
             enabled = false;
@@ -43,42 +43,54 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         }
 
 #if ENABLE_STEAMVR_INPUT
-		public override IEnumerator Start()
-		{
-			SteamVR_Render.instance.transform.parent = gameObject.transform;
+        public override void Start()
+        {
+            SteamVR_Render.instance.transform.parent = gameObject.transform;
+            base.Start();
+        }
 
-			while (!active)
-				yield return null;
+        protected override IEnumerator GatherControllerModels()
+        {
+            while (!m_LeftControllerFound && !m_RightControllerFound)
+                yield return null;
 
-			m_LeftModel = m_LeftHand.GetComponentInChildren<SteamVR_RenderModel>(true);
-			m_LeftModel.enabled = true;
-			m_RightModel = m_RightHand.GetComponentInChildren<SteamVR_RenderModel>(true);
-			m_RightModel.enabled = true;
+            m_LeftModel = m_LeftHand.GetComponentInChildren<SteamVR_RenderModel>(true);
+            m_LeftModel.enabled = true;
+            m_RightModel = m_RightHand.GetComponentInChildren<SteamVR_RenderModel>(true);
+            m_RightModel.enabled = true;
 
-			yield return base.Start();
-		}
+            yield return base.GatherControllerModels();
+        }
 
-		public override void Update()
-		{
-			if (active && m_LeftModel && m_RightModel)
-			{
-				var viveInputToEvents = (ViveInputToEvents)m_InputToEvents;
+        public override void Update()
+        {
+            if (active && m_LeftModel && m_RightModel)
+            {
+                for (var hand = TrackedController.Handedness.Left; (int)hand <= (int)TrackedController.Handedness.Right; hand++)
+                {
+                    if (m_SteamDeviceIndices[(int)hand] == -1)
+                    {
+                        m_SteamDeviceIndices[(int)hand] = hand == TrackedController.Handedness.Left ?
+                            SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost) :
+                            SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Rightmost);
+                    }
+                }
 
-				//If proxy is not mapped to a physical input device, check if one has been assigned
-				if ((int) m_LeftModel.index == -1 && viveInputToEvents.steamDevice[0] != -1)
-				{
-					// HACK set device index individually instead of calling SetDeviceIndex because loading device mesh dynamically does not work in editor. Prefab has Model Override set and mesh generated, calling SetDeviceIndex clears the model.
-					m_LeftModel.index = (SteamVR_TrackedObject.EIndex)viveInputToEvents.steamDevice[0];
-				}
+                //If proxy is not mapped to a physical input device, check if one has been assigned
+                if ((int)m_LeftModel.index == -1 && m_SteamDeviceIndices[0] != -1)
+                {
+                    // HACK set device index individually instead of calling SetDeviceIndex because loading device mesh dynamically does not work in editor. Prefab has Model Override set and mesh generated, calling SetDeviceIndex clears the model.
+                    m_LeftModel.index = (SteamVR_TrackedObject.EIndex)m_SteamDeviceIndices[0];
+                }
 
-				if ((int) m_RightModel.index == -1 && viveInputToEvents.steamDevice[1] != -1)
-				{
-					m_RightModel.index = (SteamVR_TrackedObject.EIndex)viveInputToEvents.steamDevice[1];
-				}
-			}
+                if ((int)m_RightModel.index == -1 && m_SteamDeviceIndices[1] != -1)
+                {
+                    m_RightModel.index = (SteamVR_TrackedObject.EIndex)m_SteamDeviceIndices[1];
+                }
+            }
 
-			base.Update();
-		}
+            base.Update();
+        }
 #endif
 
         protected override VRControl? VRControlFromControlIndex(int controlIndex)

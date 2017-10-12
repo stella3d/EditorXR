@@ -1,23 +1,15 @@
 ﻿#if UNITY_EDITOR
 using System.Collections;
-using UnityEditor.Experimental.EditorVR.Input;
-using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-
+using UnityEngine.InputNew;
 using TrackedControllerControl = UnityEngine.InputNew.TrackedController.TrackedControllerControl;
 using OculusTouchControllerControl = UnityEngine.InputNew.OculusTouchController.OculusTouchControllerControl;
 
 namespace UnityEditor.Experimental.EditorVR.Proxies
 {
-    sealed class TouchProxy : TwoHandedProxyBase
+    sealed class TouchProxy : TwoHandedProxyBase<OculusTouchController>
     {
-        public override void Awake()
-        {
-            base.Awake();
-            m_InputToEvents = ObjectUtils.AddComponent<OVRTouchInputToEvents>(gameObject);
-        }
-
-        public override IEnumerator Start()
+        public override void Start()
         {
             // Touch controllers should be spawned under a root that corresponds to the head with no offsets, since the
             // local positions of the controllers will be provided that way.
@@ -31,7 +23,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 			transform.localPosition = Vector3.zero;
 #endif
 
-            return base.Start();
+            base.Start();
         }
 
         protected override VRControl? VRControlFromControlIndex(int controlIndex)

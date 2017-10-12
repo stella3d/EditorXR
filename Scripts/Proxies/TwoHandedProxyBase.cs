@@ -3,7 +3,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEditor.Experimental.EditorVR.Input;
 using UnityEditor.Experimental.EditorVR.UI;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -20,7 +19,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public string tooltipText;
     }
 
-    abstract class TwoHandedProxyBase : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight
+    abstract class TwoHandedProxyBase<T> : MonoBehaviour, IProxy, IFeedbackReceiver, ISetTooltipVisibility, ISetHighlight
+        where T : TrackedController
     {
         const int k_RendererQueue = 9000;
         const float k_FeedbackDuration = 5f;
@@ -34,8 +34,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [SerializeField]
         protected PlayerInput m_PlayerInput;
 
-        internal IInputToEvents m_InputToEvents;
-
         protected Transform m_LeftHand;
         protected Transform m_RightHand;
         readonly List<Material> m_Materials = new List<Material>();
@@ -47,6 +45,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         readonly Dictionary<Node, Dictionary<VRControl, ProxyHelper.ButtonObject>> m_Buttons = new Dictionary<Node, Dictionary<VRControl, ProxyHelper.ButtonObject>>();
 
+        bool m_Active;
+        protected bool m_LeftControllerFound;
+        protected bool m_RightControllerFound;
+
         public Transform leftHand { get { return m_LeftHand; } }
         public Transform rightHand { get { return m_RightHand; } }
 
@@ -54,13 +56,18 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public virtual TrackedObject trackedObjectInput { protected get; set; }
 
-        public bool active { get { return m_InputToEvents.active; } }
-
-        public event Action activeChanged
+        public bool active
         {
-            add { m_InputToEvents.activeChanged += value; }
-            remove { m_InputToEvents.activeChanged -= value; }
+            get { return m_Active; }
+            set
+            {
+                m_Active = value;
+                if (activeChanged != null)
+                    activeChanged();
+            }
         }
+
+        public event Action activeChanged;
 
         public virtual bool hidden
         {
@@ -135,14 +142,23 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 { leftProxyHelper.rayOrigin, leftProxyHelper.fieldGrabOrigin },
                 { rightProxyHelper.rayOrigin, rightProxyHelper.fieldGrabOrigin }
             };
+
+            InputSystem.onDeviceRegistered += OnDeviceRegistered;
+            m_LeftControllerFound = InputSystem.LookupDevice(typeof(T), (int)TrackedController.Handedness.Left) != null;
+            m_RightControllerFound = InputSystem.LookupDevice(typeof(T), (int)TrackedController.Handedness.Right) != null;
         }
 
-        public virtual IEnumerator Start()
+        public virtual void Start()
         {
             // In standalone play-mode usage, attempt to get the TrackedObjectInput 
             if (trackedObjectInput == null && m_PlayerInput)
                 trackedObjectInput = m_PlayerInput.GetActions<TrackedObject>();
 
+            StartCoroutine(GatherControllerModels());
+        }
+
+        protected virtual IEnumerator GatherControllerModels()
+        {
             List<Renderer> renderers = new List<Renderer>();
             while (renderers.Count == 0)
             {
@@ -168,12 +184,17 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public virtual void OnDestroy()
         {
+            InputSystem.onDeviceRegistered -= OnDeviceRegistered;
             foreach (var m in m_Materials)
                 ObjectUtils.Destroy(m);
         }
 
         public virtual void Update()
         {
+            if (!active && m_LeftControllerFound && m_RightControllerFound)
+            {
+                active = true;
+            }
             if (active)
             {
                 m_LeftHand.localPosition = trackedObjectInput.leftPosition.vector3;
@@ -233,8 +254,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-        protected abstract VRControl? VRControlFromControlIndex(int controlIndex);
-
         public void RemoveFeedbackRequest(FeedbackRequest request)
         {
             var proxyRequest = request as ProxyFeedbackRequest;
@@ -279,6 +298,25 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             foreach (var feedbackRequest in requests)
             {
                 RemoveFeedbackRequest(feedbackRequest);
+            }
+        }
+
+        protected abstract VRControl? VRControlFromControlIndex(int controlIndex);
+
+        void OnDeviceRegistered(InputDevice device)
+        {
+            var trackedController = device as T;
+            if (trackedController == null)
+                return;
+
+            switch (trackedController.hand)
+            {
+                case TrackedController.Handedness.Left:
+                    m_LeftControllerFound = true;
+                    break;
+                case TrackedController.Handedness.Right:
+                    m_RightControllerFound = true;
+                    break;
             }
         }
     }
