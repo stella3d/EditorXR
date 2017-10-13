@@ -9,6 +9,7 @@ using UnityEditor.Experimental.EditorVR.Modules;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
+using UnityEngine.XR;
 using XRAuthoring;
 using XRAuthoring.Modules;
 
@@ -107,8 +108,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (!PlayerSettings.virtualRealitySupported)
                     Debug.Log("<color=orange>EditorVR requires VR support. Please check Virtual Reality Supported in Edit->Project Settings->Player->Other Settings</color>");
 
-#if !ENABLE_OVR_INPUT && !ENABLE_STEAMVR_INPUT
-				Debug.Log("<color=orange>EditorVR requires at least one partner (e.g. Oculus, Vive) SDK to be installed for input. You can download these from the Asset Store or from the partner's website</color>");
+#if !ENABLE_STEAMVR_INPUT
+                if (XRSettings.loadedDeviceName.IndexOf("openvr", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    Debug.Log("<color=orange>EditorVR requires the SteamVR SDK to be installed when OpenVR is the loaded XR device. You can download this SDK from the Asset Store or from the partner's website</color>");
+                }
 #endif
 
                 // Add EVR tags and layers if they don't exist
