@@ -47,7 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             for (int i = 0; i < devices.Count; i++)
             {
                 var device = devices[i];
-                if (device is TrackedController && device.tagIndex != -1)
+                if (device is TrackedController && device.tagIndex != -1 && device.connected)
                     m_SystemDevices.Add(device);
             }
 

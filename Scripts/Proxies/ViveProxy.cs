@@ -51,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         protected override IEnumerator GatherControllerModels()
         {
-            while (!m_LeftControllerFound && !m_RightControllerFound)
+            while (m_LeftController == null && m_RightController == null)
                 yield return null;
 
             m_LeftModel = m_LeftHand.GetComponentInChildren<SteamVR_RenderModel>(true);

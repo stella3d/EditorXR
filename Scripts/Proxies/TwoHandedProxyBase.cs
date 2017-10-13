@@ -46,8 +46,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         readonly Dictionary<Node, Dictionary<VRControl, ProxyHelper.ButtonObject>> m_Buttons = new Dictionary<Node, Dictionary<VRControl, ProxyHelper.ButtonObject>>();
 
         bool m_Active;
-        protected bool m_LeftControllerFound;
-        protected bool m_RightControllerFound;
+        protected TrackedController m_LeftController;
+        protected TrackedController m_RightController;
 
         public Transform leftHand { get { return m_LeftHand; } }
         public Transform rightHand { get { return m_RightHand; } }
@@ -143,9 +143,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 { rightProxyHelper.rayOrigin, rightProxyHelper.fieldGrabOrigin }
             };
 
-            InputSystem.onDeviceRegistered += OnDeviceRegistered;
-            m_LeftControllerFound = InputSystem.LookupDevice(typeof(T), (int)TrackedController.Handedness.Left) != null;
-            m_RightControllerFound = InputSystem.LookupDevice(typeof(T), (int)TrackedController.Handedness.Right) != null;
+            InputSystem.onDeviceConnectedDisconnected += OnDeviceConnectedDisconnected;
+            m_LeftController = (T)InputSystem.LookupDeviceWithTagIndex(typeof(T), (int)TrackedController.Handedness.Left, true);
+            m_RightController = (T)InputSystem.LookupDeviceWithTagIndex(typeof(T), (int)TrackedController.Handedness.Right, true);
         }
 
         public virtual void Start()
@@ -184,16 +184,20 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         public virtual void OnDestroy()
         {
-            InputSystem.onDeviceRegistered -= OnDeviceRegistered;
+            InputSystem.onDeviceConnectedDisconnected -= OnDeviceConnectedDisconnected;
             foreach (var m in m_Materials)
                 ObjectUtils.Destroy(m);
         }
 
         public virtual void Update()
         {
-            if (!active && m_LeftControllerFound && m_RightControllerFound)
+            if (!active && m_LeftController != null && m_RightController != null)
             {
                 active = true;
+            }
+            else if (active && m_LeftController == null || m_RightController == null)
+            {
+                active = false;
             }
             if (active)
             {
@@ -303,20 +307,34 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         protected abstract VRControl? VRControlFromControlIndex(int controlIndex);
 
-        void OnDeviceRegistered(InputDevice device)
+        void OnDeviceConnectedDisconnected(InputDevice device, bool connected)
         {
-            var trackedController = device as T;
-            if (trackedController == null)
-                return;
-
-            switch (trackedController.hand)
+            if (connected)
             {
-                case TrackedController.Handedness.Left:
-                    m_LeftControllerFound = true;
-                    break;
-                case TrackedController.Handedness.Right:
-                    m_RightControllerFound = true;
-                    break;
+                var trackedController = device as T;
+                if (trackedController == null)
+                    return;
+
+                switch (trackedController.hand)
+                {
+                    case TrackedController.Handedness.Left:
+                        m_LeftController = trackedController;
+                        break;
+                    case TrackedController.Handedness.Right:
+                        m_RightController = trackedController;
+                        break;
+                }
+            }
+            else
+            {
+                if (device == m_LeftController)
+                {
+                    m_LeftController = null;
+                }
+                else if (device == m_RightController)
+                {
+                    m_RightController = null;
+                }
             }
         }
     }
