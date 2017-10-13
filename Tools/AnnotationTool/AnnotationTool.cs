@@ -334,7 +334,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
             {
                 brushSize = Mathf.Lerp(MinBrushSize, MaxBrushSize, (value + 1) / 2f);
             }
-            else // For touch and hydra, let the thumbstick gradually modify the width.
+            else // For touch, let the thumbstick gradually modify the width.
             {
                 brushSize += value * Time.unscaledDeltaTime * .1f;
                 brushSize = Mathf.Clamp(brushSize, MinBrushSize, MaxBrushSize);
