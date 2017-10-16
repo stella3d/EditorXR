@@ -11,7 +11,7 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// The node associated with this tool
         /// </summary>
-        Node? node { set; }
+        Node node { set; }
     }
 }
 #endif

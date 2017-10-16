@@ -9,7 +9,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 {
     sealed class TouchProxy : TwoHandedProxyBase<OculusTouchController>
     {
-        public override void Start()
+        public override IEnumerator Start()
         {
             // Touch controllers should be spawned under a root that corresponds to the head with no offsets, since the
             // local positions of the controllers will be provided that way.
@@ -20,10 +20,10 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     transform.localPosition = Vector3.zero;
             };
 #else
-			transform.localPosition = Vector3.zero;
+            transform.localPosition = Vector3.zero;
 #endif
 
-            base.Start();
+            yield return base.Start();
         }
 
         protected override VRControl? VRControlFromControlIndex(int controlIndex)

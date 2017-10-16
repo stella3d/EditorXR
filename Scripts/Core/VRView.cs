@@ -97,7 +97,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 #if UNITY_2017_2_OR_NEWER
                 return XRDevice.GetTrackingSpaceType() == TrackingSpaceType.Stationary ? Vector3.up * HeadHeight : Vector3.zero;
 #else
-				return Vector3.zero;
+                return Vector3.zero;
 #endif
             }
         }

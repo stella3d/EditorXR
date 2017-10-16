@@ -1,6 +1,8 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.XR;
@@ -18,17 +20,15 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         [SerializeField]
         GameObject m_RightHandTouchProxyPrefab;
 
-#if ENABLE_STEAMVR_INPUT
-		SteamVR_RenderModel m_LeftModel;
-		SteamVR_RenderModel m_RightModel;
-
-        readonly int[] m_SteamDeviceIndices = { -1, -1 };
-#endif
+        bool m_IsOculus;
 
         public override void Awake()
         {
 #if UNITY_2017_2_OR_NEWER
-            if (XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0)
+            m_IsOculus = XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0;
+#endif
+
+            if (m_IsOculus)
             {
                 m_LeftHandProxyPrefab = m_LeftHandTouchProxyPrefab;
                 m_RightHandProxyPrefab = m_RightHandTouchProxyPrefab;
@@ -36,60 +36,65 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
             base.Awake();
 
-#if !ENABLE_STEAMVR_INPUT
-            enabled = false;
-#endif
-#endif
-        }
-
-#if ENABLE_STEAMVR_INPUT
-        public override void Start()
-        {
-            SteamVR_Render.instance.transform.parent = gameObject.transform;
-            base.Start();
-        }
-
-        protected override IEnumerator GatherControllerModels()
-        {
-            while (m_LeftController == null && m_RightController == null)
-                yield return null;
-
-            m_LeftModel = m_LeftHand.GetComponentInChildren<SteamVR_RenderModel>(true);
-            m_LeftModel.enabled = true;
-            m_RightModel = m_RightHand.GetComponentInChildren<SteamVR_RenderModel>(true);
-            m_RightModel.enabled = true;
-
-            yield return base.GatherControllerModels();
-        }
-
-        public override void Update()
-        {
-            if (active && m_LeftModel && m_RightModel)
+            var proxyHelper = m_LeftHand.GetComponent<ViveProxyHelper>();
+            if (proxyHelper)
             {
-                for (var hand = TrackedController.Handedness.Left; (int)hand <= (int)TrackedController.Handedness.Right; hand++)
+                foreach (var tooltip in proxyHelper.leftTooltips)
                 {
-                    if (m_SteamDeviceIndices[(int)hand] == -1)
-                    {
-                        m_SteamDeviceIndices[(int)hand] = hand == TrackedController.Handedness.Left ?
-                            SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Leftmost) :
-                            SteamVR_Controller.GetDeviceIndex(SteamVR_Controller.DeviceRelation.Rightmost);
-                    }
-                }
-
-                //If proxy is not mapped to a physical input device, check if one has been assigned
-                if ((int)m_LeftModel.index == -1 && m_SteamDeviceIndices[0] != -1)
-                {
-                    // HACK set device index individually instead of calling SetDeviceIndex because loading device mesh dynamically does not work in editor. Prefab has Model Override set and mesh generated, calling SetDeviceIndex clears the model.
-                    m_LeftModel.index = (SteamVR_TrackedObject.EIndex)m_SteamDeviceIndices[0];
-                }
-
-                if ((int)m_RightModel.index == -1 && m_SteamDeviceIndices[1] != -1)
-                {
-                    m_RightModel.index = (SteamVR_TrackedObject.EIndex)m_SteamDeviceIndices[1];
+                    ObjectUtils.Destroy(tooltip);
                 }
             }
 
-            base.Update();
+            proxyHelper = m_RightHand.GetComponent<ViveProxyHelper>();
+            if (proxyHelper)
+            {
+                foreach (var tooltip in proxyHelper.rightTooltips)
+                {
+                    ObjectUtils.Destroy(tooltip);
+                }
+            }
+
+#if !ENABLE_STEAMVR_INPUT
+            enabled = false;
+#endif
+        }
+
+        static void PostAnimate(ProxyHelper.ButtonObject[] buttons, Dictionary<Transform, ProxyAnimator.TransformInfo> transformInfos, ActionMapInput input)
+        {
+            var proxyInput = (ProxyAnimatorInput)input;
+
+            foreach (var button in buttons)
+            {
+                switch (button.control)
+                {
+                    case VRControl.LeftStickButton:
+                        if (!proxyInput.stickButton.isHeld)
+                        {
+                            var buttonTransform = button.transform;
+                            var info = transformInfos[buttonTransform];
+                            info.rotationOffset = Vector3.zero;
+                            info.Apply(buttonTransform);
+                        }
+                        break;
+                    case VRControl.Analog0:
+                        // Trackpad touch sphere
+                        if (button.translateAxes != 0)
+                            button.renderer.enabled = !Mathf.Approximately(proxyInput.stickX.value, 0) || !Mathf.Approximately(proxyInput.stickY.value, 0);
+                        break;
+                }
+            }
+        }
+
+#if ENABLE_STEAMVR_INPUT
+        public override IEnumerator Start()
+        {
+            yield return base.Start();
+
+            if (!m_IsOculus)
+            {
+                m_LeftHand.GetComponent<ProxyAnimator>().postAnimate += PostAnimate;
+                m_RightHand.GetComponent<ProxyAnimator>().postAnimate += PostAnimate;
+            }
         }
 #endif
 

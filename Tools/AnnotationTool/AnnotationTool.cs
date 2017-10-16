@@ -116,8 +116,10 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
 
     public ActionMap actionMap { get { return m_ActionMap; } }
 
+    public bool ignoreLocking { get { return false; } }
+
     public List<ILinkedObject> linkedObjects { private get; set; }
-    public Node? node { private get; set; }
+    public Node node { private get; set; }
 
     public GameObject settingsMenuItemPrefab { get { return m_SettingsMenuItemPrefab; } }
 
@@ -239,7 +241,7 @@ public class AnnotationTool : MonoBehaviour, ITool, ICustomActionMap, IUsesRayOr
             m_ColorPicker.onColorPicked = OnColorPickerValueChanged;
             OnColorPickerValueChanged(m_Preferences.annotationColor);
 
-            activator.node = node.Value;
+            activator.node = node;
             activator.rayOrigin = otherRayOrigin;
             activator.showColorPicker = ShowColorPicker;
             activator.hideColorPicker = HideColorPicker;
