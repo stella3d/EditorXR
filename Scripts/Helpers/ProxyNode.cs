@@ -25,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         public bool suppressExisting;
         public bool showBody;
         public float duration = 5f;
-        public int maxPresentations = 2;
+        public int maxPresentations = 2000000;
 
         public Func<bool> suppressPresentation;
     }
