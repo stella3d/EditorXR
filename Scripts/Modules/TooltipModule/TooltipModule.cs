@@ -45,6 +45,8 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             public float duration;
             public Action becameVisible;
             public ITooltipPlacement placement;
+            public bool active;
+            public Coroutine hideCoroutine;
 
             public Transform GetTooltipTarget(ITooltip tooltip)
             {
@@ -57,6 +59,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
 
         readonly Dictionary<ITooltip, TooltipData> m_Tooltips = new Dictionary<ITooltip, TooltipData>();
         readonly Queue<TooltipUI> m_TooltipPool = new Queue<TooltipUI>(k_PoolInitialCapacity);
+        readonly Dictionary<ITooltip, TooltipData> m_PersistentTooltips = new Dictionary<ITooltip, TooltipData>();
 
         Transform m_TooltipCanvas;
         Vector3 m_TooltipScale;
@@ -97,16 +100,21 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                         k_TooltipsToRemove.Add(tooltip);
 
                     var tooltipUI = tooltipData.tooltipUI;
-                    if (!tooltipUI)
+                    if (!tooltipUI) // Create new TooltipUI
                     {
                         tooltipUI = CreateTooltipObject();
-                        tooltipUI.Show(tooltip.tooltipText, tooltipData.placement.tooltipAlignment, null); // TODO: push icon sprite
+                        if (tooltipData.persistent)
+                            tooltipUI.gameObject.name = "Persistent Tooltip";
+                        else
+                            tooltipUI.gameObject.name = "Pooled Tooltip";
+
                         tooltipUI.becameVisible += tooltipData.becameVisible;
                         tooltipData.tooltipUI = tooltipUI;
                         tooltipUI.background.material = m_TooltipBackgroundMaterial;
                         var tooltipTransform = tooltipUI.transform;
                         MathUtilsExt.SetTransformOffset(target, tooltipTransform, Vector3.zero, Quaternion.identity);
                         tooltipTransform.localScale = Vector3.zero;
+                        tooltipUI.AnimateShow(tooltip.tooltipText, tooltipData.placement.tooltipAlignment, null); // TODO: push icon sprite
 
                         var hasLine = placement != null;
                         tooltipUI.dottedLine.gameObject.SetActive(hasLine);
@@ -115,6 +123,23 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                             sphere.gameObject.SetActive(hasLine);
                         }
                     }
+                    else if (tooltipData.persistent && !tooltipData.active)
+                    {
+                        //Debug.LogWarning("<color=green>Previously created/shown, PERSISTENT TooltipFound : </color>" + tooltip.tooltipText);
+                        var tooltipTransform = tooltipUI.transform;
+                        //tooltipTransform.localScale = Vector3.zero;
+
+                        if (tooltipData.hideCoroutine != null)
+                        {
+                            this.StopCoroutine(tooltipData.hideCoroutine);
+                            tooltipData.hideCoroutine = null;
+                        }
+
+                        tooltipUI.gameObject.SetActive(true);
+                        tooltipUI.AnimateShow(tooltip.tooltipText, tooltipData.placement.tooltipAlignment, null); // TODO: push icon sprite
+                    }
+
+                    tooltipData.active = true;
 
                     var lerp = Mathf.Clamp01((hoverTime - k_Delay) / k_TransitionDuration);
                     UpdateVisuals(tooltip, tooltipUI, placement, target, lerp);
@@ -292,19 +317,40 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (!IsValidTooltip(tooltip))
                 return;
 
-            TooltipData data;
-            if (m_Tooltips.TryGetValue(tooltip, out data))
+            TooltipData activeTooltipData;
+            m_Tooltips.TryGetValue(tooltip, out activeTooltipData);
+
+            // Update an existing active/visible Tooltip
+            if (activeTooltipData != null)
             {
-                data.persistent |= persistent;
-                data.placement = placement ?? tooltip as ITooltipPlacement;
-                data.customHighlightMaterial = GetHighlightMaterial(tooltip);
+                //Debug.LogWarning("ExistingTooltipFound : " + tooltip.tooltipText);
+                activeTooltipData.persistent |= persistent;
+                activeTooltipData.placement = placement ?? tooltip as ITooltipPlacement;
+                activeTooltipData.customHighlightMaterial = GetHighlightMaterial(tooltip); // TODO remove highlight materials for new tooltip
+                activeTooltipData.active = false;
 
                 if (duration > 0)
                 {
-                    data.duration = duration;
-                    data.lastModifiedTime = Time.time;
+                    activeTooltipData.duration = duration;
+                    activeTooltipData.lastModifiedTime = Time.time;
                 }
 
+                return;
+            }
+
+            TooltipData persistentTooltipData;
+            m_PersistentTooltips.TryGetValue(tooltip, out persistentTooltipData);
+
+            if (persistentTooltipData != null)
+            {
+                // Proceed if a persistent tooltip exists, and is not currently active/visible
+                //persistentTooltipData.startTime = Time.time;
+                persistentTooltipData.lastModifiedTime = Time.time;
+                //persistentTooltipData.duration = duration;
+                m_Tooltips[tooltip] = persistentTooltipData;
+                persistentTooltipData.active = false;
+                persistentTooltipData.placement = placement ?? tooltip as ITooltipPlacement;
+                //Debug.LogWarning("<color=blue>Inactive Persistent TooltipFound : </color>" + tooltip.tooltipText);
                 return;
             }
 
@@ -312,7 +358,7 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             if (duration < 0)
                 return;
 
-            m_Tooltips[tooltip] = new TooltipData
+            var newTooltipData = new TooltipData
             {
                 customHighlightMaterial = GetHighlightMaterial(tooltip),
                 startTime = Time.time,
@@ -322,6 +368,10 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 becameVisible = becameVisible,
                 placement = placement ?? tooltip as ITooltipPlacement
             };
+            m_Tooltips[tooltip] = newTooltipData;
+
+            if (persistent)
+                m_PersistentTooltips[tooltip] = newTooltipData;
         }
 
         Material GetHighlightMaterial(ITooltip tooltip)
@@ -355,34 +405,55 @@ namespace UnityEditor.Experimental.EditorVR.Modules
                 m_Tooltips.Remove(tooltip);
 
                 if (tooltipData.tooltipUI)
-                    StartCoroutine(AnimateHide(tooltip, tooltipData));
+                {
+                    tooltipData.hideCoroutine = StartCoroutine(AnimateHide(tooltip, tooltipData));
+                }
             }
         }
 
         IEnumerator AnimateHide(ITooltip tooltip, TooltipData data)
         {
+            var tooltipUI = data.tooltipUI;
             var placement = data.placement;
             var target = data.GetTooltipTarget(tooltip);
-            var tooltipUI = data.tooltipUI;
+            if (data.persistent)
+            {
+                // Persistent tooltips allow for custom internal hiding of contents
+                tooltipUI.AnimateShow(null, placement.tooltipAlignment); // Allow TooltipUI to hide currently displayed content
+                
+                // Wait for internal TooltipUI to finish its internal visual transition before hiding
+                while (tooltipUI.transitioning)
+                {
+                    //Debug.LogError("Transitioning : " + data.tooltipUI.name);
+                    UpdateVisuals(tooltip, tooltipUI, placement, target, 1);
+                    yield return null;
+                }
+
+                //Debug.LogWarning("finished persistent tooltip fade out");
+            }
+
+            target = data.GetTooltipTarget(tooltip); // Target could be null/destroyed at this point, attempt to fetch it again.
             var startTime = Time.realtimeSinceStartup;
             while (Time.realtimeSinceStartup - startTime < k_TransitionDuration)
             {
                 if (!target)
                     break;
 
-                UpdateVisuals(tooltip, tooltipUI, placement, target,
-                    1 - (Time.realtimeSinceStartup - startTime) / k_TransitionDuration);
+                UpdateVisuals(tooltip, tooltipUI, placement, target, 1 - (Time.realtimeSinceStartup - startTime) / k_TransitionDuration);
                 yield return null;
             }
 
-            RecycleTooltip(data);
+            if (!data.persistent)
+                RecycleTooltip(data);
+
+            tooltipUI.gameObject.SetActive(false);
+            data.hideCoroutine = null;
         }
 
         void RecycleTooltip(TooltipData tooltipData)
         {
             var tooltipUI = tooltipData.tooltipUI;
             tooltipUI.becameVisible -= tooltipData.becameVisible;
-            tooltipUI.gameObject.SetActive(false);
             m_TooltipPool.Enqueue(tooltipUI);
         }
     }
