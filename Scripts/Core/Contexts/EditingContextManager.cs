@@ -128,6 +128,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     view.Close();
             }
         }
+#endif
 
         void OnEnable()
         {
@@ -146,6 +147,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             SetEditingContext(defaultContext);
 
+#if UNITY_2017_2_OR_NEWER
             if (m_AvailableContexts.Count > 1)
                 VRView.afterOnGUI += OnVRViewGUI;
 
@@ -154,15 +156,18 @@ namespace UnityEditor.Experimental.EditorVR.Core
             EditorApplication.update += EditorApplication.QueuePlayerLoopUpdate;
 
             EditorApplication.playModeStateChanged += OnPlayModeStateChanged;
+#endif
         }
 
         void OnDisable()
         {
+#if UNITY_2017_2_OR_NEWER
             EditorApplication.playModeStateChanged -= OnPlayModeStateChanged;
 
             EditorApplication.update -= EditorApplication.QueuePlayerLoopUpdate;
 
             VRView.afterOnGUI -= OnVRViewGUI;
+#endif
 
             if (m_CurrentContext != null)
             {
@@ -179,7 +184,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             SaveUserSettings(m_Settings);
         }
-#endif
 
         void OnVRViewGUI(EditorWindow window)
         {

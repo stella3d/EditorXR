@@ -25,6 +25,8 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         {
 #if UNITY_2017_2_OR_NEWER
             m_IsOculus = XRDevice.model.IndexOf("oculus", StringComparison.OrdinalIgnoreCase) >= 0;
+#else
+            m_IsOculus = false; // Suppress "never assigned" warning
 #endif
 
             if (m_IsOculus)
