@@ -18,6 +18,9 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         [SerializeField]
         MeshRenderer m_TopHighlightRenderer;
 
+        [SerializeField]
+        bool m_GrayscaleGradient;
+
         public bool visible
         {
             get { return m_HighlightVisible; }
@@ -41,9 +44,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         void Awake()
         {
+            var highlightColor = m_GrayscaleGradient ? UnityBrandColorScheme.grayscaleSessionGradient : UnityBrandColorScheme.sessionGradient;
+
             m_TopHighlightMaterial = MaterialUtils.GetMaterialClone(m_TopHighlightRenderer);
-            m_TopHighlightMaterial.SetColor(k_TopColorProperty, UnityBrandColorScheme.sessionGradient.a);
-            m_TopHighlightMaterial.SetColor(k_BottomColorProperty, UnityBrandColorScheme.sessionGradient.b);
+            m_TopHighlightMaterial.SetColor(k_TopColorProperty, highlightColor.a);
+            m_TopHighlightMaterial.SetColor(k_BottomColorProperty, highlightColor.b);
             m_TopHighlightMaterial.SetFloat(k_AlphaProperty, 0f); // hide the highlight initially
         }
 
