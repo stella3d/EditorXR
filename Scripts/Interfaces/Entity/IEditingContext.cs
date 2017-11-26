@@ -1,4 +1,6 @@
 ﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR.Core;
+
 namespace UnityEditor.Experimental.EditorVR
 {
     /// <summary>
@@ -11,6 +13,11 @@ namespace UnityEditor.Experimental.EditorVR
         /// Name for this specific instance of an editing context
         /// </summary>
         string name { get; }
+
+        /// <summary>
+        /// Copy of the scene camera's (component) settings, and relevant image effects
+        /// </summary>
+        ContextSettings sceneCameraSettingsAndFX { get; }
 
         /// <summary>
         /// Perform one-time setup for the context when pushed to the stack.
