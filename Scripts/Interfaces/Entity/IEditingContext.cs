@@ -17,7 +17,7 @@ namespace UnityEditor.Experimental.EditorVR
         /// <summary>
         /// Copy of the scene camera's (component) settings, and relevant image effects
         /// </summary>
-        ContextSettings sceneCameraSettingsAndFX { get; }
+        ContextSettings contextSettings { get; }
 
         /// <summary>
         /// Perform one-time setup for the context when pushed to the stack.

@@ -36,7 +36,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         EditorVR m_Instance;
 
-        public ContextSettings CopySceneCameraSettingsAndFX { get { return new ContextSettings(m_CopySceneCameraSettings, m_SupportCameraFX); } }
+        public ContextSettings contextSettings { get { return new ContextSettings(m_CopySceneCameraSettings, m_SupportCameraFX); } }
 
         public void Setup()
         {
