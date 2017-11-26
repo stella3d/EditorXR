@@ -15,7 +15,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
     sealed class EditingContextManager : MonoBehaviour
     {
         [SerializeField]
-        UnityObject m_DefaultContext;
+        static UnityObject m_DefaultContext;
 
         internal const string k_SettingsPath = "ProjectSettings/EditingContextManagerSettings.asset";
         internal const string k_UserSettingsPath = "Library/EditingContextManagerSettings.asset";
@@ -24,26 +24,25 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal static EditingContextManager s_Instance;
         static InputManager s_InputManager;
+        static List<IEditingContext> s_AvailableContexts;
+        static EditingContextManagerSettings s_Settings;
 
-        EditingContextManagerSettings m_Settings;
-
-        List<IEditingContext> m_AvailableContexts;
         string[] m_ContextNames;
         int m_SelectedContextIndex;
 
-        IEditingContext m_CurrentContext;
+        static IEditingContext m_CurrentContext;
         readonly List<IEditingContext> m_PreviousContexts = new List<IEditingContext>();
 
-        internal IEditingContext defaultContext
+        internal static IEditingContext defaultContext
         {
             get
             {
-                var context = m_AvailableContexts.Find(c => c.Equals(m_DefaultContext)) ?? m_AvailableContexts.First();
+                var context = s_AvailableContexts.Find(c => c.Equals(m_DefaultContext)) ?? s_AvailableContexts.First();
 
-                var defaultContextName = m_Settings.defaultContextName;
+                var defaultContextName = s_Settings.defaultContextName;
                 if (!string.IsNullOrEmpty(defaultContextName))
                 {
-                    var foundContext = m_AvailableContexts.Find(c => c.name == defaultContextName);
+                    var foundContext = s_AvailableContexts.Find(c => c.name == defaultContextName);
                     if (foundContext != null)
                         context = foundContext;
                 }
@@ -52,7 +51,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
             set
             {
-                m_Settings.defaultContextName = value.name;
+                s_Settings.defaultContextName = value.name;
             }
         }
 
@@ -65,6 +64,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             VRView.viewEnabled += OnVRViewEnabled;
             VRView.viewDisabled += OnVRViewDisabled;
+            VRView.cameraSetupStarted += OnCameraSetupStarted;
 
             EditorApplication.update += ReopenOnExitPlaymode;
         }
@@ -79,6 +79,15 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             ObjectUtils.Destroy(s_Instance.gameObject);
             ObjectUtils.Destroy(s_InputManager.gameObject);
+        }
+
+        public static ContextSettings OnCameraSetupStarted()
+        {
+            ContextSettings settings = new ContextSettings();
+            if (m_CurrentContext != null)
+                settings = m_CurrentContext != null ? m_CurrentContext.sceneCameraSettingsAndFX : defaultContext.sceneCameraSettingsAndFX;
+
+            return settings;
         }
 
         [MenuItem("Window/EditorXR %e", false)]
@@ -131,7 +140,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         void OnEnable()
         {
-            m_Settings = LoadUserSettings();
+            s_Settings = LoadUserSettings();
 
             ISetEditingContextMethods.getAvailableEditingContexts = GetAvailableEditingContexts;
             ISetEditingContextMethods.getPreviousEditingContexts = GetPreviousEditingContexts;
@@ -141,12 +150,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
             var availableContexts = GetAvailableEditingContexts();
             m_ContextNames = availableContexts.Select(c => c.name).ToArray();
 
-            if (m_AvailableContexts.Count == 0)
+            if (s_AvailableContexts.Count == 0)
                 throw new Exception("You can't start EditorXR without at least one context. Try re-importing the package or use version control to restore the default context asset");
 
             SetEditingContext(defaultContext);
 
-            if (m_AvailableContexts.Count > 1)
+            if (s_AvailableContexts.Count > 1)
                 VRView.afterOnGUI += OnVRViewGUI;
 
             // Force the window to repaint every tick, since we need live updating
@@ -170,14 +179,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 m_CurrentContext.Dispose();
             }
 
-            m_AvailableContexts = null;
+            s_AvailableContexts = null;
 
             ISetEditingContextMethods.getAvailableEditingContexts = null;
             ISetEditingContextMethods.getPreviousEditingContexts = null;
             ISetEditingContextMethods.setEditingContext = null;
             ISetEditingContextMethods.restorePreviousEditingContext = null;
 
-            SaveUserSettings(m_Settings);
+            SaveUserSettings(s_Settings);
         }
 #endif
 
@@ -189,7 +198,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 GUILayout.FlexibleSpace();
                 GUILayout.BeginHorizontal();
                 {
-                    DoGUI(m_ContextNames, ref m_SelectedContextIndex, () => SetEditingContext(m_AvailableContexts[m_SelectedContextIndex]));
+                    DoGUI(m_ContextNames, ref m_SelectedContextIndex, () => SetEditingContext(s_AvailableContexts[m_SelectedContextIndex]));
                     GUILayout.FlexibleSpace();
                 }
                 GUILayout.EndHorizontal();
@@ -222,7 +231,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             context.Setup();
             m_CurrentContext = context;
 
-            m_SelectedContextIndex = m_AvailableContexts.IndexOf(context);
+            m_SelectedContextIndex = s_AvailableContexts.IndexOf(context);
         }
 
         internal void RestorePreviousContext()
@@ -254,12 +263,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
             return availableContexts.Select(c => c.name).ToArray();
         }
 
-        List<IEditingContext> GetAvailableEditingContexts()
+        static List<IEditingContext> GetAvailableEditingContexts()
         {
-            if (m_AvailableContexts == null)
-                m_AvailableContexts = GetEditingContextAssets();
+            if (s_AvailableContexts == null)
+                s_AvailableContexts = GetEditingContextAssets();
 
-            return m_AvailableContexts;
+            return s_AvailableContexts;
         }
 
         List<IEditingContext> GetPreviousEditingContexts()
