@@ -5,6 +5,8 @@ using UnityEngine.Assertions;
 using System.Collections;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using System.Reflection;
+using UnityEditor.Experimental.EditorVR.Utilities;
+using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.XR;
 
 #if ENABLE_STEAMVR_INPUT
@@ -18,6 +20,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public const float HeadHeight = 1.7f;
         const string k_ShowDeviceView = "VRView.ShowDeviceView";
         const string k_UseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
+
+        static Camera s_ExistingSceneMainCamera;
+        static bool s_ExistingSceneMainCameraEnabledState;
 
         DrawCameraMode m_RenderMode = DrawCameraMode.Textured;
 
@@ -52,6 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         bool m_HMDReady;
         bool m_UseCustomPreviewCamera;
+        bool m_LinearColor;
 
         Rect m_ToggleDeviceViewRect = new Rect(0, 0, 0, 20); // Width will be set based on window size
         Rect m_PresentationCameraRect = new Rect(0, 0, 0, 20); // Y position and width will be set based on window size
@@ -114,6 +120,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public static event Action<EditorWindow> beforeOnGUI;
         public static event Action<EditorWindow> afterOnGUI;
         public static event Action<bool> hmdStatusChange;
+        public static event Func<ContextSettings> cameraSetupStarted;
 
         public Rect guiRect { get; private set; }
 
@@ -135,12 +142,36 @@ namespace UnityEditor.Experimental.EditorVR.Core
             autoRepaintOnSceneChange = true;
             s_ActiveView = this;
 
-            GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("VRCamera", HideFlags.HideAndDontSave, typeof(Camera));
-            m_Camera = cameraGO.GetComponent<Camera>();
-            m_Camera.useOcclusionCulling = false;
+            ContextSettings contextSettings = new ContextSettings();
+            if (cameraSetupStarted != null)
+                 contextSettings = cameraSetupStarted();
+
+            s_ExistingSceneMainCamera = Camera.main;
+            if (contextSettings.copySceneCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
+            {
+                s_ExistingSceneMainCameraEnabledState = true;
+                GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("VRCamera", HideFlags.HideAndDontSave);
+                m_Camera = ObjectUtils.CopyComponent(s_ExistingSceneMainCamera, cameraGO);
+
+                if (contextSettings.supportCameraFX)
+                {
+                    var postprocessing = s_ExistingSceneMainCamera.GetComponent<PostProcessLayer>();
+                    if (postprocessing)
+                        ObjectUtils.CopyComponent(postprocessing, cameraGO);
+                }
+            }
+            else
+            {
+                GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("VRCamera", HideFlags.HideAndDontSave, typeof(Camera));
+                m_Camera = cameraGO.GetComponent<Camera>();
+            }
+
+            if (s_ExistingSceneMainCamera)
+                s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
+
             m_Camera.enabled = false;
             m_Camera.cameraType = CameraType.VR;
-
+            m_Camera.useOcclusionCulling = false;
             GameObject rigGO = EditorUtility.CreateGameObjectWithHideFlags("VRCameraRig", HideFlags.HideAndDontSave, typeof(EditorMonoBehaviour));
             m_CameraRig = rigGO.transform;
             m_Camera.transform.parent = m_CameraRig;
@@ -186,6 +217,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             Assert.IsNotNull(s_ActiveView, "EditorXR should have an active view");
             s_ActiveView = null;
+
+            if (s_ExistingSceneMainCamera)
+                s_ExistingSceneMainCamera.enabled = s_ExistingSceneMainCameraEnabledState;
         }
 
         void UpdateCameraTransform()
