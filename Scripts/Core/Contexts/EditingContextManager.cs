@@ -85,7 +85,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             ContextSettings settings = new ContextSettings();
             if (m_CurrentContext != null)
-                settings = m_CurrentContext != null ? m_CurrentContext.sceneCameraSettingsAndFX : defaultContext.sceneCameraSettingsAndFX;
+                settings = m_CurrentContext != null ? m_CurrentContext.contextSettings : defaultContext.contextSettings;
 
             return settings;
         }
