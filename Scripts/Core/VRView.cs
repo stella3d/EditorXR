@@ -1,10 +1,11 @@
 #if UNITY_EDITOR
 using System;
+using System.Collections;
+using System.Reflection;
+using UnityEditor.Experimental.EditorVR.Helpers;
+using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
-using System.Collections;
-using UnityEditor.Experimental.EditorVR.Helpers;
-using System.Reflection;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.XR;
@@ -150,7 +151,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             s_ExistingSceneMainCamera = Camera.main;
             if (contextSettings.copySceneCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
             {
-                s_ExistingSceneMainCameraEnabledState = true;
                 GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, HideFlags.HideAndDontSave);
                 m_Camera = ObjectUtils.CopyComponent(s_ExistingSceneMainCamera, cameraGO);
 
@@ -168,7 +168,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
 
             if (s_ExistingSceneMainCamera)
+            {
+                s_ExistingSceneMainCameraEnabledState = s_ExistingSceneMainCamera.enabled;
                 s_ExistingSceneMainCamera.enabled = false; // Disable existing MainCamera in the scene
+            }
 
             m_Camera.enabled = false;
             m_Camera.cameraType = CameraType.VR;

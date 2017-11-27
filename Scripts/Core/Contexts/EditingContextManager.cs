@@ -26,6 +26,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         static InputManager s_InputManager;
         static List<IEditingContext> s_AvailableContexts;
         static EditingContextManagerSettings s_Settings;
+        static UnityObject s_DefaultContext;
         static IEditingContext s_CurrentContext;
 
         string[] m_ContextNames;
@@ -37,7 +38,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             get
             {
-                var context = s_AvailableContexts.Find(c => c.Equals(m_DefaultContext)) ?? s_AvailableContexts.First();
+                var context = s_AvailableContexts.Find(c => c.Equals(s_DefaultContext)) ?? s_AvailableContexts.First();
 
                 var defaultContextName = s_Settings.defaultContextName;
                 if (!string.IsNullOrEmpty(defaultContextName))
@@ -85,7 +86,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             ContextSettings settings = new ContextSettings();
             if (s_CurrentContext != null)
-                settings = s_CurrentContext != null ? s_CurrentContext.contextSettings : defaultContext.contextSettings;
+                settings = s_CurrentContext.contextSettings;
 
             return settings;
         }
@@ -136,6 +137,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 if (view)
                     view.Close();
             }
+        }
+
+        void Awake()
+        {
+            s_DefaultContext = m_DefaultContext;
         }
 
         void OnEnable()
