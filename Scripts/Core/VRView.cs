@@ -20,6 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public const float HeadHeight = 1.7f;
         const string k_ShowDeviceView = "VRView.ShowDeviceView";
         const string k_UseCustomPreviewCamera = "VRView.UseCustomPreviewCamera";
+        const string k_CameraName = "VRCamera";
 
         static Camera s_ExistingSceneMainCamera;
         static bool s_ExistingSceneMainCameraEnabledState;
@@ -150,7 +151,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (contextSettings.copySceneCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
             {
                 s_ExistingSceneMainCameraEnabledState = true;
-                GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("VRCamera", HideFlags.HideAndDontSave);
+                GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, HideFlags.HideAndDontSave);
                 m_Camera = ObjectUtils.CopyComponent(s_ExistingSceneMainCamera, cameraGO);
 
                 if (contextSettings.supportCameraFX)
@@ -162,7 +163,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
             }
             else
             {
-                GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags("VRCamera", HideFlags.HideAndDontSave, typeof(Camera));
+                GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, HideFlags.HideAndDontSave, typeof(Camera));
                 m_Camera = cameraGO.GetComponent<Camera>();
             }
 

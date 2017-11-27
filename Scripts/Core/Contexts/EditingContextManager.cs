@@ -26,11 +26,11 @@ namespace UnityEditor.Experimental.EditorVR.Core
         static InputManager s_InputManager;
         static List<IEditingContext> s_AvailableContexts;
         static EditingContextManagerSettings s_Settings;
+        static IEditingContext s_CurrentContext;
 
         string[] m_ContextNames;
         int m_SelectedContextIndex;
 
-        static IEditingContext m_CurrentContext;
         readonly List<IEditingContext> m_PreviousContexts = new List<IEditingContext>();
 
         internal static IEditingContext defaultContext
@@ -57,7 +57,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         internal IEditingContext currentContext
         {
-            get { return m_CurrentContext; }
+            get { return s_CurrentContext; }
         }
 
         static EditingContextManager()
@@ -84,8 +84,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public static ContextSettings OnCameraSetupStarted()
         {
             ContextSettings settings = new ContextSettings();
-            if (m_CurrentContext != null)
-                settings = m_CurrentContext != null ? m_CurrentContext.contextSettings : defaultContext.contextSettings;
+            if (s_CurrentContext != null)
+                settings = s_CurrentContext != null ? s_CurrentContext.contextSettings : defaultContext.contextSettings;
 
             return settings;
         }
@@ -173,10 +173,10 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             VRView.afterOnGUI -= OnVRViewGUI;
 
-            if (m_CurrentContext != null)
+            if (s_CurrentContext != null)
             {
-                defaultContext = m_CurrentContext;
-                m_CurrentContext.Dispose();
+                defaultContext = s_CurrentContext;
+                s_CurrentContext.Dispose();
             }
 
             s_AvailableContexts = null;
@@ -222,14 +222,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
             if (context == null)
                 return;
 
-            if (m_CurrentContext != null)
+            if (s_CurrentContext != null)
             {
-                m_PreviousContexts.Insert(0, m_CurrentContext);
-                m_CurrentContext.Dispose();
+                m_PreviousContexts.Insert(0, s_CurrentContext);
+                s_CurrentContext.Dispose();
             }
 
             context.Setup();
-            m_CurrentContext = context;
+            s_CurrentContext = context;
 
             m_SelectedContextIndex = s_AvailableContexts.IndexOf(context);
         }
