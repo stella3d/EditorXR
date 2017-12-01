@@ -59,7 +59,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         bool m_HMDReady;
         bool m_UseCustomPreviewCamera;
-        bool m_LinearColor;
 
         Rect m_ToggleDeviceViewRect = new Rect(0, 0, 0, 20); // Width will be set based on window size
         Rect m_PresentationCameraRect = new Rect(0, 0, 0, 20); // Y position and width will be set based on window size
@@ -122,7 +121,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public static event Action<EditorWindow> beforeOnGUI;
         public static event Action<EditorWindow> afterOnGUI;
         public static event Action<bool> hmdStatusChange;
-        public static event Func<ContextSettings> cameraSetupStarted;
+        public static event Func<IEditingContext> cameraSetupStarted;
 
         public Rect guiRect { get; private set; }
 
@@ -143,16 +142,23 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
             autoRepaintOnSceneChange = true;
             s_ActiveView = this;
+            const float nearClipPlane = 0.01f;
+            const float farClipPlane = 1000f;
 
-            ContextSettings contextSettings = new ContextSettings();
-            if (cameraSetupStarted != null)
-                 contextSettings = cameraSetupStarted();
-
+            var currentEditingContext = cameraSetupStarted != null ? cameraSetupStarted() : null;
             s_ExistingSceneMainCamera = Camera.main;
-            if (contextSettings.copySceneCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
+            if (currentEditingContext != null && currentEditingContext.copySceneCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
             {
                 GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, HideFlags.HideAndDontSave);
                 m_Camera = ObjectUtils.CopyComponent(s_ExistingSceneMainCamera, cameraGO);
+
+                if (m_Camera.nearClipPlane > nearClipPlane)
+                {
+                    Debug.LogWarning("Copying settings from scene camera that is tagged 'MainCamera'." + Environment.NewLine +
+                        " Clipping issues may occur with NearClipPlane values is greater than " + nearClipPlane);
+
+                    m_Camera.nearClipPlane = nearClipPlane;
+                }
 
                 if (contextSettings.supportCameraFX)
                 {
@@ -165,6 +171,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
             {
                 GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, HideFlags.HideAndDontSave, typeof(Camera));
                 m_Camera = cameraGO.GetComponent<Camera>();
+
+                m_Camera.nearClipPlane = nearClipPlane;
+                m_Camera.farClipPlane = farClipPlane;
             }
 
             if (s_ExistingSceneMainCamera)
@@ -179,8 +188,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
             GameObject rigGO = EditorUtility.CreateGameObjectWithHideFlags("VRCameraRig", HideFlags.HideAndDontSave, typeof(EditorMonoBehaviour));
             m_CameraRig = rigGO.transform;
             m_Camera.transform.parent = m_CameraRig;
-            m_Camera.nearClipPlane = 0.01f;
-            m_Camera.farClipPlane = 1000f;
             m_CameraRig.position = headCenteredOrigin;
             m_CameraRig.rotation = Quaternion.identity;
 

@@ -15,10 +15,15 @@ namespace UnityEditor.Experimental.EditorVR
         string name { get; }
 
         /// <summary>
-        /// Settings denoting that the scene camera's (component values), and relevant image effects,
-        /// should be cloned on the XR runtime camera
+        /// Bool denotes that the scene camera's (component) values should be cloned on the XR runtime camera
         /// </summary>
-        ContextSettings contextSettings { get; }
+        bool copySceneCameraSettings { get; }
+
+        /// <summary>
+        /// Bool denotes that the scene camera's post processing effects should be cloned on the XR runtime camera
+        /// Currently only the Unity Post Processing Stack(v2) is supported
+        /// </summary>
+        bool supportCameraFX { get; }
 
         /// <summary>
         /// Perform one-time setup for the context when pushed to the stack.

@@ -7,18 +7,6 @@ using UnityEngine.XR;
 
 namespace UnityEditor.Experimental.EditorVR.Core
 {
-    public struct ContextSettings
-    {
-        public bool copySceneCameraSettings;
-        public bool supportCameraFX;
-
-        public ContextSettings(bool copySceneCameraSettings, bool supportCameraFX)
-        {
-            this.copySceneCameraSettings = copySceneCameraSettings;
-            this.supportCameraFX = supportCameraFX;
-        }
-    }
-
     [CreateAssetMenu(menuName = "EditorVR/EditorVR Context")]
     class EditorVRContext : ScriptableObject, IEditingContext
     {
@@ -36,7 +24,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         EditorVR m_Instance;
 
-        public ContextSettings contextSettings { get { return new ContextSettings(m_CopySceneCameraSettings, m_SupportCameraFX); } }
+        public bool copySceneCameraSettings { get { return m_CopySceneCameraSettings; } }
+
+        public bool supportCameraFX { get { return m_SupportCameraFX; } }
 
         public void Setup()
         {
