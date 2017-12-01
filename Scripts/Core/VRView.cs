@@ -160,7 +160,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     m_Camera.nearClipPlane = nearClipPlane;
                 }
 
-                if (contextSettings.supportCameraFX)
+                if (currentEditingContext.supportCameraFX)
                 {
                     var postprocessing = s_ExistingSceneMainCamera.GetComponent<PostProcessLayer>();
                     if (postprocessing)
