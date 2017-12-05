@@ -6,9 +6,11 @@ using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.Assertions;
-using UnityEditor.Experimental.EditorVR.Utilities;
-using UnityEngine.Rendering.PostProcessing;
 using UnityEngine.XR;
+
+#if UNITY_POST_PROCESSING_STACK_V2
+using UnityEngine.Rendering.PostProcessing;
+#endif
 
 #if ENABLE_STEAMVR_INPUT
 using Valve.VR;
@@ -159,13 +161,14 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
                     m_Camera.nearClipPlane = nearClipPlane;
                 }
-
+#if UNITY_POST_PROCESSING_STACK_V2
                 if (currentEditingContext.supportCameraFX)
                 {
                     var postprocessing = s_ExistingSceneMainCamera.GetComponent<PostProcessLayer>();
                     if (postprocessing)
                         ObjectUtils.CopyComponent(postprocessing, cameraGO);
                 }
+#endif
             }
             else
             {
