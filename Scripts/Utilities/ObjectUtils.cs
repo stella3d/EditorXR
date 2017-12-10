@@ -25,6 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<Renderer> k_Renderers = new List<Renderer>();
+        static readonly List<Transform> k_Transforms = new List<Transform>();
 
         public static GameObject Instantiate(GameObject prefab, Transform parent = null, bool worldPositionStays = true,
             bool runInEditMode = true, bool active = true)
@@ -141,13 +142,16 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             // As a fallback when there are no bounds, collect all transform positions
             if (b.size == Vector3.zero)
             {
-                var transforms = transform.GetComponentsInChildren<Transform>();
+                k_Transforms.Clear();
+                transform.GetComponentsInChildren(k_Transforms);
 
-                if (transforms.Length > 0)
-                    b.center = transforms[0].position;
+                if (k_Transforms.Count > 0)
+                    b.center = k_Transforms[0].position;
 
-                foreach (var t in transforms)
+                foreach (var t in k_Transforms)
+                {
                     b.Encapsulate(t.position);
+                }
             }
 
             return b;
@@ -202,30 +206,11 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
 
         public static T CopyComponent<T>(T sourceComponent, GameObject targetGameObject) where T : Component
         {
-            Type sourceType = sourceComponent.GetType();
-            var targetComponent = targetGameObject.GetComponent(sourceType) as T;
-            if (!targetComponent)
-                targetComponent = targetGameObject.AddComponent(sourceType) as T;
+            var sourceType = sourceComponent.GetType();
+            var clonedTargetComponent = AddComponent(sourceType, targetGameObject);
+            EditorUtility.CopySerialized(sourceComponent, clonedTargetComponent);
 
-            var fields = sourceType.GetFields();
-            foreach (var field in fields)
-            {
-                if (field.IsStatic)
-                    continue;
-
-                field.SetValue(targetComponent, field.GetValue(sourceComponent));
-            }
-
-            var properties = sourceType.GetProperties();
-            foreach (var property in properties)
-            {
-                if (!property.CanWrite || property.Name == "name")
-                    continue;
-
-                property.SetValue(targetComponent, property.GetValue(sourceComponent, null), null);
-            }
-
-            return (T)targetComponent;
+            return (T)clonedTargetComponent;
         }
 
         static IEnumerable<Type> GetAssignableTypes(Type type, Func<Type, bool> predicate = null)
@@ -282,7 +267,7 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             return Enumerable.Empty<Type>();
         }
 
-        public static void Destroy(UnityObject o, float t = 0f)
+        public static void Destroy(UnityObject o, float t = 0f, bool withUndo = false)
         {
             if (Application.isPlaying)
             {
@@ -292,20 +277,30 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
             else
             {
                 if (Mathf.Approximately(t, 0f))
-                    UnityObject.DestroyImmediate(o);
+                {
+                    if (withUndo)
+                        Undo.DestroyObjectImmediate(o);
+                    else
+                        UnityObject.DestroyImmediate(o);
+                }
                 else
+                {
                     VRView.StartCoroutine(DestroyInSeconds(o, t));
+                }
             }
 #endif
         }
 
-        static IEnumerator DestroyInSeconds(UnityObject o, float t)
+        static IEnumerator DestroyInSeconds(UnityObject o, float t, bool withUndo = false)
         {
             var startTime = Time.realtimeSinceStartup;
             while (Time.realtimeSinceStartup <= startTime + t)
                 yield return null;
 
-            UnityObject.DestroyImmediate(o);
+            if (withUndo)
+                Undo.DestroyObjectImmediate(o);
+            else
+                UnityObject.DestroyImmediate(o);
         }
 
         /// <summary>

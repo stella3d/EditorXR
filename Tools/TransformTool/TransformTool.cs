@@ -58,7 +58,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 }
             }
 
-            public void UpdatePositions(IUsesSnapping usesSnapping)
+            public void UpdatePositions(IUsesSnapping usesSnapping, bool interpolate = true)
             {
                 if (suspended)
                     return;
@@ -75,9 +75,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                     if (usesSnapping.DirectSnap(rayOrigin, grabbedObject, ref position, ref rotation, targetPosition, targetRotation))
                     {
-                        var deltaTime = Time.deltaTime;
-                        grabbedObject.position = Vector3.Lerp(grabbedObject.position, position, k_DirectLazyFollowTranslate * deltaTime);
-                        grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, rotation, k_DirectLazyFollowRotate * deltaTime);
+                        if (interpolate)
+                        {
+                            var deltaTime = Time.deltaTime;
+                            grabbedObject.position = Vector3.Lerp(grabbedObject.position, position, k_DirectLazyFollowTranslate * deltaTime);
+                            grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, rotation, k_DirectLazyFollowRotate * deltaTime);
+                        }
+                        else
+                        {
+                            grabbedObject.position = position;
+                            grabbedObject.rotation = rotation;
+                        }
                     }
                     else
                     {
@@ -436,6 +444,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                     if (leftInput.select.wasJustReleased)
                     {
+                        if (rightInput != null && rightInput.select.wasJustReleased)
+                            m_Scaling = false;
+
                         DropHeldObjects(Node.LeftHand);
                         hasLeft = false;
                         consumeControl(leftInput.select);
@@ -447,7 +458,6 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     consumeControl(rightInput.cancel);
                     if (rightInput.cancel.wasJustPressed)
                     {
-                       
                         if (m_Scaling)
                         {
                             m_Scaling = false;
@@ -465,6 +475,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                     if (rightInput.select.wasJustReleased)
                     {
+                        if (leftInput != null && leftInput.select.wasJustReleased)
+                            m_Scaling = false;
+
                         DropHeldObjects(Node.RightHand);
                         hasRight = false;
                         consumeControl(rightInput.select);
@@ -590,7 +603,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         {
             var grabData = GrabDataForNode(node);
             if (grabData != null)
+            {
                 grabData.suspended = false;
+                grabData.UpdatePositions(this, false);
+            }
         }
 
         public Transform[] GetHeldObjects(Node node)
@@ -611,7 +627,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             grabData.TransferTo(destRayOrigin, deltaOffset);
             this.ClearSnappingState(rayOrigin);
-            grabData.UpdatePositions(this);
+            grabData.UpdatePositions(this, false);
 
             // Prevent lock from getting stuck
             this.RemoveRayVisibilitySettings(rayOrigin, this);
@@ -630,7 +646,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             var grabbedObjects = grabData.grabbedObjects;
             var rayOrigin = grabData.rayOrigin;
 
-            if (objectsDropped != null && !m_Scaling)
+            if (objectsDropped != null)
                 objectsDropped(rayOrigin, grabbedObjects);
 
             if (node == Node.LeftHand)
@@ -817,17 +833,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             {
                 foreach (var id in ids)
                 {
-                    var request = new ProxyFeedbackRequest
-                    {
-                        node = node,
-                        control = id,
-                        tooltipText = tooltipText,
-                        priority = 1,
-                        suppressExisting = suppressExisting
-                    };
-
-                    this.AddFeedbackRequest(request);
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.node = node;
+                    request.control = id;
+                    request.tooltipText = tooltipText;
+                    request.priority = 1;
+                    request.suppressExisting = suppressExisting;
                     requests.Add(request);
+                    this.AddFeedbackRequest(request);
                 }
             }
         }

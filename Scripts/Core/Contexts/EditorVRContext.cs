@@ -14,7 +14,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         float m_RenderScale = 1f;
 
         [SerializeField]
-        bool m_CopySceneCameraSettings = true;
+        bool m_CopyExistingCameraSettings = true;
 
         [SerializeField]
         bool m_SupportCameraFX = true;
@@ -24,7 +24,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         EditorVR m_Instance;
 
-        public bool copySceneCameraSettings { get { return m_CopySceneCameraSettings; } }
+        public bool copyExistingCameraSettings { get { return m_CopyExistingCameraSettings; } }
+
+        public bool instanceExists { get { return m_Instance != null; } }
 
         public bool supportCameraFX { get { return m_SupportCameraFX; } }
 
@@ -37,12 +39,9 @@ namespace UnityEditor.Experimental.EditorVR.Core
 
         public void Dispose()
         {
-            if (m_Instance)
-            {
-                m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
-                ObjectUtils.Destroy(m_Instance.gameObject);
-                m_Instance = null;
-            }
+            m_Instance.Shutdown(); // Give a chance for dependent systems (e.g. serialization) to shut-down before destroying
+            ObjectUtils.Destroy(m_Instance.gameObject);
+            m_Instance = null;
         }
     }
 }

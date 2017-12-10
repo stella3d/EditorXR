@@ -134,6 +134,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                         hash.AddToSpatialHash(grabData.transform.gameObject);
                         grabData.ResetScale();
                     }
+
                     hasPreview = false;
                 }
 
@@ -381,8 +382,6 @@ namespace UnityEditor.Experimental.EditorVR.Core
                             incomingPreview.TransferObjects(miniWorldRay);
                             directSelection.ResumeGrabbers(incomingPreview.node);
                         }
-
-                        miniWorldRay.UpdatePreview(); // Otherwise the object is in the wrong position for a frame
 
                         if (!isContained)
                             m_RayWasContained[originalRayOrigin] = false; //Prevent ray from showing

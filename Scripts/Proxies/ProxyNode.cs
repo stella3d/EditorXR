@@ -25,6 +25,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                     readonly AffordanceTooltip[] m_Tooltips;
                     readonly AffordanceVisibilityDefinition m_Definition;
 
+                    readonly Action<float> m_SetFloat;
+                    readonly Action<Color> m_SetColor;
+
                     bool m_Visibile;
                     float m_VisibilityChangeTime;
 
@@ -34,6 +37,9 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
                     public float visibleDuration { get; set; }
                     public float hideTime { get { return m_VisibilityChangeTime + visibleDuration; } }
+
+                    public Action<float> setFloat { get { return m_SetFloat; } }
+                    public Action<Color> setColor { get { return m_SetColor; } }
 
                     public bool visible
                     {
@@ -51,14 +57,18 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                         m_Definition = definition;
                         m_Material = material;
                         m_MaterialIndex = Array.IndexOf(renderer.sharedMaterials, material);
+
+                        // Cache delegate versions of SetFloat and SetColor to avoid GC when used in AnimateProperty
+                        m_SetFloat = SetFloat;
+                        m_SetColor = SetColor;
                     }
 
-                    public void SetFloat(float value)
+                    void SetFloat(float value)
                     {
                         m_Material.SetFloat(m_Definition.alphaProperty, value);
                     }
 
-                    public void SetColor(Color value)
+                    void SetColor(Color value)
                     {
                         m_Material.SetColor(m_Definition.colorProperty, value);
                     }
@@ -70,16 +80,18 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 Color m_StartColor;
                 Color m_CurrentColor;
 
-                readonly Dictionary<VRControl, VisibilityState> m_AffordanceVisibilityStates = new Dictionary<VRControl, VisibilityState>();
+                readonly Dictionary<int, VisibilityState> m_AffordanceVisibilityStates = new Dictionary<int, VisibilityState>();
                 readonly Dictionary<KeyValuePair<Material, string>, VisibilityState> m_VisibilityStates = new Dictionary<KeyValuePair<Material, string>, VisibilityState>();
 
                 public void AddAffordance(Material material, VRControl control, Renderer renderer,
                     AffordanceTooltip[] tooltips, AffordanceVisibilityDefinition definition)
                 {
-                    if (m_AffordanceVisibilityStates.ContainsKey(control))
+                    var key = (int)control;
+
+                    if (m_AffordanceVisibilityStates.ContainsKey(key))
                         Debug.LogWarning("Multiple affordaces added to " + this + " for " + control);
 
-                    m_AffordanceVisibilityStates[control] = new VisibilityState(renderer, tooltips, definition, material);
+                    m_AffordanceVisibilityStates[key] = new VisibilityState(renderer, tooltips, definition, material);
 
                     switch (definition.visibilityType)
                     {
@@ -146,7 +158,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                             TransitionUtils.AnimateProperty(time, visible, ref m_WasVisible, ref m_VisibleChangeTime,
                                 ref m_CurrentColor.a, ref m_StartColor.a, definition.hiddenColor.a, m_OriginalColor.a,
                                 fadeDuration, Mathf.Approximately, TransitionUtils.GetPercentage, Mathf.Lerp,
-                                visibilityState.SetFloat, false);
+                                visibilityState.setFloat, false);
                             break;
                         case VisibilityControlType.ColorProperty:
                             if (visibilityState == null)
@@ -162,7 +174,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                             TransitionUtils.AnimateProperty(time, visible, ref m_WasVisible, ref m_VisibleChangeTime,
                                 ref m_CurrentColor, ref m_StartColor, definition.hiddenColor, m_OriginalColor,
                                 fadeDuration, TransitionUtils.Approximately, TransitionUtils.GetPercentage, Color.Lerp,
-                                visibilityState.SetColor, false);
+                                visibilityState.setColor, false);
                             break;
                     }
 
@@ -205,7 +217,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 {
                     foreach (var kvp in m_AffordanceVisibilityStates)
                     {
-                        if (kvp.Key != control)
+                        if (kvp.Key != (int)control)
                             continue;
 
                         if (kvp.Value.visible)
@@ -218,7 +230,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 public void SetVisibility(bool visible, float duration, VRControl control)
                 {
                     VisibilityState visibilityState;
-                    if (m_AffordanceVisibilityStates.TryGetValue(control, out visibilityState))
+                    if (m_AffordanceVisibilityStates.TryGetValue((int)control, out visibilityState))
                     {
                         visibilityState.visible = visible;
                         visibilityState.visibleDuration = duration;
@@ -305,73 +317,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-        /// <summary>
-        /// Used as globally unique identifiers for feedback requests
-        /// They are used to relate feedback requests to the persistent count of visible presentations used to suppress feedback
-        /// </summary>
-        [Serializable]
-        internal struct RequestKey
-        {
-            /// <summary>
-            /// The control index used to identify the related affordance
-            /// </summary>
-            [SerializeField]
-            VRControl m_Control;
-
-            /// <summary>
-            /// The tooltip text that was presented
-            /// </summary>
-            [SerializeField]
-            string m_TooltipText;
-
-            public RequestKey(ProxyFeedbackRequest request)
-            {
-                m_Control = request.control;
-                m_TooltipText = request.tooltipText;
-            }
-
-            public override int GetHashCode()
-            {
-                var hashCode = (int)m_Control;
-
-                if (m_TooltipText != null)
-                    hashCode ^= m_TooltipText.GetHashCode();
-
-                return hashCode;
-            }
-        }
-
-        /// <summary>
-        /// Contains per-request persistent data
-        /// </summary>
-        [Serializable]
-        internal class RequestData
-        {
-            [SerializeField]
-            int m_Presentations;
-
-            /// <summary>
-            /// How many times the user viewed the presentation of this type of request
-            /// </summary>
-            public int presentations
-            {
-                get { return m_Presentations; }
-                set { m_Presentations = value; }
-            }
-
-            public bool visibleThisPresentation { get; set; }
-        }
-
-        /// <summary>
-        /// Used to store persistent data about feedback requests
-        /// </summary>
-        [Serializable]
-        internal class SerializedFeedback
-        {
-            public RequestKey[] keys;
-            public RequestData[] values;
-        }
-
         const string k_ZWritePropertyName = "_ZWrite";
         const float k_LastFacingAngleWeight = 0.1f;         // How much extra emphasis to give the last facing angle to prevent 'jitter' when looking at a controller on a boundary
 
@@ -420,7 +365,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         FacingDirection m_FacingDirection = FacingDirection.Back;
 
-        SerializedFeedback m_SerializedFeedback;
+        SerializedProxyNodeFeedback m_SerializedFeedback;
         readonly List<ProxyFeedbackRequest> m_FeedbackRequests = new List<ProxyFeedbackRequest>();
         readonly Dictionary<RequestKey, RequestData> m_RequestData = new Dictionary<RequestKey, RequestData>();
 
@@ -428,6 +373,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
 
         // Local method use only -- created here to reduce garbage collection
         static readonly List<ProxyFeedbackRequest> k_FeedbackRequestsCopy = new List<ProxyFeedbackRequest>();
+        readonly Queue<RequestKey> m_RequestKeyPool = new Queue<RequestKey>();
 
         /// <summary>
         /// The transform that the device's ray contents (default ray, custom ray, etc) will be parented under
@@ -453,7 +399,6 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
         /// The transform that the display/preview objects will be parented under
         /// </summary>
         public Transform fieldGrabOrigin { get { return m_FieldGrabOrigin; } }
-
         void Awake()
         {
             // Don't allow setup if affordances are invalid
@@ -699,12 +644,17 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (request == null)
                 return;
 
-            var feedbackKey = new RequestKey(request);
+            var requestKey = GetRequestKey();
+            requestKey.UpdateValues(request);
             RequestData data;
-            if (!m_RequestData.TryGetValue(feedbackKey, out data))
+            if (!m_RequestData.TryGetValue(requestKey, out data))
             {
                 data = new RequestData();
-                m_RequestData[feedbackKey] = data;
+                m_RequestData[requestKey] = data;
+            }
+            else
+            {
+                m_RequestKeyPool.Enqueue(requestKey);
             }
 
             var suppress = data.presentations > request.maxPresentations - 1;
@@ -734,17 +684,19 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                             data.visibleThisPresentation = false;
                             tooltip.tooltipText = tooltipText;
                             this.ShowTooltip(tooltip, true, placement: tooltip.GetPlacement(m_FacingDirection),
-                                becameVisible: () =>
-                                {
-                                    if (!data.visibleThisPresentation)
-                                        data.presentations++;
-
-                                    data.visibleThisPresentation = true;
-                                });
+                                becameVisible: data.onBecameVisible);
                         }
                     }
                 }
             }
+        }
+
+        RequestKey GetRequestKey()
+        {
+            if (m_RequestKeyPool.Count > 0)
+                return m_RequestKeyPool.Dequeue();
+
+            return new RequestKey();
         }
 
         public void RemoveFeedbackRequest(ProxyFeedbackRequest request)
@@ -776,6 +728,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
                 if (feedbackRequest == request)
                 {
                     m_FeedbackRequests.Remove(feedbackRequest);
+
                     if (!request.showBody)
                         ExecuteFeedback(request);
 
@@ -799,24 +752,28 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             }
         }
 
-        public SerializedFeedback OnSerializePreferences()
+        public SerializedProxyNodeFeedback OnSerializePreferences()
         {
-            if (m_SerializedFeedback != null)
-            {
-                var count = m_RequestData.Count;
-                var keys = new RequestKey[count];
-                var values = new RequestData[count];
-                count = 0;
-                foreach (var kvp in m_RequestData)
-                {
-                    keys[count] = kvp.Key;
-                    values[count] = kvp.Value;
-                    count++;
-                }
+            if (m_RequestData.Count == 0)
+                return m_SerializedFeedback;
 
-                m_SerializedFeedback.keys = keys;
-                m_SerializedFeedback.values = values;
+            if (m_SerializedFeedback == null)
+                m_SerializedFeedback = new SerializedProxyNodeFeedback();
+
+            var keys = new List<RequestKey>();
+            var values = new List<RequestData>();
+            foreach (var kvp in m_RequestData)
+            {
+                var requestKey = kvp.Key;
+                if (!requestKey.HasTooltip())
+                    continue;
+
+                keys.Add(requestKey);
+                values.Add(kvp.Value);
             }
+
+            m_SerializedFeedback.keys = keys.ToArray();
+            m_SerializedFeedback.values = values.ToArray();
 
             return m_SerializedFeedback;
         }
@@ -826,7 +783,7 @@ namespace UnityEditor.Experimental.EditorVR.Proxies
             if (obj == null)
                 return;
 
-            m_SerializedFeedback = (SerializedFeedback)obj;
+            m_SerializedFeedback = (SerializedProxyNodeFeedback)obj;
             if (m_SerializedFeedback.keys == null)
                 return;
 

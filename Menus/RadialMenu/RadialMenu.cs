@@ -10,7 +10,7 @@ using UnityEngine.InputNew;
 namespace UnityEditor.Experimental.EditorVR.Menus
 {
     sealed class RadialMenu : MonoBehaviour, IInstantiateUI, IAlternateMenu, IUsesMenuOrigins, ICustomActionMap,
-        IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback
+        IControlHaptics, IUsesNode, IConnectInterfaces, IRequestFeedback, IActionsMenu
     {
         const float k_ActivationThreshold = 0.5f; // Do not consume thumbstick or activate menu if the control vector's magnitude is below this threshold
 
@@ -47,6 +47,7 @@ namespace UnityEditor.Experimental.EditorVR.Menus
         public Node node { get; set; }
 
         public Bounds localBounds { get { return default(Bounds); } }
+        public int priority { get { return 1; } }
 
         public ActionMap actionMap { get { return m_ActionMap; } }
         public bool ignoreLocking { get { return false; } }
@@ -166,12 +167,11 @@ namespace UnityEditor.Experimental.EditorVR.Menus
             {
                 foreach (var id in controls)
                 {
-                    this.AddFeedbackRequest(new ProxyFeedbackRequest
-                    {
-                        control = id,
-                        node = node,
-                        tooltipText = "Select Action (Press to Execute)"
-                    });
+                    var request = (ProxyFeedbackRequest)this.GetFeedbackRequestObject(typeof(ProxyFeedbackRequest));
+                    request.control = id;
+                    request.node = node;
+                    request.tooltipText = "Select Action (Press to Execute)";
+                    this.AddFeedbackRequest(request);
                 }
             }
         }
