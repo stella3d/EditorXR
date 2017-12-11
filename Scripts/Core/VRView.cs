@@ -141,14 +141,16 @@ namespace UnityEditor.Experimental.EditorVR.Core
         {
             Assert.IsNull(s_ActiveView, "Only one EditorXR should be active");
 
-            autoRepaintOnSceneChange = true;
-            s_ActiveView = this;
             const float nearClipPlane = 0.01f;
             const float farClipPlane = 1000f;
+            var defaultContext = EditingContextManager.defaultContext;
+            autoRepaintOnSceneChange = true;
+            s_ActiveView = this;
 
             s_ExistingSceneMainCamera = Camera.main;
+
             // TODO: Copy camera settings when changing contexts
-            if (EditingContextManager.defaultContext.copyExistingCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
+            if (defaultContext.copyExistingCameraSettings && s_ExistingSceneMainCamera && s_ExistingSceneMainCamera.enabled)
             {
                 GameObject cameraGO = EditorUtility.CreateGameObjectWithHideFlags(k_CameraName, HideFlags.HideAndDontSave);
                 m_Camera = ObjectUtils.CopyComponent(s_ExistingSceneMainCamera, cameraGO);
@@ -161,7 +163,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
                     m_Camera.nearClipPlane = nearClipPlane;
                 }
 #if UNITY_POST_PROCESSING_STACK_V2
-                if (currentEditingContext.supportCameraFX)
+                if (defaultContext.supportCameraFX)
                 {
                     var postprocessing = s_ExistingSceneMainCamera.GetComponent<PostProcessLayer>();
                     if (postprocessing)
