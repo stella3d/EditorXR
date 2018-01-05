@@ -6,6 +6,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Extensions;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
@@ -13,6 +14,12 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
@@ -39,7 +46,11 @@ namespace UnityEditor.Experimental.EditorVR.UI
         OnChangeEvent m_OnValueChanged = new OnChangeEvent();
 
         [SerializeField]
+#if INCLUDE_TEXT_MESH_PRO
+        TextMeshProUGUI m_TextComponent;
+#else
         Text m_TextComponent;
+#endif
 
         [SerializeField]
         int m_CharacterLimit = 10;

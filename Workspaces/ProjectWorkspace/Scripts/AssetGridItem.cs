@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Extensions;
@@ -11,6 +12,12 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.InputNew;
 using UnityEngine.UI;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -30,7 +37,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const int k_HidePreviewVertexCount = 100000;
 
         [SerializeField]
+#if INCLUDE_TEXT_MESH_PRO
+        TextMeshProUGUI m_Text;
+#else
         Text m_Text;
+#endif
 
         [SerializeField]
         BaseHandle m_Handle;

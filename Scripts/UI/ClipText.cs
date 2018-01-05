@@ -1,13 +1,26 @@
 ﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#else
 using UnityEngine.UI;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
     /// <summary>
     /// Extension of UI.Text allows the use of a custom clipping material by providing GetModifiedMaterial override
     /// </summary>
-    sealed class ClipText : Text
+    sealed class ClipText :
+#if INCLUDE_TEXT_MESH_PRO
+        TextMeshProUGUI
+#else
+        Text
+#endif
     {
         /// <summary>
         /// Parent transform worldToLocalMatrix

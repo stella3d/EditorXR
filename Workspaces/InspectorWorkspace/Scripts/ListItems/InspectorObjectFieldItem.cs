@@ -1,17 +1,29 @@
 ﻿#if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
-using UnityEngine.UI;
 using Object = UnityEngine.Object;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#else
+using UnityEngine.UI;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     sealed class InspectorObjectFieldItem : InspectorPropertyItem
     {
         [SerializeField]
+#if INCLUDE_TEXT_MESH_PRO
+        TextMeshProUGUI m_FieldLabel;
+#else
         Text m_FieldLabel;
+#endif
 
         [SerializeField]
         MeshRenderer m_Button;

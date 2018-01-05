@@ -131,7 +131,7 @@ namespace UnityEditor.Experimental.EditorVR.UI
             EditorGUILayout.EndHorizontal();
         }
 
-        KeyCode GetKeycodeFromString(string inputString)
+        static KeyCode GetKeycodeFromString(string inputString)
         {
             if (string.IsNullOrEmpty(inputString))
                 return KeyCode.None;

@@ -1,13 +1,21 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections;
+using UnityEditor.Experimental.EditorVR;
 using UnityEngine;
-using UnityEngine.UI;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Helpers;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEditor.Experimental.EditorVR.Workspaces;
 using UnityEditor.Experimental.EditorVR.Extensions;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#else
+using UnityEngine.UI;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.UI
 {
@@ -30,39 +38,15 @@ namespace UnityEditor.Experimental.EditorVR.UI
         const float k_KeyResponsePositionAmplitude = 0.02f;
         const float k_KeyResponseScaleAmplitude = 0.08f;
 
-        public Text textComponent
-        {
-            get { return m_TextComponent; }
-            set { m_TextComponent = value; }
-        }
-
         [SerializeField]
+#if INCLUDE_TEXT_MESH_PRO
+        TextMeshProUGUI m_TextComponent;
+#else
         Text m_TextComponent;
-
-        public Material targetMeshMaterial
-        {
-            get { return m_TargetMeshMaterial; }
-        }
+#endif
 
         Material m_TargetMeshMaterial;
-
-        public Color targetMeshBaseColor
-        {
-            get { return m_TargetMeshBaseColor; }
-        }
-
         Color m_TargetMeshBaseColor;
-
-        public CanvasGroup canvasGroup
-        {
-            get
-            {
-                return !m_CanvasGroup
-                    ? GetComponentInChildren<CanvasGroup>(true)
-                    : m_CanvasGroup;
-            }
-        }
-
         CanvasGroup m_CanvasGroup;
 
         [SerializeField]
@@ -101,6 +85,36 @@ namespace UnityEditor.Experimental.EditorVR.UI
         Action<char> m_KeyPress;
         Func<bool> m_PressOnHover;
         Func<bool> m_InTransition;
+
+#if INCLUDE_TEXT_MESH_PRO
+        public TextMeshProUGUI textComponent
+#else
+        public Text textComponent
+#endif
+        {
+            get { return m_TextComponent; }
+            set { m_TextComponent = value; }
+        }
+
+        public Material targetMeshMaterial
+        {
+            get { return m_TargetMeshMaterial; }
+        }
+
+        public Color targetMeshBaseColor
+        {
+            get { return m_TargetMeshBaseColor; }
+        }
+
+        public CanvasGroup canvasGroup
+        {
+            get
+            {
+                return !m_CanvasGroup
+                    ? GetComponentInChildren<CanvasGroup>(true)
+                    : m_CanvasGroup;
+            }
+        }
 
         void Awake()
         {

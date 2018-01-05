@@ -1,15 +1,27 @@
 #if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEngine;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#else
 using UnityEngine.UI;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     abstract class InspectorPropertyItem : InspectorListItem
     {
         [SerializeField]
+#if INCLUDE_TEXT_MESH_PRO
+        TextMeshProUGUI m_Label;
+#else
         Text m_Label;
+#endif
 
         public Transform tooltipTarget
         {

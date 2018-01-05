@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.UI;
@@ -7,6 +8,12 @@ using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 using InputField = UnityEditor.Experimental.EditorVR.UI.InputField;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -121,7 +128,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
             }
 
             // Texts need a specific shader
+#if INCLUDE_TEXT_MESH_PRO
+            var texts = GetComponentsInChildren<TextMeshProUGUI>(true);
+#else
             var texts = GetComponentsInChildren<Text>(true);
+#endif
             foreach (var text in texts)
             {
                 text.material = textMaterial;
@@ -268,7 +279,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 }
             }
 
+#if INCLUDE_TEXT_MESH_PRO
+            var texts = clone.GetComponentsInChildren<TextMeshProUGUI>(true);
+#else
             var texts = clone.GetComponentsInChildren<Text>(true);
+#endif
             foreach (var text in texts)
             {
                 text.material = m_NoClipText;

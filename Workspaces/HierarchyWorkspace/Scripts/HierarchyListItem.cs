@@ -1,11 +1,18 @@
 #if UNITY_EDITOR
 using System;
 using System.Collections.Generic;
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Handles;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -16,11 +23,19 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
 
         const float k_ExpandArrowRotateSpeed = 0.4f;
 
+#if INCLUDE_TEXT_MESH_PRO
+        [SerializeField]
+        TextMeshProUGUI m_Text;
+
+        [SerializeField]
+        TextMeshProUGUI m_SceneText;
+#else
         [SerializeField]
         Text m_Text;
 
         [SerializeField]
         Text m_SceneText;
+#endif
 
         [SerializeField]
         BaseHandle m_Lock;

@@ -1,9 +1,16 @@
 ﻿#if UNITY_EDITOR
+using UnityEditor.Experimental.EditorVR;
 using UnityEditor.Experimental.EditorVR.Data;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
 using UnityEngine.UI;
 using Button = UnityEditor.Experimental.EditorVR.UI.Button;
+
+#if INCLUDE_TEXT_MESH_PRO
+using TMPro;
+#endif
+
+[assembly: OptionalDependency("TMPro.TextMeshProUGUI", "INCLUDE_TEXT_MESH_PRO")]
 
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
@@ -23,7 +30,11 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         Toggle m_EnabledToggle;
 
         [SerializeField]
+#if INCLUDE_TEXT_MESH_PRO
+        TextMeshProUGUI m_NameText;
+#else
         Text m_NameText;
+#endif
 
         public override void Setup(InspectorData data)
         {
