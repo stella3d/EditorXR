@@ -185,6 +185,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
+            var hits = Physics.RaycastAll(rayOrigin.position, rayOrigin.forward, Mathf.Infinity, LayerMask.GetMask("UI"), QueryTriggerInteraction.Collide);
+            foreach (var hit in hits)
+            {
+                Debug.Log(hit.collider);
+            }
+
             if (this.GetManipulatorDragState())
                 return;
 
