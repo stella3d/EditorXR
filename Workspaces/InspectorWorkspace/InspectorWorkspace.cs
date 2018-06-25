@@ -8,7 +8,7 @@ using UnityEngine;
 namespace UnityEditor.Experimental.EditorVR.Workspaces
 {
     [MainMenuItem("Inspector", "Workspaces", "View and edit GameObject properties")]
-    sealed class InspectorWorkspace : Workspace, ISelectionChanged
+    sealed class InspectorWorkspace : Workspace, ISelectionChanged, IInspectorWorkspace
     {
         public new static readonly Vector3 DefaultBounds = new Vector3(0.3f, 0.1f, 0.5f);
 
@@ -65,13 +65,13 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
                 OnSelectionChanged();
 
             Undo.postprocessModifications += OnPostprocessModifications;
-            Undo.undoRedoPerformed += OnUndoRedo;
+            Undo.undoRedoPerformed += UpdateCurrentObject;
 
             // Propagate initial bounds
             OnBoundsChanged();
         }
 
-        void OnUndoRedo()
+        void UpdateCurrentObject()
         {
             UpdateCurrentObject(true);
         }
@@ -357,7 +357,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         protected override void OnDestroy()
         {
             Undo.postprocessModifications -= OnPostprocessModifications;
-            Undo.undoRedoPerformed -= OnUndoRedo;
+            Undo.undoRedoPerformed -= UpdateCurrentObject;
+#if UNITY_2018_1_OR_NEWER
+            EditorApplication.hierarchyChanged -= UpdateCurrentObject;
+#else
+            EditorApplication.hierarchyWindowChanged -= UpdateCurrentObject;
+#endif
             base.OnDestroy();
         }
 
@@ -365,6 +370,12 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         {
             SetIsLocked();
             OnButtonClicked(rayOrigin);
+        }
+
+        public void UpdateInspector(GameObject obj, bool fullRebuild = false)
+        {
+            if (obj == null || obj == m_SelectedObject)
+                UpdateCurrentObject(fullRebuild);
         }
     }
 }
