@@ -34,16 +34,18 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             public Transform[] grabbedObjects { get; private set; }
             public TransformInput input { get; private set; }
+            public HalfPressableInputControl grabInput { get; private set; }
             public Transform rayOrigin { get; private set; }
 
             public bool suspended { private get; set; }
 
             Vector3 pivotPoint { get { return rayOrigin.position + rayOrigin.rotation * m_GrabOffset; } }
 
-            public GrabData(Transform rayOrigin, TransformInput input, Transform[] grabbedObjects, Vector3 contactPoint)
+            public GrabData(Transform rayOrigin, TransformInput input, HalfPressableInputControl grabInput, Transform[] grabbedObjects, Vector3 contactPoint)
             {
                 this.rayOrigin = rayOrigin;
                 this.input = input;
+                this.grabInput = grabInput;
                 this.grabbedObjects = grabbedObjects;
                 var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
                 m_GrabOffset = inverseRotation * (contactPoint - rayOrigin.position);
@@ -71,12 +73,27 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 }
             }
 
+            private void ResetRotation()
+            {
+                var length = grabbedObjects.Length;
+                for (var i = 0; i < length; i++)
+                {
+                    var grabbedTransform = grabbedObjects[i];
+
+                    var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
+                    m_RotationOffsets[i] = inverseRotation * grabbedTransform.transform.rotation;
+                }
+            }
+
             public void UpdatePositions(IUsesSnapping usesSnapping, bool interpolate = true)
             {
                 if (suspended)
                     return;
 
                 Undo.RecordObjects(grabbedObjects, "Move");
+
+                if (grabInput.wasJustFullPressed)
+                    ResetRotation();
 
                 var rayOriginRotation = rayOrigin.rotation;
                 var pivot = pivotPoint;
@@ -86,7 +103,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     var position = grabbedObject.position;
                     var rotation = grabbedObject.rotation;
                     var targetPosition = pivot + rayOriginRotation * m_PositionOffsets[i];
-                    var targetRotation = rayOriginRotation * m_RotationOffsets[i];
+                    var targetRotation = (grabInput.isFullPressed ? rayOriginRotation  * m_RotationOffsets[i] : rotation);
 
                     if (usesSnapping.DirectSnap(rayOrigin, grabbedObject, ref position, ref rotation, targetPosition, targetRotation))
                     {
@@ -94,18 +111,21 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         {
                             var deltaTime = Time.deltaTime;
                             grabbedObject.position = Vector3.Lerp(grabbedObject.position, position, k_DirectLazyFollowTranslate * deltaTime);
-                            grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, rotation, k_DirectLazyFollowRotate * deltaTime);
+                            if (grabInput.isFullPressed)
+                                grabbedObject.rotation = Quaternion.Lerp(grabbedObject.rotation, rotation, k_DirectLazyFollowRotate * deltaTime);
                         }
                         else
                         {
                             grabbedObject.position = position;
-                            grabbedObject.rotation = rotation;
+                            if (grabInput.isFullPressed)
+                                grabbedObject.rotation = rotation;
                         }
                     }
                     else
                     {
                         grabbedObject.position = targetPosition;
-                        grabbedObject.rotation = targetRotation;
+                        if (grabInput.isFullPressed)
+                            grabbedObject.rotation = targetRotation;
                     }
                 }
             }
@@ -274,6 +294,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         bool m_CurrentlySnapping;
 
         TransformInput m_Input;
+        HalfPressableInputControl m_SelectInput;
 
         readonly BindingDictionary m_Controls = new BindingDictionary();
         readonly List<ProxyFeedbackRequest> m_GrabFeedback = new List<ProxyFeedbackRequest>();
@@ -345,6 +366,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public void ProcessInput(ActionMapInput input, ConsumeControlDelegate consumeControl)
         {
             m_Input = (TransformInput)input;
+            if (m_SelectInput == null)
+                m_SelectInput = new HalfPressableInputControl(m_Input.select);
+            m_SelectInput.ProcessInput();
 
             if (!this.IsSharedUpdater(this))
                 return;
@@ -421,8 +445,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     }
 
                     var transformInput = transformTool.m_Input;
-
-                    if (transformInput.select.wasJustPressed)
+                    var grabInput = transformTool.m_SelectInput;
+                    if (grabInput.wasJustHalfPressed) // Trigger was just pressed
                     {
                         this.ClearSnappingState(directRayOrigin);
 
@@ -434,7 +458,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         if (objectsGrabbed != null && !m_Scaling)
                             objectsGrabbed(directRayOrigin, grabbedObjects);
 
-                        var grabData = new GrabData(directRayOrigin, transformInput, grabbedObjects.ToArray(), directSelectionData.contactPoint);
+                        var grabData = new GrabData(directRayOrigin, transformInput, grabInput, grabbedObjects.ToArray(), directSelectionData.contactPoint);
                         if (otherData != null)
                         {
                             //m_ScaleStartDistance = (directRayOrigin.position - otherData.rayOrigin.position).magnitude;
@@ -463,9 +487,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 hasRight = m_RightGrabData != null;
 
                 var leftInput = m_LeftGrabData != null ? m_LeftGrabData.input : null;
-                var leftHeld = m_LeftGrabData != null && leftInput.select.isHeld;
+                var leftGrabInput = m_LeftGrabData != null ? m_LeftGrabData.grabInput : null;
+                var leftHeld = leftGrabInput != null && leftGrabInput.isHalfPressed;
+
                 var rightInput = m_RightGrabData != null ? m_RightGrabData.input : null;
-                var rightHeld = m_RightGrabData != null && rightInput.select.isHeld;
+                var rightGrabInput = m_RightGrabData != null ? m_RightGrabData.grabInput : null;
+                var rightHeld = rightGrabInput != null && rightGrabInput.isHalfPressed;
 
                 if (hasLeft)
                 {
@@ -487,9 +514,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         Undo.PerformUndo();
                     }
 
-                    if (leftInput.select.wasJustReleased)
+                    if (leftGrabInput.halfWasJustReleased)
                     {
-                        if (rightInput != null && rightInput.select.wasJustReleased)
+                        if (rightInput != null && rightGrabInput.halfWasJustReleased)
                             m_Scaling = false;
 
                         DropHeldObjects(Node.LeftHand);
@@ -518,9 +545,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         Undo.PerformUndo();
                     }
 
-                    if (rightInput.select.wasJustReleased)
+                    if (rightGrabInput.halfWasJustReleased)
                     {
-                        if (leftInput != null && leftInput.select.wasJustReleased)
+                        if (leftInput != null && leftGrabInput.halfWasJustReleased)
                             m_Scaling = false;
 
                         DropHeldObjects(Node.RightHand);
@@ -529,7 +556,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     }
                 }
 
-                if (hasLeft && hasRight && leftHeld && rightHeld && m_Scaling) // Two-handed scaling
+                if (hasLeft && hasRight && leftHeld && rightHeld && m_Scaling) // Two-handed manipulation
                 {
                     var rightRayOrigin = m_RightGrabData.rayOrigin;
                     var leftRayOrigin = m_LeftGrabData.rayOrigin;
