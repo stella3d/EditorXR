@@ -9,6 +9,24 @@ public class HalfPressableInputControl
     float m_FullPressThreshold;
     InputControl m_InputControl;
 
+    public float halfPressThreshold
+    {
+        get { return m_HalfPressThreshold; }
+        set { m_HalfPressThreshold = value; }
+    }
+
+    public float fullPressThreshold
+    {
+        get { return m_FullPressThreshold; }
+        set { m_FullPressThreshold = value; }
+    }
+
+    public InputControl inputControl
+    {
+        get { return m_InputControl; }
+        set { m_InputControl = value; }
+    }
+
     public bool isHalfPressed { get; private set; }
 
     public bool isFullPressed { get; private set; }
@@ -42,59 +60,5 @@ public class HalfPressableInputControl
         wasJustFullPressed = !isFullPressed && currentIsFullPressed;
         fullWasJustReleased = isFullPressed && !currentIsFullPressed;
         isFullPressed = currentIsFullPressed;
-
-        if (wasJustFullPressed || wasJustHalfPressed || fullWasJustReleased || halfWasJustReleased)
-        {
-            Debug.Log("Half: " + isHalfPressed + " Full: " + isFullPressed);
-            if (!isHalfPressed && !isFullPressed)
-            {
-                Debug.Log("Currently not pressed: " + m_InputControl.rawValue);
-            }
-        }
-
-
-        // ResetJustChangedStates();
-
-//        if (m_InputControl.rawValue < m_HalfPressThreshold) // Less than half pressed
-//        {
-//            if (isHalfPressed)
-//            {
-//                halfWasJustReleased = true;
-//                isHalfPressed = false;
-//            }
-//        }
-//        else // More than half pressed
-//        {
-//            if (!isHalfPressed)
-//            {
-//                wasJustHalfPressed = true;
-//                isHalfPressed = true;
-//            }
-//        }
-//
-//        if (m_InputControl.rawValue < m_FullPressThreshold) // Less than full pressed
-//        {
-//            if (isFullPressed)
-//            {
-//                fullWasJustReleased = true;
-//                isFullPressed = false;
-//            }
-//        }
-//        else // full pressed
-//        {
-//            if (!isFullPressed)
-//            {
-//                wasJustFullPressed = true;
-//                isFullPressed = true;
-//            }
-//        }
     }
-//
-//    void ResetJustChangedStates()
-//    {
-//        wasJustFullPressed = false;
-//        wasJustHalfPressed = false;
-//        halfWasJustReleased = false;
-//        fullWasJustReleased = false;
-//    }
 }
