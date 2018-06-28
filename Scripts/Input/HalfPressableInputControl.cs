@@ -3,7 +3,7 @@ using UnityEngine.InputNew;
 
 public class HalfPressableInputControl
 {
-    const float k_DefaultFullPressThreshold = 0.9f;
+    const float k_DefaultFullPressThreshold = 0.95f;
     const float k_DefaultHalfPressThreshold = 0.05f;
     float m_HalfPressThreshold;
     float m_FullPressThreshold;
@@ -38,6 +38,11 @@ public class HalfPressableInputControl
     public bool wasJustFullPressed { get; private set; }
 
     public bool fullWasJustReleased { get; private set; }
+
+    public float halfToFullValue
+    {
+        get { return Mathf.Clamp01((m_InputControl.rawValue - halfPressThreshold) / (fullPressThreshold - halfPressThreshold)); }
+    }
 
     public HalfPressableInputControl(InputControl inputControl, float halfPressThreshold = k_DefaultHalfPressThreshold, float fullPressThreshold = k_DefaultFullPressThreshold)
     {

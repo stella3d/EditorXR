@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Unity.Labs.SuperScience;
 using UnityEditor.Experimental.EditorVR.Core;
 using UnityEditor.Experimental.EditorVR.Manipulators;
 using UnityEditor.Experimental.EditorVR.Proxies;
@@ -31,6 +32,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             Quaternion m_ForwardRotationOffset;
             Vector3 m_GrabOffset;
             float m_StartDistance;
+            Quaternion m_InverseGrabRotationOffset;
 
             public Transform[] grabbedObjects { get; private set; }
             public TransformInput input { get; private set; }
@@ -62,26 +64,15 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 m_RotationOffsets = new Quaternion[length];
                 m_InitialScales = new Vector3[length];
                 var pivot = pivotPoint;
+                m_InverseGrabRotationOffset = Quaternion.Inverse(rayOrigin.rotation);
+
                 for (var i = 0; i < length; i++)
                 {
                     var grabbedTransform = grabbedObjects[i];
 
-                    var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
-                    m_PositionOffsets[i] = inverseRotation * (grabbedTransform.transform.position - pivot);
-                    m_RotationOffsets[i] = inverseRotation * grabbedTransform.transform.rotation;
+                    m_PositionOffsets[i] = (grabbedTransform.transform.position - pivot);
+                    m_RotationOffsets[i] = m_InverseGrabRotationOffset * grabbedTransform.transform.rotation;
                     m_InitialScales[i] = grabbedTransform.transform.localScale;
-                }
-            }
-
-            private void ResetRotation()
-            {
-                var length = grabbedObjects.Length;
-                for (var i = 0; i < length; i++)
-                {
-                    var grabbedTransform = grabbedObjects[i];
-
-                    var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
-                    m_RotationOffsets[i] = inverseRotation * grabbedTransform.transform.rotation;
                 }
             }
 
@@ -92,8 +83,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                 Undo.RecordObjects(grabbedObjects, "Move");
 
-                if (grabInput.wasJustFullPressed)
-                    ResetRotation();
+
+                if (grabInput.wasJustFullPressed || grabInput.fullWasJustReleased)
+                    Reset();
 
                 var rayOriginRotation = rayOrigin.rotation;
                 var pivot = pivotPoint;
@@ -102,8 +94,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     var grabbedObject = grabbedObjects[i];
                     var position = grabbedObject.position;
                     var rotation = grabbedObject.rotation;
-                    var targetPosition = pivot + rayOriginRotation * m_PositionOffsets[i];
-                    var targetRotation = (grabInput.isFullPressed ? rayOriginRotation  * m_RotationOffsets[i] : rotation);
+                    var positionOffset = (grabInput.isFullPressed ? rayOriginRotation * m_InverseGrabRotationOffset : Quaternion.identity) * m_PositionOffsets[i];
+                    var targetPosition = pivot + positionOffset;
+                    var targetRotation = grabInput.isFullPressed ? rayOriginRotation  * m_RotationOffsets[i] : rotation;
 
                     if (usesSnapping.DirectSnap(rayOrigin, grabbedObject, ref position, ref rotation, targetPosition, targetRotation))
                     {
@@ -137,10 +130,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                 Undo.RecordObjects(grabbedObjects, "Move");
 
+                if (otherGrabData.grabInput.wasJustFullPressed || otherGrabData.grabInput.fullWasJustReleased)
+                    StartScaling(otherGrabData);
+
                 var thisPosition = pivotPoint;
                 var otherPosition = otherGrabData.pivotPoint;
                 var distance = Vector3.Distance(thisPosition, otherPosition);
                 var scaleFactor = distance / m_StartDistance;
+
                 if (scaleFactor > 0 && scaleFactor < Mathf.Infinity)
                 {
                     var rayToRay = otherPosition - thisPosition;
@@ -157,12 +154,17 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     {
                         var grabbedObject = grabbedObjects[i];
 
-                        var targetPosition = midPoint + rotationOffset * m_PositionOffsets[i] * scaleFactor;
+                        Vector3 targetPosition;
+                        if (otherGrabData.grabInput.isFullPressed)
+                            targetPosition = midPoint + rotationOffset * m_PositionOffsets[i] * scaleFactor;
+                        else
+                            targetPosition = thisPosition + rotationOffset * m_PositionOffsets[i];
+
                         if (grabbedObject.position != targetPosition)
                             grabbedObject.position = targetPosition;
 
                         var targetScale = m_InitialScales[i] * scaleFactor;
-                        if (grabbedObject.localScale != targetScale)
+                        if (grabbedObject.localScale != targetScale && otherGrabData.grabInput.isFullPressed)
                             grabbedObject.localScale = targetScale;
 
                         grabbedObject.rotation = rotationOffset * m_RotationOffsets[i];
@@ -194,7 +196,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 for (var i = 0; i < grabbedObjects.Length; i++)
                 {
                     var grabbedObject = grabbedObjects[i];
-                    m_PositionOffsets[i] = grabbedObject.position - m_StartMidPoint;
+                    m_PositionOffsets[i] = grabbedObject.position - (otherGrab.grabInput.isFullPressed ? m_StartMidPoint : thisPosition);
                     m_RotationOffsets[i] = grabbedObject.rotation;
                 }
             }
@@ -267,6 +269,9 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
         [SerializeField]
         HapticPulse m_RotatePulse;
+
+        [SerializeField]
+        HapticPulse m_FullGrabPulse;
 
         BaseManipulator m_CurrentManipulator;
 
@@ -368,6 +373,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             m_Input = (TransformInput)input;
             if (m_SelectInput == null)
                 m_SelectInput = new HalfPressableInputControl(m_Input.select);
+
             m_SelectInput.ProcessInput();
 
             if (!this.IsSharedUpdater(this))
@@ -556,7 +562,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     }
                 }
 
-                if (hasLeft && hasRight && leftHeld && rightHeld && m_Scaling) // Two-handed manipulation
+                if (hasLeft && hasRight && leftHeld && rightHeld && m_Scaling) // 2 handed manipulation
                 {
                     var rightRayOrigin = m_RightGrabData.rayOrigin;
                     var leftRayOrigin = m_LeftGrabData.rayOrigin;
@@ -571,7 +577,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                         this.ClearSnappingState(rightRayOrigin);
                     }
                 }
-                else
+                else // 1 handed manipulation
                 {
                     // Offsets will change while scaling. Whichever hand keeps holding the trigger after scaling is done will need to reset itself
                     if (m_Scaling)
@@ -595,10 +601,24 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     }
 
                     if (hasLeft && leftHeld)
+                    {
                         m_LeftGrabData.UpdatePositions(this);
+                        if (!leftGrabInput.isFullPressed)
+                            this.Pulse(Node.LeftHand, m_DragPulse, 1f, 0.5f + leftGrabInput.halfToFullValue);
+
+                        if (leftGrabInput.wasJustFullPressed)
+                            this.Pulse(Node.LeftHand, m_FullGrabPulse);
+                    }
 
                     if (hasRight && rightHeld)
+                    {
                         m_RightGrabData.UpdatePositions(this);
+                        if (!rightGrabInput.isFullPressed)
+                            this.Pulse(Node.RightHand, m_DragPulse, 1f, 0.4f + rightGrabInput.halfToFullValue);
+
+                        if(rightGrabInput.wasJustFullPressed)
+                            this.Pulse(Node.RightHand, m_FullGrabPulse);
+                    }
                 }
 
                 foreach (var linkedObject in linkedObjects)
