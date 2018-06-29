@@ -24,6 +24,7 @@ MonoImporter:
   - m_DragPulse: {fileID: 11400000, guid: a187e6c970cfc58498747aee6dca2919, type: 2}
   - m_RotatePulse: {fileID: 11400000, guid: 2e2c8d33e61b196448657254e78ba15c, type: 2}
   - m_FullGrabPulse: {fileID: 11400000, guid: 2379b9e7e3dc98a4da7dc15270e04a1b, type: 2}
+  - m_HalfGrabPulse: {fileID: 11400000, guid: a6d06b510d57be94fbb4f490f3e93f98, type: 2}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
