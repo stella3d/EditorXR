@@ -79,21 +79,23 @@
 					half4 frag(v2f input) : COLOR
 					{
 						half4 sum = half4(0,0,0,0);
-						#define GrabAndOffset(weight,kernelX) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x + _GrabTexture_TexelSize.x * kernelX * (_Blur * input.yPos), input.grab.y, input.grab.z, input.grab.w))) * weight
-						
-						sum += GrabAndOffset(0.02, -6.0);
-						sum += GrabAndOffset(0.04, -5.0);
-						sum += GrabAndOffset(0.06, -4.0);
-						sum += GrabAndOffset(0.08, -3.0);
-						sum += GrabAndOffset(0.10, -2.0);
-						sum += GrabAndOffset(0.12, -1.0);
-						sum += GrabAndOffset(0.14, 0.0);
-						sum += GrabAndOffset(0.12, +1.0);
-						sum += GrabAndOffset(0.10, +2.0);
-						sum += GrabAndOffset(0.08, +3.0);
-						sum += GrabAndOffset(0.06, +4.0);
-						sum += GrabAndOffset(0.04, +5.0);
-						sum += GrabAndOffset(0.02, +6.0);
+#if EDITORXR_COMPATIBILITY_MODE_ENABLED
+						#DEFINE GRABANDOFFSET(WEIGHT,KERNELX) TEX2DPROJ( _GRABTEXTURE, UNITY_PROJ_COORD(FLOAT4(INPUT.GRAB.X + _GRABTEXTURE_TEXELSIZE.X * KERNELX * (_BLUR * INPUT.YPOS), INPUT.GRAB.Y, INPUT.GRAB.Z, INPUT.GRAB.W))) * WEIGHT
+
+						SUM += GRABANDOFFSET(0.02, -6.0);
+						SUM += GRABANDOFFSET(0.04, -5.0);
+						SUM += GRABANDOFFSET(0.06, -4.0);
+						SUM += GRABANDOFFSET(0.08, -3.0);
+						SUM += GRABANDOFFSET(0.10, -2.0);
+						SUM += GRABANDOFFSET(0.12, -1.0);
+						SUM += GRABANDOFFSET(0.14, 0.0);
+						SUM += GRABANDOFFSET(0.12, +1.0);
+						SUM += GRABANDOFFSET(0.10, +2.0);
+						SUM += GRABANDOFFSET(0.08, +3.0);
+						SUM += GRABANDOFFSET(0.06, +4.0);
+						SUM += GRABANDOFFSET(0.04, +5.0);
+						SUM += GRABANDOFFSET(0.02, +6.0);
+#endif
 						return sum;
 					}
 					ENDCG
@@ -132,13 +134,13 @@
 				{
 					v2f output;
 					output.position = UnityObjectToClipPos(v.position);
-	#if UNITY_UV_STARTS_AT_TOP
+#if UNITY_UV_STARTS_AT_TOP
 					float sign = -1.0;
 					output.yPos = v.texcoord.y;
-	#else
+#else
 					float sign = 1.0;
 					output.yPos = -v.texcoord.y;
-	#endif
+#endif
 					output.grab.xy = (float2(output.position.x, output.position.y * sign) + output.position.w) * 0.5;
 					output.grab.zw = output.position.zw;
 					output.grab *= _WorldScale;
@@ -148,6 +150,7 @@
 				half4 frag(v2f input) : COLOR
 				{
 					half4 sum = half4(0,0,0,0);
+#if EDITORXR_COMPATIBILITY_MODE_ENABLED
 					#define GrabAndOffset(weight,kernelY) tex2Dproj( _GrabTexture, UNITY_PROJ_COORD(float4(input.grab.x, input.grab.y + _GrabTexture_TexelSize.y * kernelY * (_Blur * input.yPos + _VerticalOffset), input.grab.z, input.grab.w))) * weight
 
 					sum += GrabAndOffset(0.02, -6.0);
@@ -163,6 +166,7 @@
 					sum += GrabAndOffset(0.06, +4.0);
 					sum += GrabAndOffset(0.04, +5.0);
 					sum += GrabAndOffset(0.02, +6.0);
+#endif
 					return sum;
 				}
 				ENDCG
@@ -202,11 +206,11 @@
 				{
 					v2f output;
 					output.position = UnityObjectToClipPos(v.position);
-	#if UNITY_UV_STARTS_AT_TOP
+#if UNITY_UV_STARTS_AT_TOP
 					float sign = -1.0;
-	#else
+#else
 					float sign = 1.0;
-	#endif
+#endif
 					output.grab.xy = (float2(output.position.x, output.position.y * sign) + output.position.w) * 0.5;
 					output.grab.zw = output.position.zw;
 					output.grab *= _WorldScale;
