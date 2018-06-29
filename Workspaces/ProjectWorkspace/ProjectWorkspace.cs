@@ -20,7 +20,7 @@ namespace UnityEditor.Experimental.EditorVR.Workspaces
         const float k_MaxScale = 0.09f;
 
         static readonly Vector3 k_MinBounds = new Vector3(MinBounds.x, k_YBounds, 0.5f);
-        static readonly Vector3 k_CustomStartingBounds = new Vector3(0.8f, k_YBounds, 0.5f);
+        static readonly Vector3 k_CustomStartingBounds = new Vector3(MinBounds.x, k_YBounds, 0.5f);
 
         bool m_AssetGridDragging;
         bool m_FolderPanelDragging;
