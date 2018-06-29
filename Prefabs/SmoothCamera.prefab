@@ -72,6 +72,7 @@ Camera:
   m_TargetEye: 3
   m_HDR: 0
   m_AllowMSAA: 1
+  m_AllowDynamicResolution: 0
   m_ForceIntoRT: 0
   m_OcclusionCulling: 1
   m_StereoConvergence: 10
@@ -89,6 +90,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_VRCamera: {fileID: 0}
   m_TargetDisplay: 0
-  m_FieldOfView: 40
-  m_PullBackDistance: 0.8
+  m_FieldOfView: 50
+  m_PullBackDistance: 0.1
   m_SmoothingMultiplier: 3
