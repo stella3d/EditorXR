@@ -25,7 +25,7 @@ namespace UnityEditor.Experimental.EditorVR.Core
         [SerializeField]
         internal List<MonoScript> m_DefaultToolStack;
 
-        [Tooltip("When enabled, reduce the complexity of certain visual properties throughout EditorXR")]
+        [Tooltip("When enabled, reduce the complexity of certain visual elements throughout EditorXR")]
         [SerializeField]
         bool m_CompatibilityMode;
 
@@ -38,6 +38,8 @@ namespace UnityEditor.Experimental.EditorVR.Core
         public bool copyMainCameraImageEffectsToPresentationCamera { get { return m_CopyMainCameraImageEffectsToPresentationCamera; } }
 
         public bool instanceExists { get { return m_Instance != null; } }
+
+        public bool compatibilityMode {  get { return m_CompatibilityMode; } }
 
         public void Setup()
         {

@@ -35,6 +35,11 @@ namespace UnityEditor.Experimental.EditorVR
         bool instanceExists { get; }
 
         /// <summary>
+        /// Bool denotes that the complexity of certain visual elements throughout EditorXR should be reduced
+        /// </summary>
+        bool compatibilityMode { get; }
+
+        /// <summary>
         /// Perform one-time setup for the context when pushed to the stack.
         /// </summary>
         void Setup();
