@@ -86,6 +86,9 @@ namespace UnityEditor.Experimental.EditorVR.Modules
             PlayerHandleManager.RemovePlayerHandle(m_PlayerHandle);
         }
 
+        /// <summary>
+        /// Called in the EditorVR Update() function
+        /// </summary>
         public void ProcessInput()
         {
             k_RemoveList.Clear();
