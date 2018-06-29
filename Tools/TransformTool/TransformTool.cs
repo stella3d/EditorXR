@@ -21,6 +21,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         const float k_LazyFollowRotate = 12f;
         const float k_DirectLazyFollowTranslate = 20f;
         const float k_DirectLazyFollowRotate = 30f;
+        const float k_ModiferDeadZone = 0.1f;
 
         class GrabData
         {
@@ -28,11 +29,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             Quaternion[] m_RotationOffsets;
             Vector3[] m_InitialScales;
             Vector3 m_StartMidPoint;
+            Vector3 m_PivotStartPosition;
             Quaternion m_UpRotationOffset;
             Quaternion m_ForwardRotationOffset;
             Vector3 m_GrabOffset;
             float m_StartDistance;
             Quaternion m_InverseGrabRotationOffset;
+            int m_LastHoveredModifier;
 
             public Transform[] grabbedObjects { get; private set; }
             public TransformInput input { get; private set; }
@@ -41,7 +44,26 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
             public bool suspended { private get; set; }
 
-            Vector3 pivotPoint { get { return rayOrigin.position + rayOrigin.rotation * m_GrabOffset; } }
+            Vector3 pivotPoint 
+            { 
+                get 
+                { 
+                    var pivot = rayOrigin.position + rayOrigin.rotation * m_GrabOffset;
+                    switch (m_LastHoveredModifier)
+                    {
+                        case 0: // Right
+                            return new Vector3(pivot.x, m_PivotStartPosition.y, m_PivotStartPosition.z);
+                        case 1: // Up
+                            return new Vector3(m_PivotStartPosition.x, pivot.y, m_PivotStartPosition.z);                        
+                        case 2: // Left
+                            return pivot;
+                        case 3: // Down
+                            return new Vector3(m_PivotStartPosition.x, m_PivotStartPosition.y, pivot.z);
+                        default:
+                            return pivot;
+                    }
+                } 
+            }
 
             public GrabData(Transform rayOrigin, TransformInput input, HalfPressableInputControl grabInput, Transform[] grabbedObjects, Vector3 contactPoint)
             {
@@ -51,6 +73,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 this.grabbedObjects = grabbedObjects;
                 var inverseRotation = Quaternion.Inverse(rayOrigin.rotation);
                 m_GrabOffset = inverseRotation * (contactPoint - rayOrigin.position);
+                m_LastHoveredModifier = -1;
                 Reset();
             }
 
@@ -64,6 +87,7 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 m_RotationOffsets = new Quaternion[length];
                 m_InitialScales = new Vector3[length];
                 var pivot = pivotPoint;
+                m_PivotStartPosition = pivot;
                 m_InverseGrabRotationOffset = Quaternion.Inverse(rayOrigin.rotation);
 
                 for (var i = 0; i < length; i++)
@@ -83,12 +107,13 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                 Undo.RecordObjects(grabbedObjects, "Move");
 
-
+                CheckModifiers();
                 if (grabInput.wasJustFullPressed || grabInput.fullWasJustReleased)
                     Reset();
 
                 var rayOriginRotation = rayOrigin.rotation;
                 var pivot = pivotPoint;
+              
                 for (var i = 0; i < grabbedObjects.Length; i++)
                 {
                     var grabbedObject = grabbedObjects[i];
@@ -207,6 +232,29 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                     m_PositionOffsets[i] = grabbedObject.position - (otherGrab.grabInput.isFullPressed ? m_StartMidPoint : thisPosition);
                     m_RotationOffsets[i] = grabbedObject.rotation;
                     m_InitialScales[i] = grabbedObject.localScale;
+                }
+            }
+
+            void CheckModifiers()
+            {
+                var modifierInputVector = input.modifier.vector2;
+                if (modifierInputVector.magnitude > k_ModiferDeadZone)
+                {
+                    var angle = Mathf.Atan2(modifierInputVector.y, modifierInputVector.x) * Mathf.Rad2Deg;
+                    angle += 45f;
+                    // Handle lower quadrant to put it into full 360 degree range
+                    if (angle < 0f)
+                        angle += 360f;
+
+                    var sections = 4;
+                    var kPadding = 0.1f;
+                    var kSlotAngle = 360f/sections;
+                    var currentSection = angle/kSlotAngle;
+                    var t = currentSection % 1f;
+                    if (t >= kPadding && t <= 1f - kPadding)
+                    {
+                        m_LastHoveredModifier = (int)currentSection;
+                    }
                 }
             }
         }
