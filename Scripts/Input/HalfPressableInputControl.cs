@@ -4,13 +4,16 @@ using UnityEngine.InputNew;
 public class HalfPressableInputControl
 {
     const float k_DefaultFullPressThreshold = 0.95f;
-    const float k_DefaultHalfPressThreshold = 0.02f;
-    const float k_DefaultHalfPressMinimumDuration = 0.3f;
+    const float k_DefaultHalfPressThreshold = 0.01f;
+    const float k_DefaultHalfPressMinimumDuration = 0.1f;
+    const float k_DefaultFullPressMinimumDuration = 0.1f;
 
     float m_HalfPressThreshold;
     float m_FullPressThreshold;
-    float m_HalfPressMinimumDuration;
+    float m_HalfPressMinimumDuration = k_DefaultHalfPressMinimumDuration;
+    float m_FullPressMinimumDuration = k_DefaultFullPressMinimumDuration;
     float m_TimeInHalfRange;
+    float m_TimeInFullRange;
 
     InputControl m_InputControl;
 
@@ -56,8 +59,7 @@ public class HalfPressableInputControl
     }
 
     public HalfPressableInputControl(InputControl inputControl, 
-        float halfPressThreshold = k_DefaultHalfPressThreshold, float fullPressThreshold = k_DefaultFullPressThreshold, 
-        float halfPressMinimumDuration = k_DefaultHalfPressMinimumDuration)
+        float halfPressThreshold = k_DefaultHalfPressThreshold, float fullPressThreshold = k_DefaultFullPressThreshold)
     {
         m_InputControl = inputControl;
         if (inputControl == null)
@@ -65,7 +67,6 @@ public class HalfPressableInputControl
 
         m_HalfPressThreshold = halfPressThreshold;
         m_FullPressThreshold = fullPressThreshold;
-        m_HalfPressMinimumDuration = halfPressMinimumDuration;
     }
 
     public void ProcessInput()
@@ -76,14 +77,16 @@ public class HalfPressableInputControl
         wasJustReleased = isPressed && !currentIsPressed;
         isPressed = currentIsPressed;        
         
-        var inHalfPressRange = rawValue >= m_HalfPressThreshold && rawValue < m_FullPressThreshold;
+        var inHalfPressRange = !isFullPressed && rawValue >= m_HalfPressThreshold && rawValue < m_FullPressThreshold; // Once full-press is active, don't switch into half-press state
         m_TimeInHalfRange = inHalfPressRange ? (m_TimeInHalfRange + Time.deltaTime) : 0f;
-        var currentIsHalfPressed = m_TimeInHalfRange >= m_HalfPressMinimumDuration;
+        var currentIsHalfPressed = (isHalfPressed || m_TimeInHalfRange >= m_HalfPressMinimumDuration) && isPressed; // If in half-press state, stay in state until completely unpressed
         wasJustHalfPressed = !isHalfPressed && currentIsHalfPressed;
         halfWasJustReleased = isHalfPressed && !currentIsHalfPressed;
         isHalfPressed = currentIsHalfPressed;
 
-        var currentIsFullPressed = rawValue >= m_FullPressThreshold;
+        var inFullPressRange = !isHalfPressed && rawValue >= m_FullPressThreshold; // Once half-press is active, don't switch into full-press state
+        m_TimeInFullRange = inFullPressRange ? (m_TimeInFullRange + Time.deltaTime) : 0f;
+        var currentIsFullPressed = (isFullPressed || m_TimeInFullRange >= m_FullPressMinimumDuration) && isPressed; // If in full-press state, stay in state until completely unpressed
         wasJustFullPressed = !isFullPressed && currentIsFullPressed;
         fullWasJustReleased = isFullPressed && !currentIsFullPressed;
         isFullPressed = currentIsFullPressed;
