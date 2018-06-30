@@ -17,9 +17,15 @@ namespace UnityEditor.Experimental.EditorVR
 
         internal delegate bool DirectSnapDelegate(Transform rayOrigin, Transform transform, ref Vector3 position, ref Quaternion rotation, Vector3 targetPosition, Quaternion targetRotation);
 
+        internal delegate bool GetSnappingEnabledDelegate();
+
         internal static ManipulatorSnapDelegate manipulatorSnap { get; set; }
         internal static DirectSnapDelegate directSnap { get; set; }
         internal static Action<Transform> clearSnappingState { get; set; }
+        internal static Action<bool> setSnappingEnabled { get; set; }
+        internal static GetSnappingEnabledDelegate getSnappingEnabled { get; set; }
+
+
 
         /// <summary>
         /// Perform manipulator snapping: Translate a position vector using deltas while also respecting snapping
@@ -59,6 +65,24 @@ namespace UnityEditor.Experimental.EditorVR
         public static void ClearSnappingState(this IUsesSnapping usesSnaping, Transform rayOrigin)
         {
             clearSnappingState(rayOrigin);
+        }
+
+        /// <summary>
+        /// Set whether snapping is enabled
+        /// </summary>
+        /// <param name="enable">Whether snapping should be enabled</param>
+        public static void SetSnappingEnabled(this IUsesSnapping usesSnaping, bool enable)
+        {
+            setSnappingEnabled(enable);
+        }
+
+        /// <summary>
+        /// Get whether snapping is enabled
+        /// </summary>
+        /// <param name="enable">Whether snapping should be enabled</param>
+        public static bool GetSnappingEnabled(this IUsesSnapping usesSnaping)
+        {
+            return getSnappingEnabled();
         }
     }
 }

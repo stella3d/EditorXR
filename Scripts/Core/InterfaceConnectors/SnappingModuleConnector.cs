@@ -12,6 +12,12 @@ namespace UnityEditor.Experimental.EditorVR.Core
                 IUsesSnappingMethods.manipulatorSnap = provider.ManipulatorSnap;
                 IUsesSnappingMethods.directSnap = provider.DirectSnap;
                 IUsesSnappingMethods.clearSnappingState = provider.ClearSnappingState;
+                IUsesSnappingMethods.setSnappingEnabled = (value) =>
+                {
+                    provider.snappingEnabled = value;
+                };
+
+                IUsesSnappingMethods.getSnappingEnabled = () => provider.snappingEnabled;
             }
         }
     }

@@ -5,7 +5,7 @@ public class HalfPressableInputControl
 {
     const float k_DefaultFullPressThreshold = 0.95f;
     const float k_DefaultHalfPressThreshold = 0.01f;
-    const float k_DefaultHalfPressMinimumDuration = 0.1f;
+    const float k_DefaultHalfPressMinimumDuration = 0.2f;
     const float k_DefaultFullPressMinimumDuration = 0.1f;
 
     float m_HalfPressThreshold;
@@ -24,7 +24,7 @@ public class HalfPressableInputControl
     public bool isFullPressed { get; private set; }
 
     public bool wasJustPressed {get; private set; }
-    
+
     public bool wasJustHalfPressed { get; private set; }
 
     public bool wasJustFullPressed { get; private set; }
@@ -55,10 +55,10 @@ public class HalfPressableInputControl
 
     public float halfToFullValue
     {
-        get { return Mathf.Clamp01((m_InputControl.rawValue - m_HalfPressThreshold) / (m_FullPressThreshold - m_HalfPressThreshold)); }
+        get { return (m_InputControl.rawValue - m_HalfPressThreshold) / (m_FullPressThreshold - m_HalfPressThreshold); }
     }
 
-    public HalfPressableInputControl(InputControl inputControl, 
+    public HalfPressableInputControl(InputControl inputControl,
         float halfPressThreshold = k_DefaultHalfPressThreshold, float fullPressThreshold = k_DefaultFullPressThreshold)
     {
         m_InputControl = inputControl;
@@ -75,8 +75,8 @@ public class HalfPressableInputControl
         var currentIsPressed = rawValue >= m_HalfPressThreshold;
         wasJustPressed = !isPressed && currentIsPressed;
         wasJustReleased = isPressed && !currentIsPressed;
-        isPressed = currentIsPressed;        
-        
+        isPressed = currentIsPressed;
+
         var inHalfPressRange = !isFullPressed && rawValue >= m_HalfPressThreshold && rawValue < m_FullPressThreshold; // Once full-press is active, don't switch into half-press state
         m_TimeInHalfRange = inHalfPressRange ? (m_TimeInHalfRange + Time.deltaTime) : 0f;
         var currentIsHalfPressed = (isHalfPressed || m_TimeInHalfRange >= m_HalfPressMinimumDuration) && isPressed; // If in half-press state, stay in state until completely unpressed

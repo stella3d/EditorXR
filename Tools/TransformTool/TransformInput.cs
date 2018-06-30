@@ -12,5 +12,6 @@ namespace UnityEngine.InputNew
 		public AxisInputControl @modifierX { get { return (AxisInputControl)this[2]; } }
 		public AxisInputControl @modifierY { get { return (AxisInputControl)this[3]; } }
 		public Vector2InputControl @modifier { get { return (Vector2InputControl)this[4]; } }
+		public ButtonInputControl @snapping { get { return (ButtonInputControl)this[5]; } }
 	}
 }
