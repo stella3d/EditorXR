@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2017
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "oculus", "oculus.csproj", "{7303A043-BB08-2018-2A2F-DD36BAEE5FB7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "oculus.Editor", "oculus.Editor.csproj", "{02B89981-6977-F4EB-8BE6-3748F3F470B8}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7303A043-BB08-2018-2A2F-DD36BAEE5FB7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7303A043-BB08-2018-2A2F-DD36BAEE5FB7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7303A043-BB08-2018-2A2F-DD36BAEE5FB7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7303A043-BB08-2018-2A2F-DD36BAEE5FB7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{02B89981-6977-F4EB-8BE6-3748F3F470B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{02B89981-6977-F4EB-8BE6-3748F3F470B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{02B89981-6977-F4EB-8BE6-3748F3F470B8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{02B89981-6977-F4EB-8BE6-3748F3F470B8}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
