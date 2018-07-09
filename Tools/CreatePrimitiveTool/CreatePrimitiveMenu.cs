@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System;
+using System.Collections.Generic;
 using UnityEditor.Experimental.EditorVR.Menus;
 using UnityEditor.Experimental.EditorVR.Utilities;
 using UnityEngine;
@@ -14,6 +15,16 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         public Action<PrimitiveType, bool> selectPrimitive;
         public Action close;
 
+        [SerializeField]
+        List<Renderer> m_MenuPrimitiveRenderers = new List<Renderer>();
+
+
+        Material m_OriginalPrimitiveMaterial;
+
+        [SerializeField]
+        Material m_CustomPrimitiveMaterial;
+
+        public Material customPrimitiveMaterial {  get { return m_CustomPrimitiveMaterial; } }
         public Bounds localBounds { get; private set; }
         public int priority { get { return 1; } }
 
@@ -28,6 +39,10 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         void Awake()
         {
             localBounds = ObjectUtils.GetBounds(transform);
+            m_OriginalPrimitiveMaterial = m_MenuPrimitiveRenderers[0].sharedMaterial;
+
+            if (m_CustomPrimitiveMaterial != null)
+                SetPrimitiveMaterials(m_CustomPrimitiveMaterial);
         }
 
         public void SelectPrimitive(int type)
@@ -40,6 +55,12 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 var go = m_HighlightObjects[i];
                 go.SetActive(i == type);
             }
+        }
+
+        public void SetPrimitiveMaterials(Material material)
+        {
+            foreach (var renderer in m_MenuPrimitiveRenderers)
+                renderer.sharedMaterial = material;
         }
 
         public void SelectFreeformCuboid()

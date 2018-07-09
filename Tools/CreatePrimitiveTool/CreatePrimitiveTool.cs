@@ -18,6 +18,8 @@ namespace UnityEditor.Experimental.EditorVR.Tools
         [SerializeField]
         Sprite m_Icon;
 
+        Material m_CustomMaterial;
+
         const float k_DrawDistance = 0.075f;
 
         GameObject m_ToolMenu;
@@ -49,7 +51,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
             // Clear selection so we can't manipulate things
             Selection.activeGameObject = null;
 
+
             m_ToolMenu = this.InstantiateMenuUI(rayOrigin, m_MenuPrefab);
+            if (m_MenuPrefab.customPrimitiveMaterial != null)
+                m_CustomMaterial = m_MenuPrefab.customPrimitiveMaterial;
+
             var createPrimitiveMenu = m_ToolMenu.GetComponent<CreatePrimitiveMenu>();
             this.ConnectInterfaces(createPrimitiveMenu, rayOrigin);
             createPrimitiveMenu.selectPrimitive = SetSelectedPrimitive;
@@ -107,6 +113,11 @@ namespace UnityEditor.Experimental.EditorVR.Tools
                 this.AddRayVisibilitySettings(rayOrigin, this, false, true);
         }
 
+        public void SetCustomMaterial(Material material)
+        {
+            m_CustomMaterial = material;
+        }
+
         void SetSelectedPrimitive(PrimitiveType type, bool isFreeform)
         {
             m_SelectedPrimitiveType = type;
@@ -131,8 +142,14 @@ namespace UnityEditor.Experimental.EditorVR.Tools
 
                 this.AddToSpatialHash(m_CurrentGameObject);
 
+                if (m_CustomMaterial != null)
+                {
+                    m_CurrentGameObject.GetComponent<Renderer>().sharedMaterial = m_CustomMaterial;
+                }
+
                 consumeControl(standardInput.action);
                 Selection.activeGameObject = m_CurrentGameObject;
+
             }
         }
 

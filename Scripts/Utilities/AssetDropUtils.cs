@@ -11,6 +11,9 @@ namespace UnityEditor.Experimental.EditorVR.Utilities
     {
         public static List<Material> activeMaterialClones = new List<Material>();
 
+        public static readonly List<Renderer> selectionRenderers = new List<Renderer>();
+        public static readonly Dictionary<Renderer, Material> selectionOriginalMaterials = new Dictionary<Renderer, Material>();
+
         public static readonly Dictionary<string, List<Type>> AssignmentDependencies
             = new Dictionary<string, List<Type>>
         {
